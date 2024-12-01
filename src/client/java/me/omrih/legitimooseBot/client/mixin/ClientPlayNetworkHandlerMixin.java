@@ -18,6 +18,7 @@ public class ClientPlayNetworkHandlerMixin {
         try {
             DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhookUrl());
             webhook.setUsername(packet.sender().toString());
+            webhook.setAvatarUrl("https://mc-heads.net/avatar/" + packet.sender());
             EmbedObject embed = new EmbedObject().setDescription(packet.body().content());
             webhook.getEmbeds().add(embed);
             webhook.execute();
