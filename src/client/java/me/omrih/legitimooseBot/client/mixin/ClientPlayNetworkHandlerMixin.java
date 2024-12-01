@@ -15,14 +15,16 @@ import static me.omrih.legitimooseBot.client.LegitimooseBotClient.CONFIG;
 public class ClientPlayNetworkHandlerMixin {
     @Inject(method = "onChatMessage", at = @At("HEAD"))
     public void messageListener(ChatMessageS2CPacket packet, CallbackInfo ci) {
-        try {
-            DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhookUrl());
-            webhook.setUsername(packet.sender().toString());
-            webhook.setAvatarUrl("https://mc-heads.net/avatar/" + packet.sender());
-            EmbedObject embed = new EmbedObject().setDescription(packet.body().content());
-            webhook.getEmbeds().add(embed);
-            webhook.execute();
-        } catch (Exception ignored) {
-        }
+        new Thread(() -> {
+            try {
+                DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhookUrl());
+                webhook.setUsername(packet.sender().toString());
+                webhook.setAvatarUrl("https://mc-heads.net/avatar/" + packet.sender());
+                EmbedObject embed = new EmbedObject().setDescription(packet.body().content());
+                webhook.getEmbeds().add(embed);
+                webhook.execute();
+            } catch (Exception ignored) {
+            }
+        }).start();
     }
 }
