@@ -21,7 +21,7 @@ public class ClientPlayNetworkHandlerMixin {
         new Thread(() -> {
             try {
                 String message = packet.content().getString();
-                Pattern pattern = Pattern.compile("^([^:]+):");
+                Pattern pattern = Pattern.compile("^(?:[^|]+\\|\\s*)?([^:]+):");
                 Matcher matcher = pattern.matcher(message);
 
                 String username = "";
