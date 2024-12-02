@@ -37,7 +37,7 @@ public class ClientPlayNetworkHandlerMixin {
 
                 if (joinMatcher.find()) {
                     username = joinMatcher.group(1);
-                    cleanMessage = "**Joined the server**";
+                    cleanMessage = "**" + username + " joined the server**";
                     isJoinMessage = true;
                 } else if (chatMatcher.find()) {
                     username = chatMatcher.group(1);
