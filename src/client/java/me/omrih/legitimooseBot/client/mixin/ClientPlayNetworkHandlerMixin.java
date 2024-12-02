@@ -18,7 +18,7 @@ public class ClientPlayNetworkHandlerMixin {
         new Thread(() -> {
             try {
                 DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhookUrl());
-                EmbedObject embed = new EmbedObject().setDescription(packet.content().toString());
+                EmbedObject embed = new EmbedObject().setDescription(packet.content().getString());
                 webhook.getEmbeds().add(embed);
                 webhook.execute();
             } catch (Exception ignored) {
