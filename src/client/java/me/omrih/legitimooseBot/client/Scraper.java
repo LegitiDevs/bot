@@ -30,11 +30,8 @@ public class Scraper {
             ScreenHandler currentScreenHandler = client.player.currentScreenHandler;
             int syncId = currentScreenHandler.syncId;
             Inventory inv = currentScreenHandler.getSlot(0).inventory;
-            List<Text> tooltip = new ArrayList<>();
-            Item item = Registries.ITEM.get(Identifier.ofVanilla("dirt"));
-            item.appendTooltip(item.getDefaultStack(), Item.TooltipContext.DEFAULT, tooltip, TooltipType.BASIC);
             try {
-                LOGGER.info(inv.getStack(0).getItem().appendTooltip());
+                LOGGER.info(Objects.requireNonNull(inv.getStack(0).getItem().getComponents().get(DataComponentTypes.LORE)).lines().getFirst().getString());
             } catch (Exception e) {
                 LOGGER.warning(e.getMessage());
             }
