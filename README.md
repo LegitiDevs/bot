@@ -1,4 +1,4 @@
-# LegitiDevs Website
+# LegitiDevs in-game bot
 Fabric mod for world scraping and syncing lobby chat to discord
 
 ![GitHub forks badge](https://img.shields.io/github/forks/LegitiDevs/bot) ![Works on my machine badge](https://cdn.jsdelivr.net/gh/nikku/works-on-my-machine@v0.4.0/badge.svg)
