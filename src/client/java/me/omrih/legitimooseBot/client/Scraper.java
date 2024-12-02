@@ -9,8 +9,6 @@ import net.minecraft.screen.slot.SlotActionType;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static me.omrih.legitimooseBot.client.LegitimooseBotClient.LOGGER;
-
 public class Scraper {
     /*
     Scrape all worlds (will only scrape world name, description, votes and owner)
@@ -30,11 +28,21 @@ public class Scraper {
             ScreenHandler currentScreenHandler = client.player.currentScreenHandler;
             int syncId = currentScreenHandler.syncId;
             Inventory inv = currentScreenHandler.getSlot(0).inventory;
-            try {
-                LOGGER.info(Objects.requireNonNull(inv.getStack(0).getItem().getComponents().get(DataComponentTypes.LORE)).lines().getFirst().getString());
-            } catch (Exception e) {
-                LOGGER.warning(e.getMessage());
+            String ownerName = Objects.requireNonNull(inv.getStack(0).get(DataComponentTypes.LORE)).lines().get(4).getString();
+            String ownerNameRemaining = ownerName.substring(3).trim();
+            if (ownerNameRemaining.contains("|")) {
+                String[] parts = ownerNameRemaining.split("\\|");
+                if (parts.length > 1) {
+                    ownerName = parts[1];
+                }
+            } else {
+                ownerName = ownerNameRemaining;
             }
+            ScrapedWorld world = new ScrapedWorld();
+            world.name = Objects.requireNonNull(inv.getStack(0).get(DataComponentTypes.CUSTOM_NAME)).getString();
+            world.description = Objects.requireNonNull(inv.getStack(0).get(DataComponentTypes.LORE)).lines().getFirst().getString();
+            world.ownerName = ownerName;
+            world.resourcePackPresent = inv.getStack(0).get(DataComponentTypes.LORE).lines().size() > 5;
             MinecraftClient.getInstance().interactionManager.clickSlot(syncId, 0, 0, SlotActionType.PICKUP, client.player);
         }).start();
     }
