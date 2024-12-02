@@ -42,7 +42,6 @@ public class Scraper {
             world.name = Objects.requireNonNull(inv.getStack(0).get(DataComponentTypes.CUSTOM_NAME)).getString();
             world.description = Objects.requireNonNull(inv.getStack(0).get(DataComponentTypes.LORE)).lines().getFirst().getString();
             world.ownerName = ownerName;
-            world.resourcePackPresent = inv.getStack(0).get(DataComponentTypes.LORE).lines().size() > 5;
             MinecraftClient.getInstance().interactionManager.clickSlot(syncId, 0, 0, SlotActionType.PICKUP, client.player);
         }).start();
     }
