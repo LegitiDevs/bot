@@ -11,14 +11,12 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -35,6 +33,7 @@ import static me.omrih.legitimooseBot.client.LegitimooseBotClient.LOGGER;
 
 public class Scraper {
     public static boolean invIsOpen = false;
+
     public static void scrapeAll() {
         MinecraftClient client = MinecraftClient.getInstance();
         assert client.player != null;
@@ -54,12 +53,13 @@ public class Scraper {
                 return;
             }
             LOGGER.info("Last page is: " + max_pages);
-            for(int i = 1; i <= max_pages; i++) {
-                for(int j = 0; j <= 26; j++) {
-                    if(client.player.currentScreenHandler.syncId == 0) return; // should check if player closed the inventory not sure though
+            for (int i = 1; i <= max_pages; i++) {
+                for (int j = 0; j <= 26; j++) {
+                    if (client.player.currentScreenHandler.syncId == 0)
+                        return; // should check if player closed the inventory not sure though
                     ItemStack itemStack = inv.getStack(j);
                     // last page & air: break, last world was already hit.
-                    if(i == max_pages && itemStack.toString().substring(2).equals("minecraft:air")) break;
+                    if (i == max_pages && itemStack.toString().substring(2).equals("minecraft:air")) break;
                     NbtCompound customData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
                     NbtElement publicBukkitValues = customData.get("PublicBukkitValues");
                     assert publicBukkitValues != null;
@@ -182,6 +182,7 @@ public class Scraper {
                     .append("description", this.description)
                     .append("icon", this.icon)
             );
+            LOGGER.info("Created World");
         }
     }
 
