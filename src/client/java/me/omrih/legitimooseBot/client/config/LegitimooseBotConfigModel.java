@@ -8,4 +8,5 @@ import io.wispforest.owo.config.annotation.Modmenu;
 public class LegitimooseBotConfigModel {
     public String webhookUrl = "";
     public String mongoUri = "";
+    public int waitMinutesBetweenScrapes = 10;
 }

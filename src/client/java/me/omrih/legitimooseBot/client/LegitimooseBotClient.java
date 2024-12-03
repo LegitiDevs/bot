@@ -17,6 +17,7 @@ import net.minecraft.client.network.ServerInfo;
 
 import java.awt.*;
 import java.time.OffsetDateTime;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +34,17 @@ public class LegitimooseBotClient implements ClientModInitializer {
             if (screen instanceof TitleScreen) {
                 ServerInfo info = new ServerInfo("Server", "legitimoose.com", ServerInfo.ServerType.OTHER);
                 ConnectScreen.connect(new MultiplayerScreen(null), MinecraftClient.getInstance(), ServerAddress.parse("legitimoose.com"), info, false, null);
+                // then, scrape every 10 minutes:
+                new Thread(() -> {
+                    while(true) {
+                        Scraper.scrapeAll();
+                        try {
+                            TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
+                        } catch (InterruptedException e) {
+                            LOGGER.warning(e.getMessage());
+                        }
+                    }
+                }).start();
             }
         });
 
