@@ -9,8 +9,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 
 import java.awt.*;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
+import java.time.OffsetDateTime;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,8 +23,6 @@ public class LegitimooseBotClient implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> ScrapeCommand.registerCommand(dispatcher));
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            SimpleDateFormat dateFormatUtc = new SimpleDateFormat("HH:mm:ss");
-            dateFormatUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
             final Pattern JOIN_PATTERN = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
             final Pattern CHAT_PATTERN = Pattern.compile("^(?:[^|]+\\|\\s*)?([^:]+):");
             new Thread(() -> {
@@ -52,7 +49,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                         webhook.setUsername(username);
                         webhook.setAvatarUrl("https://mc-heads.net/avatar/" + username);
 
-                        EmbedObject embed = new EmbedObject().setDescription(cleanMessage);
+                        EmbedObject embed = new EmbedObject().setDescription(cleanMessage).setTimestamp(OffsetDateTime.now());
                         if (isJoinMessage) {
                             embed.setColor(Color.GREEN); // Green color for join messages
                         }
