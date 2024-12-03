@@ -11,6 +11,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.inventory.Inventory;
@@ -19,6 +20,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -31,50 +34,67 @@ import static me.omrih.legitimooseBot.client.LegitimooseBotClient.CONFIG;
 import static me.omrih.legitimooseBot.client.LegitimooseBotClient.LOGGER;
 
 public class Scraper {
-    /*
-    Scrape all worlds (will only scrape world name, description, votes and owner)
-     */
+    public static boolean invIsOpen = false;
     public static void scrapeAll() {
         MinecraftClient client = MinecraftClient.getInstance();
         assert client.player != null;
         client.player.networkHandler.sendChatCommand("worlds");
 
         new Thread(() -> {
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            waitSeconds(1);
             assert MinecraftClient.getInstance().interactionManager != null;
-            ScreenHandler currentScreenHandler = client.player.currentScreenHandler;
-            int syncId = currentScreenHandler.syncId;
-            Inventory inv = currentScreenHandler.getSlot(0).inventory;
-            ItemStack itemStack = inv.getStack(0);
-            NbtCompound customData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-            NbtElement publicBukkitValues = customData.get("PublicBukkitValues");
-            assert publicBukkitValues != null;
-
-            ScrapedWorld world = new ScrapedWorld();
-            world.creation_date = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:creation_date")).asString();
-            world.enforce_whitelist = Boolean.getBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:enforce_whitelist")).asString());
-            world.locked = Boolean.getBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:locked")).asString());
-            world.owner_uuid = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:owner")).asString();
-            world.player_count = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:player_count")).asString());
-            world.resource_pack_url = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:resource_pack_url")).asString();
-            world.world_uuid = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:uuid")).asString();
-            world.version = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:version")).asString();
-            world.visits = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:visits")).asString());
-            world.votes = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:votes")).asString());
-            world.whitelist_on_version_change = Boolean.getBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:whitelist_on_version_change")).asString());
-            world.name = Objects.requireNonNull(inv.getStack(0).get(DataComponentTypes.CUSTOM_NAME)).getString();
-            world.description = Objects.requireNonNull(inv.getStack(0).get(DataComponentTypes.LORE)).lines().getFirst().getString();
-            world.icon = Objects.requireNonNull(inv.getStack(0).toString().substring(2));
+            Inventory inv = client.player.currentScreenHandler.getSlot(0).inventory;
+            String title = client.currentScreen.getTitle().toString();
+            int max_pages = 0;
             try {
-                world.uploadToDB();
-            } catch (Exception e) {
-                LOGGER.info(e.getMessage());
+                max_pages = Integer.parseInt(title.substring(31, title.length() - 2));
+            } catch (NumberFormatException e) {
+                LOGGER.warning(e.getMessage());
+                client.player.sendMessage(Text.literal("Cannot start scraping: failed to parse integer amount of worlds!").formatted(Formatting.RED));
+                return;
             }
-            MinecraftClient.getInstance().interactionManager.clickSlot(syncId, 0, 0, SlotActionType.PICKUP, client.player);
+            LOGGER.info("Last page is: " + max_pages);
+            for(int i = 1; i <= max_pages; i++) {
+                for(int j = 0; j <= 26; j++) {
+                    if(client.player.currentScreenHandler.syncId == 0) return; // should check if player closed the inventory not sure though
+                    ItemStack itemStack = inv.getStack(j);
+                    // last page & air: break, last world was already hit.
+                    if(i == max_pages && itemStack.toString().substring(2).equals("minecraft:air")) break;
+                    NbtCompound customData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                    NbtElement publicBukkitValues = customData.get("PublicBukkitValues");
+                    assert publicBukkitValues != null;
+
+                    ScrapedWorld world = new ScrapedWorld();
+                    world.creation_date = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:creation_date")).asString();
+                    world.enforce_whitelist = Boolean.getBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:enforce_whitelist")).asString());
+                    world.locked = Boolean.getBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:locked")).asString());
+                    world.owner_uuid = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:owner")).asString();
+                    world.player_count = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:player_count")).asString());
+                    world.resource_pack_url = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:resource_pack_url")).asString();
+                    world.world_uuid = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:uuid")).asString();
+                    world.version = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:version")).asString();
+                    world.visits = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:visits")).asString());
+                    world.votes = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:votes")).asString());
+                    world.whitelist_on_version_change = Boolean.getBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:whitelist_on_version_change")).asString());
+                    world.name = Objects.requireNonNull(itemStack.get(DataComponentTypes.CUSTOM_NAME)).getString();
+                    world.description = Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).lines().getFirst().getString();
+                    world.icon = Objects.requireNonNull(itemStack.toString().substring(2));
+
+                    LOGGER.info("Scraped World " + j);
+                    LOGGER.info("World data: " + world.getString());
+                    try {
+                        world.uploadToDB();
+                    } catch (Exception e) {
+                        LOGGER.info(e.getMessage());
+                    }
+                }
+                // finally, click on next page button
+                LOGGER.info("Scraped page #" + i);
+                MinecraftClient.getInstance().interactionManager.clickSlot(client.player.currentScreenHandler.syncId, 32, 0, SlotActionType.PICKUP, client.player);
+                waitSeconds(3); // wait three seconds to give legmos time to load
+            }
+            client.player.closeHandledScreen();
+            client.player.sendMessage(Text.literal("Finished Scraping!").formatted(Formatting.GREEN));
         }).start();
     }
 
@@ -173,5 +193,14 @@ public class Scraper {
         NbtElement nbtElement = result.getOrThrow();
         // cast here, as soon as this breaks, the mod will need to update anyway
         return (NbtCompound) nbtElement;
+    }
+
+    private static void waitSeconds(int time) {
+        try {
+            TimeUnit.SECONDS.sleep(time);
+        } catch (InterruptedException e) {
+            LOGGER.warning("Failed to wait " + time + " seconds:");
+            LOGGER.warning(e.getMessage());
+        }
     }
 }
