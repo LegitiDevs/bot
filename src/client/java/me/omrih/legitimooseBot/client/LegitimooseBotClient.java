@@ -16,7 +16,6 @@ import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 
 import java.awt.*;
-import java.time.OffsetDateTime;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -36,7 +35,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 ConnectScreen.connect(new MultiplayerScreen(null), MinecraftClient.getInstance(), ServerAddress.parse("legitimoose.com"), info, false, null);
                 // then, scrape every 10 minutes:
                 new Thread(() -> {
-                    while(true) {
+                    while (true) {
                         Scraper.scrapeAll();
                         try {
                             TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
@@ -75,7 +74,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                         webhook.setUsername(username);
                         webhook.setAvatarUrl("https://mc-heads.net/avatar/" + username);
 
-                        EmbedObject embed = new EmbedObject().setDescription(cleanMessage).setTimestamp(OffsetDateTime.now());
+                        EmbedObject embed = new EmbedObject().setDescription(cleanMessage);
                         if (isJoinMessage) {
                             embed.setColor(Color.GREEN); // Green color for join messages
                         }
