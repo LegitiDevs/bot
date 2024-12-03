@@ -36,11 +36,13 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 ConnectScreen.connect(new MultiplayerScreen(null), MinecraftClient.getInstance(), ServerAddress.parse("legitimoose.com"), info, false, null);
                 // then, scrape every 10 minutes:
                 new Thread(() -> {
-                    Scraper.scrapeAll();
-                    try {
-                        TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
-                    } catch (InterruptedException e) {
-                        LOGGER.warning(e.getMessage());
+                    while(true) {
+                        Scraper.scrapeAll();
+                        try {
+                            TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
+                        } catch (InterruptedException e) {
+                            LOGGER.warning(e.getMessage());
+                        }
                     }
                 }).start();
             }
