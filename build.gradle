@@ -29,6 +29,9 @@ repositories {
 
 dependencies {
     // To change the versions see the gradle.properties file
+    include implementation("org.mongodb:mongodb-driver-sync:5.2.1")
+    include implementation("org.mongodb:mongodb-driver-core:5.2.1")
+    include implementation("org.mongodb:bson:5.2.1")
     include implementation("com.github.micartey:webhookly:master-SNAPSHOT")
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
