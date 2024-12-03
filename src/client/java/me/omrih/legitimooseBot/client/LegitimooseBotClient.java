@@ -2,7 +2,6 @@ package me.omrih.legitimooseBot.client;
 
 import me.micartey.webhookly.DiscordWebhook;
 import me.micartey.webhookly.embeds.EmbedObject;
-import me.micartey.webhookly.embeds.Footer;
 import me.omrih.legitimooseBot.client.command.ScrapeCommand;
 import me.omrih.legitimooseBot.client.config.LegitimooseBotConfig;
 import net.fabricmc.api.ClientModInitializer;
@@ -11,7 +10,6 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -54,7 +52,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                         webhook.setUsername(username);
                         webhook.setAvatarUrl("https://mc-heads.net/avatar/" + username);
 
-                        EmbedObject embed = new EmbedObject().setDescription(cleanMessage).setFooter(new Footer(getCurrentUtcTime() + " UTC", ""));
+                        EmbedObject embed = new EmbedObject().setDescription(cleanMessage);
                         if (isJoinMessage) {
                             embed.setColor(Color.GREEN); // Green color for join messages
                         }
@@ -67,19 +65,5 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 }
             }).start();
         });
-    }
-
-    public static Date getCurrentUtcTime() {  // handling ParseException
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        SimpleDateFormat ldf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        Date d1 = null;
-        try {
-            d1 = ldf.parse(sdf.format(new Date()));
-        }
-        catch (java.text.ParseException e) {
-            LOGGER.info(e.getMessage());
-        }
-        return d1;
     }
 }
