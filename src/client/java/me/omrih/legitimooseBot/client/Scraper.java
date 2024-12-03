@@ -32,8 +32,6 @@ import static me.omrih.legitimooseBot.client.LegitimooseBotClient.CONFIG;
 import static me.omrih.legitimooseBot.client.LegitimooseBotClient.LOGGER;
 
 public class Scraper {
-    public static boolean invIsOpen = false;
-
     public static void scrapeAll() {
         MinecraftClient client = MinecraftClient.getInstance();
         assert client.player != null;
@@ -42,9 +40,8 @@ public class Scraper {
         new Thread(() -> {
             waitSeconds(1);
             assert MinecraftClient.getInstance().interactionManager != null;
-            Inventory inv = client.player.currentScreenHandler.getSlot(0).inventory;
             String title = client.currentScreen.getTitle().toString();
-            int max_pages = 0;
+            int max_pages;
             try {
                 max_pages = Integer.parseInt(title.substring(31, title.length() - 2));
             } catch (NumberFormatException e) {
@@ -54,6 +51,7 @@ public class Scraper {
             }
             LOGGER.info("Last page is: " + max_pages);
             for (int i = 1; i <= max_pages; i++) {
+                Inventory inv = client.player.currentScreenHandler.getSlot(0).inventory;
                 for (int j = 0; j <= 26; j++) {
                     if (client.player.currentScreenHandler.syncId == 0)
                         return; // should check if player closed the inventory not sure though
