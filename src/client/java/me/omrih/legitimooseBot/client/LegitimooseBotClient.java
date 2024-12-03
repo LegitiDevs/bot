@@ -2,6 +2,7 @@ package me.omrih.legitimooseBot.client;
 
 import me.micartey.webhookly.DiscordWebhook;
 import me.micartey.webhookly.embeds.EmbedObject;
+import me.micartey.webhookly.embeds.Footer;
 import me.omrih.legitimooseBot.client.command.ScrapeCommand;
 import me.omrih.legitimooseBot.client.config.LegitimooseBotConfig;
 import net.fabricmc.api.ClientModInitializer;
@@ -9,6 +10,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,11 +21,10 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            ScrapeCommand.registerCommand(dispatcher);
-        });
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> ScrapeCommand.registerCommand(dispatcher));
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+            long unixTimestamp = Instant.now().getEpochSecond();
             final Pattern JOIN_PATTERN = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
             final Pattern CHAT_PATTERN = Pattern.compile("^(?:[^|]+\\|\\s*)?([^:]+):");
             new Thread(() -> {
@@ -50,7 +51,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                         webhook.setUsername(username);
                         webhook.setAvatarUrl("https://mc-heads.net/avatar/" + username);
 
-                        EmbedObject embed = new EmbedObject().setDescription(cleanMessage);
+                        EmbedObject embed = new EmbedObject().setDescription(cleanMessage).setFooter(new Footer("<t:" + unixTimestamp + ":F>", ""));
                         if (isJoinMessage) {
                             embed.setColor(Color.GREEN); // Green color for join messages
                         }
