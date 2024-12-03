@@ -7,7 +7,6 @@ import me.omrih.legitimooseBot.client.config.LegitimooseBotConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 import java.awt.*;
 import java.util.logging.Logger;
