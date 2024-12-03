@@ -62,7 +62,7 @@ public class Scraper {
             world.description = Objects.requireNonNull(inv.getStack(0).get(DataComponentTypes.LORE)).lines().getFirst().getString();
             world.icon = Objects.requireNonNull(inv.getStack(0).toString().substring(2));
 
-            LOGGER.info(world.toString());
+            LOGGER.info(world.getString());
 /*
                 Sample data:
                 minecraft:custom_data=>{PublicBukkitValues:{
@@ -100,10 +100,10 @@ public class Scraper {
         String description;
         String icon;
 
-        @Override
-        public String toString() {
+        public String getString() {
             return toJsonObject().toString();
         }
+
         public JsonObject toJsonObject() {
             JsonObject obj = new JsonObject();
             obj.add("creation_date", new JsonPrimitive(creation_date));
