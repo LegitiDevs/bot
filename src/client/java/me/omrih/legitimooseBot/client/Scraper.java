@@ -67,7 +67,7 @@ public class Scraper {
                     ScrapedWorld world = new ScrapedWorld();
                     world.creation_date = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:creation_date")).asString();
                     world.enforce_whitelist = Boolean.getBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:enforce_whitelist")).asString());
-                    world.locked = Boolean.getBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:locked")).asString());
+                    world.locked = Boolean.parseBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:locked")).asString());
                     world.owner_uuid = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:owner")).asString();
                     world.player_count = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:player_count")).asString());
                     world.resource_pack_url = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:resource_pack_url")).asString();
@@ -75,7 +75,7 @@ public class Scraper {
                     world.version = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:version")).asString();
                     world.visits = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:visits")).asString());
                     world.votes = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:votes")).asString());
-                    world.whitelist_on_version_change = Boolean.getBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:whitelist_on_version_change")).asString());
+                    world.whitelist_on_version_change = Boolean.parseBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:whitelist_on_version_change")).asString());
                     world.name = Objects.requireNonNull(itemStack.get(DataComponentTypes.CUSTOM_NAME)).getString();
                     world.description = Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).lines().getFirst().getString();
                     world.icon = Objects.requireNonNull(itemStack.toString().substring(2));
