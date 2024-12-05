@@ -79,7 +79,7 @@ public class Scraper {
                     world.icon = Objects.requireNonNull(itemStack.toString().substring(2));
 
                     LOGGER.info("Scraped World " + j);
-                    LOGGER.info("World data: " + world.getString());
+                    if(CONFIG.verboseLogging()) LOGGER.info("World data: " + world.getString());
                     try {
                         world.uploadToDB();
                     } catch (Exception e) {
@@ -160,7 +160,7 @@ public class Scraper {
                         Updates.set("icon", this.icon)
                 );
                 collection.updateOne(doc, updates, new UpdateOptions());
-                LOGGER.info("Updated world");
+                if(CONFIG.verboseLogging()) LOGGER.info("Updated world");
                 return;
             }
             collection.insertOne(new Document()
@@ -180,7 +180,7 @@ public class Scraper {
                     .append("description", this.description)
                     .append("icon", this.icon)
             );
-            LOGGER.info("Created World");
+            if(CONFIG.verboseLogging()) LOGGER.info("Created World");
         }
     }
 

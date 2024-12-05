@@ -83,7 +83,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                         webhook.execute();
                     }
                 } catch (Exception e) {
-                    LOGGER.info(e.getMessage());
+                    LOGGER.warning(e.getMessage());
                 }
             }).start();
         });
