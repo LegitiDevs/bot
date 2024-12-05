@@ -160,7 +160,7 @@ public class Scraper {
                         Updates.set("icon", this.icon)
                 );
                 collection.updateOne(doc, updates, new UpdateOptions());
-                if(CONFIG.verboseLogging()) LOGGER.info("Updated world");
+                LOGGER.info("Updated world");
                 return;
             }
             collection.insertOne(new Document()
@@ -180,7 +180,7 @@ public class Scraper {
                     .append("description", this.description)
                     .append("icon", this.icon)
             );
-            if(CONFIG.verboseLogging()) LOGGER.info("Created World");
+            LOGGER.info("Created World");
         }
     }
 
