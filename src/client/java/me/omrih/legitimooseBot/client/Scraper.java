@@ -79,7 +79,7 @@ public class Scraper {
                     world.icon = Objects.requireNonNull(itemStack.toString().substring(2));
 
                     LOGGER.info("Scraped World " + j);
-                    LOGGER.info("World data: " + world.getString());
+                    if(CONFIG.verboseLogging()) LOGGER.info("World data: " + world.getString());
                     try {
                         world.uploadToDB();
                     } catch (Exception e) {

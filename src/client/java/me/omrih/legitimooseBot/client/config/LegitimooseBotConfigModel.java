@@ -9,4 +9,5 @@ public class LegitimooseBotConfigModel {
     public String webhookUrl = "";
     public String mongoUri = "";
     public int waitMinutesBetweenScrapes = 10;
+    public boolean verboseLogging = false;
 }
