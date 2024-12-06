@@ -77,6 +77,7 @@ public class Scraper {
                     world.name = Objects.requireNonNull(itemStack.get(DataComponentTypes.CUSTOM_NAME)).getString();
                     world.description = Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).lines().getFirst().getString();
                     world.icon = Objects.requireNonNull(itemStack.toString().substring(2));
+                    world.last_scraped = System.currentTimeMillis();
 
                     LOGGER.info("Scraped World " + j);
                     if(CONFIG.verboseLogging()) LOGGER.info("World data: " + world.getString());
@@ -112,6 +113,7 @@ public class Scraper {
         String name;
         String description;
         String icon;
+        long last_scraped;
 
         public String getString() {
             return toJsonObject().toString();
@@ -133,6 +135,7 @@ public class Scraper {
             obj.add("name", new JsonPrimitive(name));
             obj.add("description", new JsonPrimitive(description));
             obj.add("icon", new JsonPrimitive(icon));
+            obj.add("last_scraped", new JsonPrimitive(last_scraped));
             return obj;
         }
 
@@ -157,7 +160,8 @@ public class Scraper {
                         Updates.set("whitelist_on_version_change", this.whitelist_on_version_change),
                         Updates.set("name", this.name),
                         Updates.set("description", this.description),
-                        Updates.set("icon", this.icon)
+                        Updates.set("icon", this.icon),
+                        Updates.set("last_scraped", this.last_scraped)
                 );
                 collection.updateOne(doc, updates, new UpdateOptions());
                 LOGGER.info("Updated world");
@@ -179,6 +183,7 @@ public class Scraper {
                     .append("name", this.name)
                     .append("description", this.description)
                     .append("icon", this.icon)
+                    .append("last_scraped", this.last_scraped)
             );
             LOGGER.info("Created World");
         }
