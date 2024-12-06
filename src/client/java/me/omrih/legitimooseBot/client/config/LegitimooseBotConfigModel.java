@@ -7,6 +7,7 @@ import io.wispforest.owo.config.annotation.Modmenu;
 @Config(name = "legitimoosebot-config", wrapperName = "LegitimooseBotConfig")
 public class LegitimooseBotConfigModel {
     public String webhookUrl = "";
+    public String secretPrefix = "::";
     public String mongoUri = "";
     public int waitMinutesBetweenScrapes = 10;
     public boolean verboseLogging = false;
