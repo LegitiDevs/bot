@@ -7,6 +7,7 @@ import me.omrih.legitimooseBot.client.config.LegitimooseBotConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
@@ -33,18 +34,23 @@ public class LegitimooseBotClient implements ClientModInitializer {
             if (screen instanceof TitleScreen) {
                 ServerInfo info = new ServerInfo("Server", "legitimoose.com", ServerInfo.ServerType.OTHER);
                 ConnectScreen.connect(new MultiplayerScreen(null), MinecraftClient.getInstance(), ServerAddress.parse("legitimoose.com"), info, false, null);
-                // then, scrape every 10 minutes:
-                new Thread(() -> {
-                    while (true) {
-                        Scraper.scrapeAll();
-                        try {
-                            TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
-                        } catch (InterruptedException e) {
-                            LOGGER.warning(e.getMessage());
-                        }
-                    }
-                }).start();
             }
+        });
+
+        ClientPlayConnectionEvents.JOIN.register((phase, listener, client) -> {
+            new Thread(() -> {
+                try {
+                    // wait 5 seconds to not make legmos thing that we are DDoS'ing
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException e) { LOGGER.warning(e.getMessage()); }
+
+                while (true) {
+                    Scraper.scrapeAll();
+                    try {
+                        TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
+                    } catch (InterruptedException e) { LOGGER.warning(e.getMessage()); }
+                }
+            }).start();
         });
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
