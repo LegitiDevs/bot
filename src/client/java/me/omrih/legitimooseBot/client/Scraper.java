@@ -29,7 +29,10 @@ import static me.omrih.legitimooseBot.client.LegitimooseBotClient.CONFIG;
 import static me.omrih.legitimooseBot.client.LegitimooseBotClient.LOGGER;
 
 public class Scraper {
+    public static MongoClient mongoClient;
     public static void scrapeAll() {
+        mongoClient = MongoClients.create(CONFIG.mongoUri());
+
         MinecraftClient client = MinecraftClient.getInstance();
         assert client.player != null;
         client.player.networkHandler.sendChatCommand("worlds");
@@ -137,7 +140,6 @@ public class Scraper {
         }
 
         public void uploadToDB() {
-            MongoClient mongoClient = MongoClients.create(CONFIG.mongoUri());
             MongoDatabase database = mongoClient.getDatabase("legitimooseapi");
             database.createCollection("worlds");
             MongoCollection<Document> collection = database.getCollection("worlds");
