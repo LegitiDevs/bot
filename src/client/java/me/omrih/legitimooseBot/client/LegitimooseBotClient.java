@@ -69,7 +69,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                         cleanMessage = msg.substring(chatMatcher.end()).trim();
                     }
 
-                    if (!username.isEmpty()) {
+                    if (!username.isEmpty() && !cleanMessage.startsWith(CONFIG.secretPrefix())) {
                         DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhookUrl());
                         webhook.setUsername(username);
                         webhook.setAvatarUrl("https://mc-heads.net/avatar/" + username);
