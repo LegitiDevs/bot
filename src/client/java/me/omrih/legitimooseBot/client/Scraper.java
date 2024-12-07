@@ -2,8 +2,6 @@ package me.omrih.legitimooseBot.client;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -11,7 +9,6 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -79,7 +76,7 @@ public class Scraper {
                     world.icon = Objects.requireNonNull(itemStack.toString().substring(2));
 
                     LOGGER.info("Scraped World " + j);
-                    if(CONFIG.verboseLogging()) LOGGER.info("World data: " + world.getString());
+                    if (CONFIG.verboseLogging()) LOGGER.info("World data: " + world.getString());
                     try {
                         world.uploadToDB();
                     } catch (Exception e) {
@@ -180,16 +177,6 @@ public class Scraper {
             );
             LOGGER.info("Created World");
         }
-    }
-
-    private static NbtCompound encodeStack(ItemStack stack, DynamicOps<NbtElement> ops) {
-        DataResult<NbtElement> result = ComponentChanges.CODEC.encodeStart(ops, stack.getComponentChanges());
-        result.ifError(e -> {
-
-        });
-        NbtElement nbtElement = result.getOrThrow();
-        // cast here, as soon as this breaks, the mod will need to update anyway
-        return (NbtCompound) nbtElement;
     }
 
     private static void waitSeconds(int time) {
