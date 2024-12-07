@@ -58,7 +58,13 @@ public class Scraper {
                     ItemStack itemStack = inv.getStack(j);
                     // last page & air: break, last world was already hit.
                     if (i == max_pages && itemStack.toString().substring(2).equals("minecraft:air")) break;
-                    NbtCompound customData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                    NbtCompound customData;
+                    try {
+                        customData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                    } catch (NullPointerException e) {
+                        LOGGER.warning(e.getMessage());
+                        continue;
+                    }
                     NbtElement publicBukkitValues = customData.get("PublicBukkitValues");
                     assert publicBukkitValues != null;
 
