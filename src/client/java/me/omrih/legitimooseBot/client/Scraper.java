@@ -77,7 +77,7 @@ public class Scraper {
                     world.name = Objects.requireNonNull(itemStack.get(DataComponentTypes.CUSTOM_NAME)).getString();
                     world.description = Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).lines().getFirst().getString();
                     world.icon = Objects.requireNonNull(itemStack.toString().substring(2));
-                    world.last_scraped = System.currentTimeMillis();
+                    world.last_scraped = System.currentTimeMillis() / 1000L;
 
                     LOGGER.info("Scraped World " + j);
                     if(CONFIG.verboseLogging()) LOGGER.info("World data: " + world.getString());
