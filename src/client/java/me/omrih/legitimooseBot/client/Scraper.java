@@ -144,13 +144,11 @@ public class Scraper {
             Document doc = collection.find(eq("world_uuid", this.world_uuid)).first();
             if (doc != null) {
                 Bson updates = Updates.combine(
-                        Updates.set("creation_date", this.creation_date),
                         Updates.set("enforce_whitelist", this.enforce_whitelist),
                         Updates.set("locked", this.locked),
                         Updates.set("owner_uuid", this.owner_uuid),
                         Updates.set("player_count", this.player_count),
                         Updates.set("resource_pack_url", this.resource_pack_url),
-                        Updates.set("world_uuid", this.world_uuid),
                         Updates.set("version", this.version),
                         Updates.set("visits", this.visits),
                         Updates.set("votes", this.votes),
