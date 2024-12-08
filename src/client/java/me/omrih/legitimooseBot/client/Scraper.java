@@ -84,8 +84,8 @@ public class Scraper {
                     world.whitelist_on_version_change = Boolean.parseBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:whitelist_on_version_change")).asString());
                     world.name = Objects.requireNonNull(itemStack.get(DataComponentTypes.CUSTOM_NAME)).getString();
                     world.description = Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).lines().getFirst().getString();
-                    world.raw_name = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, Objects.requireNonNull(itemStack.get(DataComponentTypes.CUSTOM_NAME))).toString();
-                    world.raw_description = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).lines().getFirst()).toString();
+                    world.raw_name = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, Objects.requireNonNull(itemStack.get(DataComponentTypes.CUSTOM_NAME))).result().toString();
+                    world.raw_description = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).lines().getFirst()).result().toString();
                     world.icon = Objects.requireNonNull(itemStack.toString().substring(2));
                     world.last_scraped = System.currentTimeMillis() / 1000L;
 
