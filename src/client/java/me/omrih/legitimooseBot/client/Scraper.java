@@ -2,6 +2,7 @@ package me.omrih.legitimooseBot.client;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.JsonOps;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -16,6 +17,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.Formatting;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -82,6 +84,8 @@ public class Scraper {
                     world.whitelist_on_version_change = Boolean.parseBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:whitelist_on_version_change")).asString());
                     world.name = Objects.requireNonNull(itemStack.get(DataComponentTypes.CUSTOM_NAME)).getString();
                     world.description = Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).lines().getFirst().getString();
+                    world.raw_name = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, Objects.requireNonNull(itemStack.get(DataComponentTypes.CUSTOM_NAME))).toString();
+                    world.raw_description = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).lines().getFirst()).toString();
                     world.icon = Objects.requireNonNull(itemStack.toString().substring(2));
                     world.last_scraped = System.currentTimeMillis() / 1000L;
 
@@ -118,6 +122,8 @@ public class Scraper {
         boolean whitelist_on_version_change;
         String name;
         String description;
+        String raw_name;
+        String raw_description;
         String icon;
         long last_scraped;
 
@@ -140,6 +146,8 @@ public class Scraper {
             obj.add("whitelist_on_version_change", new JsonPrimitive(whitelist_on_version_change));
             obj.add("name", new JsonPrimitive(name));
             obj.add("description", new JsonPrimitive(description));
+            obj.add("raw_name", new JsonPrimitive(raw_name));
+            obj.add("raw_description", new JsonPrimitive(raw_description));
             obj.add("icon", new JsonPrimitive(icon));
             obj.add("last_scraped", new JsonPrimitive(last_scraped));
             return obj;
@@ -163,6 +171,8 @@ public class Scraper {
                         Updates.set("whitelist_on_version_change", this.whitelist_on_version_change),
                         Updates.set("name", this.name),
                         Updates.set("description", this.description),
+                        Updates.set("raw_name", this.raw_name),
+                        Updates.set("raw_description", this.raw_description),
                         Updates.set("icon", this.icon),
                         Updates.set("last_scraped", this.last_scraped)
                 );
@@ -185,6 +195,8 @@ public class Scraper {
                     .append("whitelist_on_version_change", this.whitelist_on_version_change)
                     .append("name", this.name)
                     .append("description", this.description)
+                    .append("raw_name", this.raw_name)
+                    .append("raw_description", this.raw_description)
                     .append("icon", this.icon)
                     .append("last_scraped", this.last_scraped)
             );
