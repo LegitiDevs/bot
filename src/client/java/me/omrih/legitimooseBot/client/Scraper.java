@@ -27,11 +27,13 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.lt;
 import static me.omrih.legitimooseBot.client.LegitimooseBotClient.CONFIG;
 import static me.omrih.legitimooseBot.client.LegitimooseBotClient.LOGGER;
 
 public class Scraper {
     public static MongoClient mongoClient;
+
     public static void scrapeAll() {
         mongoClient = MongoClients.create(CONFIG.mongoUri());
 
@@ -158,6 +160,7 @@ public class Scraper {
             database.createCollection("worlds");
             MongoCollection<Document> collection = database.getCollection("worlds");
             Document doc = collection.find(eq("world_uuid", this.world_uuid)).first();
+            collection.deleteMany(lt("last_scraped", System.currentTimeMillis() / 1000L - 86400));
             if (doc != null) {
                 Bson updates = Updates.combine(
                         Updates.set("enforce_whitelist", this.enforce_whitelist),
