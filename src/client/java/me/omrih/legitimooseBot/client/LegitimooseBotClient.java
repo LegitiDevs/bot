@@ -51,6 +51,22 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     } catch (InterruptedException e) { LOGGER.warning(e.getMessage()); }
                 }
             }).start();
+            new Thread(() -> {
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException e) {
+                    LOGGER.warning(e.getMessage());
+                }
+
+                while (true) {
+                    MinecraftClient.getInstance().player.networkHandler.sendChatMessage("I am a bot that syncs lobby chat to discord. Prefix your message with \"::\", and I won't send it in discord.");
+                    try {
+                        TimeUnit.MINUTES.sleep(5);
+                    } catch (InterruptedException e) {
+                        LOGGER.warning(e.getMessage());
+                    }
+                }
+            }).start();
         });
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
