@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '1.9-SNAPSHOT'
     id 'maven-publish'
+    id 'com.gradleup.shadow' version '9.0.0-beta4'
 }
 
 version = project.mod_version
@@ -29,10 +30,6 @@ repositories {
 
 dependencies {
     // To change the versions see the gradle.properties file
-    include implementation("org.mongodb:mongodb-driver-sync:5.2.1")
-    include implementation("org.mongodb:mongodb-driver-core:5.2.1")
-    include implementation("org.mongodb:bson:5.2.1")
-    include implementation("com.github.micartey:webhookly:master-SNAPSHOT")
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
@@ -41,6 +38,14 @@ dependencies {
 
     annotationProcessor modImplementation("io.wispforest:owo-lib:${project.owo_version}")
     include "io.wispforest:owo-sentinel:${project.owo_version}"
+
+    shadow implementation("org.mongodb:mongodb-driver-sync:5.2.1")
+    shadow implementation("org.mongodb:mongodb-driver-core:5.2.1")
+    shadow implementation("org.mongodb:bson:5.2.1")
+    shadow implementation("com.github.micartey:webhookly:master-SNAPSHOT")
+    shadow implementation("net.dv8tion:JDA:5.2.1") {
+        exclude module: 'opus-java'
+    }
 }
 
 processResources {
@@ -66,6 +71,20 @@ tasks.withType(JavaCompile).configureEach {
     if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
         it.options.release.set(targetJavaVersion)
     }
+}
+
+shadowJar {
+    from sourceSets.main.output
+    from sourceSets.client.output
+    configurations = [project.configurations.shadow]
+    //exclude("META-INF")
+    minimize()
+}
+
+remapJar {
+    dependsOn(shadowJar)
+    mustRunAfter(shadowJar)
+    inputFile = file(shadowJar.archivePath)
 }
 
 java {
