@@ -1,7 +1,6 @@
 package me.omrih.legitimooseBot.client;
 
 import me.micartey.webhookly.DiscordWebhook;
-import me.micartey.webhookly.embeds.EmbedObject;
 import me.omrih.legitimooseBot.client.command.ScrapeCommand;
 import me.omrih.legitimooseBot.client.config.LegitimooseBotConfig;
 import net.fabricmc.api.ClientModInitializer;
@@ -16,7 +15,6 @@ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 
-import java.awt.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -82,33 +80,25 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     String msg = message.getString();
                     String username = "";
                     String cleanMessage = msg;
-                    boolean isJoinMessage = false;
 
                     Matcher joinMatcher = JOIN_PATTERN.matcher(msg);
                     Matcher chatMatcher = CHAT_PATTERN.matcher(msg);
 
+                    DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhookUrl());
                     if (joinMatcher.find()) {
                         username = joinMatcher.group(1);
                         cleanMessage = "**" + username + " joined the server**";
-                        isJoinMessage = true;
                     } else if (chatMatcher.find()) {
                         username = chatMatcher.group(1);
                         cleanMessage = msg.substring(chatMatcher.end()).trim();
+                        webhook.setUsername(username);
+                        webhook.setAvatarUrl("https://mc-heads.net/avatar/" + username);
                     }
 
                     if (username.equals("Legitimooseapi")) return;
 
                     if (!username.isEmpty() && !cleanMessage.startsWith(CONFIG.secretPrefix())) {
-                        DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhookUrl());
-                        webhook.setUsername(username);
-                        webhook.setAvatarUrl("https://mc-heads.net/avatar/" + username);
-
-                        EmbedObject embed = new EmbedObject().setDescription(cleanMessage);
-                        if (isJoinMessage) {
-                            embed.setColor(Color.GREEN); // Green color for join messages
-                        }
-
-                        webhook.getEmbeds().add(embed);
+                        webhook.setContent(cleanMessage);
                         webhook.execute();
                     }
                 } catch (Exception e) {
