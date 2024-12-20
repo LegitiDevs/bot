@@ -98,7 +98,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     if (username.equals("Legitimooseapi")) return;
 
                     if (!username.isEmpty() && !cleanMessage.startsWith(CONFIG.secretPrefix())) {
-                        webhook.setContent(cleanMessage);
+                        webhook.setContent(cleanMessage.replace("@", ""));
                         webhook.execute();
                     }
                 } catch (Exception e) {
