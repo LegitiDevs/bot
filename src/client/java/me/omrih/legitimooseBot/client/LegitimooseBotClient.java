@@ -42,13 +42,17 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 try {
                     // wait 5 seconds to not make legmos thing that we are DDoS'ing
                     TimeUnit.SECONDS.sleep(5);
-                } catch (InterruptedException e) { LOGGER.warning(e.getMessage()); }
+                } catch (InterruptedException e) {
+                    LOGGER.warning(e.getMessage());
+                }
 
                 while (true) {
                     Scraper.scrapeAll();
                     try {
                         TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
-                    } catch (InterruptedException e) { LOGGER.warning(e.getMessage()); }
+                    } catch (InterruptedException e) {
+                        LOGGER.warning(e.getMessage());
+                    }
                 }
             }).start();
             new Thread(() -> {
@@ -67,6 +71,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     }
                 }
             }).start();
+            new Thread(DiscordMessageListener::main).start();
         });
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
@@ -90,6 +95,8 @@ public class LegitimooseBotClient implements ClientModInitializer {
                         username = chatMatcher.group(1);
                         cleanMessage = msg.substring(chatMatcher.end()).trim();
                     }
+
+                    if (username.equals("Legitimooseapi")) return;
 
                     if (!username.isEmpty() && !cleanMessage.startsWith(CONFIG.secretPrefix())) {
                         DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhookUrl());

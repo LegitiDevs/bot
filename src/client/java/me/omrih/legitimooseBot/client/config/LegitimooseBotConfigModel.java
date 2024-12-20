@@ -9,6 +9,8 @@ public class LegitimooseBotConfigModel {
     public String webhookUrl = "";
     public String secretPrefix = "::";
     public String mongoUri = "";
+    public String discordToken = "";
+    public String channelId = "";
     public int waitMinutesBetweenScrapes = 10;
     public boolean verboseLogging = false;
 }
