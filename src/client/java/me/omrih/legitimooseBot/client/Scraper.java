@@ -74,6 +74,7 @@ public class Scraper {
 
                     ScrapedWorld world = new ScrapedWorld();
                     world.creation_date = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:creation_date")).asString();
+                    world.creation_date_unix_seconds = Integer.parseInt(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:creation_date_unix_seconds")).asString());
                     world.enforce_whitelist = Boolean.parseBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:enforce_whitelist")).asString());
                     world.locked = Boolean.parseBoolean(Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:locked")).asString());
                     world.owner_uuid = Objects.requireNonNull(((NbtCompound) publicBukkitValues).get("datapackserverpaper:owner")).asString();
@@ -112,6 +113,7 @@ public class Scraper {
     // inner class
     public static class ScrapedWorld {
         String creation_date;
+        int creation_date_unix_seconds;
         boolean enforce_whitelist;
         boolean locked;
         String owner_uuid;
@@ -136,6 +138,7 @@ public class Scraper {
         public JsonObject toJsonObject() {
             JsonObject obj = new JsonObject();
             obj.add("creation_date", new JsonPrimitive(creation_date));
+            obj.add("creation_date_unix_seconds", new JsonPrimitive(creation_date_unix_seconds));
             obj.add("enforce_whitelist", new JsonPrimitive(enforce_whitelist));
             obj.add("locked", new JsonPrimitive(locked));
             obj.add("owner_uuid", new JsonPrimitive(owner_uuid));
@@ -186,6 +189,7 @@ public class Scraper {
             collection.insertOne(new Document()
                     .append("_id", new ObjectId())
                     .append("creation_date", this.creation_date)
+                    .append("creation_date_unix_seconds", this.creation_date_unix_seconds)
                     .append("enforce_whitelist", this.enforce_whitelist)
                     .append("locked", this.locked)
                     .append("owner_uuid", this.owner_uuid)
