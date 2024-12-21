@@ -36,8 +36,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
             }
         });
 
-        ClientPlayConnectionEvents.JOIN.register((phase, listener, client) -> {
-            new Thread(() -> {
+                    new Thread(() -> {
                 try {
                     // wait 5 seconds to not make legmos thing that we are DDoS'ing
                     TimeUnit.SECONDS.sleep(5);
@@ -64,13 +63,12 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 while (true) {
                     MinecraftClient.getInstance().player.networkHandler.sendChatMessage("I am a bot that syncs lobby chat to discord. Prefix your message with \"::\", and I won't send it in discord.");
                     try {
-                        TimeUnit.MINUTES.sleep(30);
+                        TimeUnit.MINUTES.sleep(15);
                     } catch (InterruptedException e) {
                         LOGGER.warning(e.getMessage());
                     }
                 }
             }).start();
-        });
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
             final Pattern JOIN_PATTERN = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
