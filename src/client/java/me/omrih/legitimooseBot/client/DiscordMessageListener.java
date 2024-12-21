@@ -18,9 +18,10 @@ public class DiscordMessageListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.isWebhookMessage() || event.getMessage().getContentDisplay().length() >= 200 || event.getMessage().getContentDisplay().contains("§")) return;
+        String message = event.getMessage().getContentStripped().replace("\n","<br>");
+        if (event.isWebhookMessage() || message.length() >= 200 || message.contains("§")) return;
         if (event.getChannel().getId().equals(CONFIG.channelId())) {
-            MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc [Discord] " + "<" + event.getMember().getEffectiveName() + ">: " + event.getMessage().getContentStripped().replace("\n","<br>"));
+            MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc [Discord] " + "<" + event.getMember().getEffectiveName() + ">: " + message);
         }
     }
 }
