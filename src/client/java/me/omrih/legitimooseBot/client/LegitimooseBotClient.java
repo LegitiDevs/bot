@@ -26,6 +26,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        new Thread(DiscordMessageListener::main).start();
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> ScrapeCommand.registerCommand(dispatcher));
 
         ScreenEvents.AFTER_INIT.register((minecraftClient, screen, i, i1) -> {
@@ -69,7 +70,6 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     }
                 }
             }).start();
-            new Thread(DiscordMessageListener::main).start();
         });
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
