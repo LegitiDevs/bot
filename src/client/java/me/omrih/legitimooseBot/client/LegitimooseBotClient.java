@@ -6,7 +6,6 @@ import me.omrih.legitimooseBot.client.config.LegitimooseBotConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
@@ -36,39 +35,39 @@ public class LegitimooseBotClient implements ClientModInitializer {
             }
         });
 
-                    new Thread(() -> {
+        new Thread(() -> {
+            try {
+                // wait 5 seconds to not make legmos thing that we are DDoS'ing
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                LOGGER.warning(e.getMessage());
+            }
+
+            while (true) {
+                Scraper.scrapeAll();
                 try {
-                    // wait 5 seconds to not make legmos thing that we are DDoS'ing
-                    TimeUnit.SECONDS.sleep(5);
+                    TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
                 } catch (InterruptedException e) {
                     LOGGER.warning(e.getMessage());
                 }
+            }
+        }).start();
+        new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                LOGGER.warning(e.getMessage());
+            }
 
-                while (true) {
-                    Scraper.scrapeAll();
-                    try {
-                        TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
-                    } catch (InterruptedException e) {
-                        LOGGER.warning(e.getMessage());
-                    }
-                }
-            }).start();
-            new Thread(() -> {
+            while (true) {
+                MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc <gray>I am a bot that syncs lobby chat to discord. <u>Prefix</u> your message with <u>\"::\"</u> and I won't send it in discord.");
                 try {
-                    TimeUnit.SECONDS.sleep(5);
+                    TimeUnit.MINUTES.sleep(15);
                 } catch (InterruptedException e) {
                     LOGGER.warning(e.getMessage());
                 }
-
-                while (true) {
-                    MinecraftClient.getInstance().player.networkHandler.sendChatMessage("I am a bot that syncs lobby chat to discord. Prefix your message with \"::\", and I won't send it in discord.");
-                    try {
-                        TimeUnit.MINUTES.sleep(15);
-                    } catch (InterruptedException e) {
-                        LOGGER.warning(e.getMessage());
-                    }
-                }
-            }).start();
+            }
+        }).start();
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
             final Pattern JOIN_PATTERN = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
