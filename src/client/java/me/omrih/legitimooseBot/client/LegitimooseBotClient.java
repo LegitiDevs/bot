@@ -44,7 +44,10 @@ public class LegitimooseBotClient implements ClientModInitializer {
             }
 
             while (true) {
-                Scraper.scrapeAll();
+                try {
+                    Scraper.scrapeAll();
+                } catch (Exception ignored) {
+                }
                 try {
                     TimeUnit.MINUTES.sleep(CONFIG.waitMinutesBetweenScrapes());
                 } catch (InterruptedException e) {
@@ -60,7 +63,10 @@ public class LegitimooseBotClient implements ClientModInitializer {
             }
 
             while (true) {
-                MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc <gray>I am a bot that syncs lobby chat to discord. <u>Prefix</u> your message with <u>\"::\"</u> and I won't send it in discord.");
+                try {
+                    MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc <gray>I am a bot that syncs lobby chat to discord. <u>Prefix</u> your message with <u>\"::\"</u> and I won't send it in discord.");
+                } catch (Exception ignored) {
+                }
                 try {
                     TimeUnit.MINUTES.sleep(15);
                 } catch (InterruptedException e) {
