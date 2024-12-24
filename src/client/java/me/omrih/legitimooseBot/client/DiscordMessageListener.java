@@ -18,10 +18,9 @@ public class DiscordMessageListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        // Bot check I think (don't blame me I skimmed over everything) if (event.getMember() == null) return; 
-        String message = event.getMessage().getContentStripped().replace("\n","<br>");
-        String discordNick = event.getMember().getEffectiveName().replace("§","?");
-        if (event.isWebhookMessage() || message.length() >= 200 || message.contains("§")) return;
+        String message = event.getMessage().getContentStripped().replace("\n", "<br>").replace("§", "?");
+        if (event.isWebhookMessage() || message.length() >= 200) return;
+        String discordNick = event.getMember().getEffectiveName().replace("§", "?");
         if (event.getChannel().getId().equals(CONFIG.channelId())) {
             MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc <br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>" + discordNick + "</yellow><gray>:</gray> " + message);
         }
