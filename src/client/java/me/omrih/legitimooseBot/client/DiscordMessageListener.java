@@ -18,11 +18,12 @@ public class DiscordMessageListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        String message = event.getMessage().getContentStripped().replace("\n", "<br>").replace("§", "?");
-        if (event.isWebhookMessage() || message.length() >= 200) return;
+        if (event.isWebhookMessage()) return;
         String discordNick = event.getMember().getEffectiveName().replace("§", "?");
+        String message = "<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>" + discordNick + "</yellow><gray>:</gray> " + event.getMessage().getContentStripped().replace("\n", "<br>").replace("§", "?");
+        if (message.length() >= 200) return;
         if (event.getChannel().getId().equals(CONFIG.channelId())) {
-            MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc <br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>" + discordNick + "</yellow><gray>:</gray> " + message);
+            MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc " + message);
         }
     }
 }
