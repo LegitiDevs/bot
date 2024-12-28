@@ -5,8 +5,10 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 
@@ -20,7 +22,8 @@ public class DiscordBot extends ListenerAdapter {
 
         jda.addEventListener(new DiscordBot());
         jda.updateCommands().addCommands(
-                Commands.slash("playerlist", "List the online players in the lobby")
+                Commands.slash("playerlist", "List the online players in the lobby"),
+                Commands.slash("find", "Find which world a player is in").addOption(OptionType.STRING, "player", "The username of the player you want to find", true)
         ).queue();
     }
 
@@ -33,6 +36,14 @@ public class DiscordBot extends ListenerAdapter {
                 players.append(player.getDisplayName().getString()).append('\n');
             }
             event.reply(players.toString()).queue();
+        } else if (event.getName().equals("find")) {
+            MinecraftClient.getInstance().player.networkHandler.sendChatCommand("find " + event.getOption("player").getAsString());
+            final Boolean[] bool = {true};
+            ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+                if (!bool[0]) return;
+                event.reply(message.getString().replace(" Click HERE to join.", "").trim()).queue();
+                bool[0] = false;
+            });
         }
     }
 
