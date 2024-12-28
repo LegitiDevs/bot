@@ -3,6 +3,7 @@ package me.omrih.legitimooseBot.client;
 import me.micartey.webhookly.DiscordWebhook;
 import me.omrih.legitimooseBot.client.command.ScrapeCommand;
 import me.omrih.legitimooseBot.client.config.LegitimooseBotConfig;
+import me.omrih.legitimooseBot.client.discord.DiscordBot;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
@@ -25,7 +26,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        new Thread(DiscordMessageListener::main).start();
+        new Thread(DiscordBot::runBot).start();
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> ScrapeCommand.registerCommand(dispatcher));
 
         ScreenEvents.AFTER_INIT.register((minecraftClient, screen, i, i1) -> {
