@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.network.PlayerListEntry;
 
 import java.util.Collection;
@@ -21,21 +22,28 @@ public class DiscordBot extends ListenerAdapter {
         JDA jda = JDABuilder.createDefault(CONFIG.discordToken()).enableIntents(GatewayIntent.MESSAGE_CONTENT).build();
 
         jda.addEventListener(new DiscordBot());
-        jda.updateCommands().addCommands(
-                Commands.slash("playerlist", "List the online players in the lobby"),
-                Commands.slash("find", "Find which world a player is in").addOption(OptionType.STRING, "player", "The username of the player you want to find", true)
-        ).queue();
+        jda.updateCommands().addCommands(Commands.slash("list", "List online players in the server").addOption(OptionType.BOOLEAN, "lobby", "True if you only want to see online players in the lobby"), Commands.slash("find", "Find which world a player is in").addOption(OptionType.STRING, "player", "The username of the player you want to find", true)).queue();
     }
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        if (event.getName().equals("playerlist")) {
-            Collection<PlayerListEntry> playerList = MinecraftClient.getInstance().getNetworkHandler().getPlayerList();
-            StringBuilder players = new StringBuilder();
-            for (PlayerListEntry player : playerList) {
-                players.append(player.getDisplayName().getString()).append('\n');
+        if (event.getName().equals("list")) {
+            if (event.getOption("lobby") != null && event.getOption("lobby").getAsBoolean()) {
+                Collection<PlayerListEntry> playerList = MinecraftClient.getInstance().getNetworkHandler().getPlayerList();
+                StringBuilder players = new StringBuilder();
+                for (PlayerListEntry player : playerList) {
+                    players.append(player.getDisplayName().getString()).append('\n');
+                }
+                event.reply(players.toString()).queue();
+            } else {
+                MinecraftClient.getInstance().execute(() -> MinecraftClient.getInstance().setScreen(new ChatScreen("/find ")));
+
+                if (MinecraftClient.getInstance().currentScreen instanceof ChatScreen screen) {
+                    // chatInputSuggestor in ChatScreen is package private so it's a pain to get the autocomplete suggestions from the chat
+                } else {
+                    event.reply("it didn't work :shrug:").queue();
+                }
             }
-            event.reply(players.toString()).queue();
         } else if (event.getName().equals("find")) {
             MinecraftClient.getInstance().player.networkHandler.sendChatCommand("find " + event.getOption("player").getAsString());
             final Boolean[] bool = {true};
