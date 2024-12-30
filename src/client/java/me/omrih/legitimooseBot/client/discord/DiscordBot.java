@@ -1,5 +1,8 @@
 package me.omrih.legitimooseBot.client.discord;
 
+import com.mojang.brigadier.suggestion.Suggestion;
+import me.omrih.legitimooseBot.client.mixin.ChatInputSuggestorAccessor;
+import me.omrih.legitimooseBot.client.mixin.ChatScreenAccessor;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -10,10 +13,13 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.network.PlayerListEntry;
 
 import java.util.Collection;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static me.omrih.legitimooseBot.client.LegitimooseBotClient.CONFIG;
 
@@ -36,12 +42,38 @@ public class DiscordBot extends ListenerAdapter {
                 }
                 event.reply(players.toString()).queue();
             } else {
+                event.deferReply().queue();
                 MinecraftClient.getInstance().execute(() -> MinecraftClient.getInstance().setScreen(new ChatScreen("/find ")));
 
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
                 if (MinecraftClient.getInstance().currentScreen instanceof ChatScreen screen) {
-                    // chatInputSuggestor in ChatScreen is package private so it's a pain to get the autocomplete suggestions from the chat
+                    ChatInputSuggestor chatInputSuggestor = ((ChatScreenAccessor) screen).getChatInputSuggestor();
+                    chatInputSuggestor.show(false);
+
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    StringBuilder suggestions = new StringBuilder();
+                    try {
+                        for (Suggestion suggestion : ((ChatInputSuggestorAccessor) chatInputSuggestor).getPendingSuggestions().get().getList()) {
+                            suggestions.append(suggestion.getText() + '\n');
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    event.getHook().sendMessage(suggestions.toString()).queue();
+
                 } else {
-                    event.reply("it didn't work :shrug:").queue();
+                    event.getHook().sendMessage("it didn't work :shrug:").queue();
                 }
             }
         } else if (event.getName().equals("find")) {
