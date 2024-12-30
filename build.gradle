@@ -42,7 +42,6 @@ dependencies {
     shadow implementation("org.mongodb:mongodb-driver-sync:5.2.1")
     shadow implementation("org.mongodb:mongodb-driver-core:5.2.1")
     shadow implementation("org.mongodb:bson:5.2.1")
-    shadow implementation("com.github.micartey:webhookly:master-SNAPSHOT")
     shadow implementation("net.dv8tion:JDA:5.2.1") {
         exclude module: 'opus-java'
     }

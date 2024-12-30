@@ -1,6 +1,6 @@
 package me.omrih.legitimooseBot.client;
 
-import me.micartey.webhookly.DiscordWebhook;
+import me.omrih.legitimooseBot.client.discord.DiscordWebhook;
 import me.omrih.legitimooseBot.client.command.ScrapeCommand;
 import me.omrih.legitimooseBot.client.config.LegitimooseBotConfig;
 import me.omrih.legitimooseBot.client.discord.DiscordBot;
