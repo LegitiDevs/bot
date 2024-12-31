@@ -28,7 +28,10 @@ public class DiscordBot extends ListenerAdapter {
         JDA jda = JDABuilder.createDefault(CONFIG.discordToken()).enableIntents(GatewayIntent.MESSAGE_CONTENT).build();
 
         jda.addEventListener(new DiscordBot());
-        jda.updateCommands().addCommands(Commands.slash("list", "List online players in the server").addOption(OptionType.BOOLEAN, "lobby", "True if you only want to see online players in the lobby"), Commands.slash("find", "Find which world a player is in").addOption(OptionType.STRING, "player", "The username of the player you want to find", true)).queue();
+        jda.updateCommands().addCommands(
+                Commands.slash("list", "List online players in the server").addOption(OptionType.BOOLEAN, "lobby", "True if you only want to see online players in the lobby"),
+                Commands.slash("find", "Find which world a player is in").addOption(OptionType.STRING, "player", "The username of the player you want to find", true),
+                Commands.slash("msg", "Message an ingame player").addOption(OptionType.STRING, "player", "The username of the player you want to message", true).addOption(OptionType.STRING, "message", "The message you want to send", true)).queue();
     }
 
     @Override
@@ -84,6 +87,9 @@ public class DiscordBot extends ListenerAdapter {
                 event.reply(message.getString().replace(" Click HERE to join.", "").trim()).queue();
                 bool[0] = false;
             });
+        } else if (event.getName().equals("msg")) {
+            MinecraftClient.getInstance().player.networkHandler.sendChatCommand("msg " + event.getOption("player").getAsString() + " [ᴅɪsᴄᴏʀᴅ] " + event.getMember().getEffectiveName() + ": " + event.getOption("message").getAsString().replace("\n", "<br>").replace("§", "?"));
+            event.reply("Sent " + event.getOption("message").getAsString().trim() + " to " + event.getOption("player").getAsString()).setEphemeral(true).queue();
         }
     }
 
