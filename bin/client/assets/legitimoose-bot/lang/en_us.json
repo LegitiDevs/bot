@@ -1,0 +1,5 @@
+{
+  "text.config.legitimoosebot-config.title": "Legitimoose-Bot Config",
+  "text.config.legitimoosebot-config.option.webhookUrl": "Discord Webhook Url",
+  "text.config.legitimoosebot-config.option.mongoUri": "MongoDB Uri"
+}

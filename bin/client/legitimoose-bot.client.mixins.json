@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.omrih.legitimooseBot.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ChatInputSuggestorAccessor",
+    "ChatScreenAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
