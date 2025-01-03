@@ -3,6 +3,7 @@ package me.omrih.legitimooseBot.client;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.JsonOps;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -160,7 +161,9 @@ public class Scraper {
 
         public void uploadToDB() {
             MongoDatabase database = mongoClient.getDatabase("legitimooseapi");
-            database.createCollection("worlds");
+            try {
+                database.createCollection("worlds");
+            } catch (MongoCommandException ignored) {}
             MongoCollection<Document> collection = database.getCollection("worlds");
             Document doc = collection.find(eq("world_uuid", this.world_uuid)).first();
             collection.deleteMany(lt("last_scraped", System.currentTimeMillis() / 1000L - 86400));
