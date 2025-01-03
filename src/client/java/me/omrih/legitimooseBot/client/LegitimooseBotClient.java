@@ -67,7 +67,6 @@ public class LegitimooseBotClient implements ClientModInitializer {
             while (true) {
                 try {
                     MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc <br><red>I am a bot that syncs lobby chat to a community Discord");
-                    TimeUnit.SECONDS.sleep(1);
                     MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc <br><red>If you wish to not have your messages sent to discord, prefix your messages with <u>::</u>");
                     TimeUnit.MINUTES.sleep(5);
                     MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc You can check out the API at <bold>https://api.legitimoose.net</bold>");

@@ -5,6 +5,8 @@
 *.ipr
 *.iws
 
+# bin file
+bin/
 # IntelliJ
 out/
 # mpeltonen/sbt-idea plugin
