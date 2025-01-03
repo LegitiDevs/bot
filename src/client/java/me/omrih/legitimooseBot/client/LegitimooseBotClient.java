@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 
+import java.sql.Time;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -66,7 +67,10 @@ public class LegitimooseBotClient implements ClientModInitializer {
             while (true) {
                 try {
                     MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc <br><red>I am a bot that syncs lobby chat to a community Discord");
+                    TimeUnit.SECONDS.sleep(1);
                     MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc <br><red>If you wish to not have your messages sent to discord, prefix your messages with <u>::</u>");
+                    TimeUnit.MINUTES.sleep(5);
+                    MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc You can check out the API at <bold>https://api.legitimoose.net</bold>");
                 } catch (Exception ignored) {
                 }
                 try {
@@ -92,7 +96,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhookUrl());
                     if (joinMatcher.find()) {
                         username = joinMatcher.group(1);
-                        cleanMessage = "**" + username + " joined the server**";
+                        cleanMessage = "**" + username + " Joined The Server**";
                     } else if (chatMatcher.find()) {
                         username = chatMatcher.group(1);
                         cleanMessage = msg.substring(chatMatcher.end()).trim();
@@ -103,7 +107,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     if (username.equals("Legitimooseapi")) return;
 
                     if (!username.isEmpty() && !cleanMessage.startsWith(CONFIG.secretPrefix())) {
-                        webhook.setContent(cleanMessage.replace("@", ""));
+                        webhook.setContent(cleanMessage.replace("@",""));
                         webhook.execute();
                     }
                 } catch (Exception e) {
