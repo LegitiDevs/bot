@@ -97,7 +97,7 @@ public class DiscordBot extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isWebhookMessage() || event.getAuthor().isBot()) return;
         String discordNick = event.getMember().getEffectiveName().replace("§", "?");
-        String message = "<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>" + discordNick + "</yellow><gray>:</gray> " + event.getMessage().getContentStripped().replace("\n", "<br>").replace("§", "?");
+        String message = "<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>" + discordNick + "</yellow><dark_gray>:</dark_gray> " + event.getMessage().getContentStripped().replace("\n", "<br>").replace("§", "?");
         if (message.length() >= 200) return;
         if (event.getChannel().getId().equals(CONFIG.channelId())) {
             MinecraftClient.getInstance().player.networkHandler.sendChatCommand("lc " + message);
