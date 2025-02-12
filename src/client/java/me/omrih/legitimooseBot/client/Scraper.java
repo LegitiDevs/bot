@@ -50,11 +50,11 @@ public class Scraper {
             try {
                 max_pages = Integer.parseInt(title.substring(31, title.length() - 2));
             } catch (NumberFormatException e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.warn(e.getMessage());
                 client.player.sendMessage(Text.literal("Cannot start scraping: failed to parse integer amount of worlds!").formatted(Formatting.RED));
                 return;
             }
-            LOGGER.info("Last page is: " + max_pages);
+            LOGGER.info("Last page is: {}", max_pages);
             for (int i = 1; i <= max_pages; i++) {
                 Inventory inv = client.player.currentScreenHandler.getSlot(0).inventory;
                 for (int j = 0; j <= 26; j++) {
@@ -67,7 +67,7 @@ public class Scraper {
                     try {
                         customData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
                     } catch (NullPointerException e) {
-                        LOGGER.warning(e.getMessage());
+                        LOGGER.warn(e.getMessage());
                         continue;
                     }
                     NbtElement publicBukkitValues = customData.get("PublicBukkitValues");
@@ -218,8 +218,8 @@ public class Scraper {
         try {
             TimeUnit.SECONDS.sleep(time);
         } catch (InterruptedException e) {
-            LOGGER.warning("Failed to wait " + time + " seconds:");
-            LOGGER.warning(e.getMessage());
+            LOGGER.warn("Failed to wait {} seconds:", time);
+            LOGGER.warn(e.getMessage());
         }
     }
 }
