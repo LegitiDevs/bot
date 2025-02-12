@@ -26,6 +26,7 @@ repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
     maven { url 'https://maven.wispforest.io' }
+    maven { url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1" }
 }
 
 dependencies {
@@ -45,6 +46,8 @@ dependencies {
     shadow implementation("net.dv8tion:JDA:5.2.1") {
         exclude module: 'opus-java'
     }
+
+    modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
 }
 
 processResources {

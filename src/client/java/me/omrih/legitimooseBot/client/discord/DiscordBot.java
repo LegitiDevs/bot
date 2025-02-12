@@ -24,8 +24,9 @@ import java.util.concurrent.TimeUnit;
 import static me.omrih.legitimooseBot.client.LegitimooseBotClient.CONFIG;
 
 public class DiscordBot extends ListenerAdapter {
+    public static JDA jda;
     static public void runBot() {
-        JDA jda = JDABuilder.createDefault(CONFIG.discordToken()).enableIntents(GatewayIntent.MESSAGE_CONTENT).build();
+        jda = JDABuilder.createDefault(CONFIG.discordToken()).enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS).build();
 
         jda.addEventListener(new DiscordBot());
         jda.updateCommands().addCommands(
