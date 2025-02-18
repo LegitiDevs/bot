@@ -90,7 +90,7 @@ public class DiscordBot extends ListenerAdapter {
             });
         } else if (event.getName().equals("msg")) {
             MinecraftClient.getInstance().player.networkHandler.sendChatCommand("msg " + event.getOption("player").getAsString() + " [ᴅɪsᴄᴏʀᴅ] " + event.getMember().getEffectiveName() + ": " + event.getOption("message").getAsString().replace("\n", "<br>").replace("§", "?"));
-            event.reply("Sent " + event.getOption("message").getAsString().trim() + " to " + event.getOption("player").getAsString()).setEphemeral(true).queue();
+            event.reply("Sent `" + event.getOption("message").getAsString().trim() + "` to " + event.getOption("player").getAsString()).setEphemeral(true).queue();
         }
     }
 
