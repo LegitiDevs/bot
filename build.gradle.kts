@@ -45,6 +45,10 @@ dependencies {
     include(implementation("org.mongodb:bson-kotlinx:5.3.0")!!)
     include(implementation("net.dv8tion:JDA:5.3.0")!!)
     include("com.squareup.okhttp3:okhttp:4.12.0")
+    include("com.squareup.okio:okio:3.6.0")
+    include("com.fasterxml.jackson.core:jackson-databind:2.17.2")
+    include("com.fasterxml.jackson.core:jackson-core:2.17.2")
+    include("net.sf.trove4j:core:3.1.0")
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
 }
