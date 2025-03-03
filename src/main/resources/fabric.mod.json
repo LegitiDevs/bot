@@ -10,10 +10,16 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "net.legitimoose.bot.LegitimooseBotClient"
+      {
+        "adapter": "kotlin",
+        "value": "net.legitimoose.bot.LegitimooseBotClient::init"
+      }
     ],
     "main": [
-      "net.legitimoose.bot.LegitimooseBot"
+      {
+        "adapter": "kotlin",
+        "value": "net.legitimoose.bot.LegitimooseBot::init"
+      }
     ]
   },
   "mixins": [
@@ -27,6 +33,6 @@
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",
     "minecraft": "${minecraft_version}",
-    "owo-lib": "${owo_version}"
+    "owo": "${owo_version}"
   }
 }

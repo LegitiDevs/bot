@@ -1,4 +1,6 @@
 plugins {
+    kotlin("jvm") version "2.1.10"
+    id("com.google.devtools.ksp") version "2.1.10-1.0.29"
     id("fabric-loom") version "1.9-SNAPSHOT"
 }
 
@@ -24,6 +26,7 @@ repositories {
     mavenCentral()
     maven("https://maven.wispforest.io")
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
+    maven("https://maven.kosmx.dev/")
 }
 
 dependencies {
@@ -33,12 +36,13 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+    modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("fabric_kotlin_version")}")
 
-    annotationProcessor(modImplementation("io.wispforest:owo-lib:${project.property("owo_version")}")!!)
+    modImplementation("io.wispforest:owo-lib:${project.property("owo_version")}")
+    ksp("dev.kosmx.kowoconfig:ksp-owo-config:0.1.0")
 
-    include(implementation("org.mongodb:mongodb-driver-sync:5.2.1")!!)
-    include(implementation("org.mongodb:mongodb-driver-core:5.2.1")!!)
-    include(implementation("org.mongodb:bson:5.2.1")!!)
+    include(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.3.0")!!)
+    include(implementation("org.mongodb:bson-kotlinx:5.3.0")!!)
     include(implementation("net.dv8tion:JDA:5.3.0") {
         exclude(module = "opus-java")
     })
