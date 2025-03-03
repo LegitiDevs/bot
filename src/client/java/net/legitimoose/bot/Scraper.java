@@ -1,4 +1,4 @@
-package me.omrih.legitimooseBot.client;
+package net.legitimoose.bot;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.lt;
-import static me.omrih.legitimooseBot.client.LegitimooseBotClient.CONFIG;
-import static me.omrih.legitimooseBot.client.LegitimooseBotClient.LOGGER;
+import static net.legitimoose.bot.LegitimooseBot.CONFIG;
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class Scraper {
     public static MongoClient mongoClient;

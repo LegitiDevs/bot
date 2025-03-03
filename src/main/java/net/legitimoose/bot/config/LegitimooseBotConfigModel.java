@@ -1,4 +1,4 @@
-package me.omrih.legitimooseBot.client.config;
+package net.legitimoose.bot.config;
 
 import io.wispforest.owo.config.annotation.Config;
 

@@ -1,4 +1,4 @@
-package me.omrih.legitimooseBot.client.mixin;
+package net.legitimoose.bot.mixin.client;
 
 import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.screen.ChatScreen;

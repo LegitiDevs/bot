@@ -1,8 +1,7 @@
-package me.omrih.legitimooseBot.client;
+package net.legitimoose.bot;
 
-import me.omrih.legitimooseBot.client.config.LegitimooseBotConfig;
-import me.omrih.legitimooseBot.client.discord.DiscordBot;
-import me.omrih.legitimooseBot.client.discord.DiscordWebhook;
+import net.legitimoose.bot.discord.DiscordBot;
+import net.legitimoose.bot.discord.DiscordWebhook;
 import net.dv8tion.jda.api.entities.Member;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
@@ -13,16 +12,18 @@ import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static net.legitimoose.bot.LegitimooseBot.CONFIG;
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+
 public class LegitimooseBotClient implements ClientModInitializer {
-    public static final LegitimooseBotConfig CONFIG = LegitimooseBotConfig.createAndLoad();
-    public static final Logger LOGGER = LoggerFactory.getLogger("Legitimoose-Bot");
+    private static final Pattern JOIN_PATTERN = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
+    private static final Pattern CHAT_PATTERN = Pattern.compile("^(?:[^|]+\\|\\s*)?([^:]+):");
+    private static final Pattern MSG_PATTERN = Pattern.compile("\\[(.*) -> me\\] @(.*) (.*)");
 
     @Override
     public void onInitializeClient() {
@@ -79,9 +80,6 @@ public class LegitimooseBotClient implements ClientModInitializer {
         }).start();
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            final Pattern JOIN_PATTERN = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
-            final Pattern CHAT_PATTERN = Pattern.compile("^(?:[^|]+\\|\\s*)?([^:]+):");
-            final Pattern MSG_PATTERN = Pattern.compile("\\[(.*) -> me\\] @(.*) (.*)");
             new Thread(() -> {
                 try {
                     String msg = message.getString();

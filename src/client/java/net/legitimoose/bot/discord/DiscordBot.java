@@ -1,8 +1,8 @@
-package me.omrih.legitimooseBot.client.discord;
+package net.legitimoose.bot.discord;
 
 import com.mojang.brigadier.suggestion.Suggestion;
-import me.omrih.legitimooseBot.client.mixin.ChatInputSuggestorAccessor;
-import me.omrih.legitimooseBot.client.mixin.ChatScreenAccessor;
+import net.legitimoose.bot.mixin.client.ChatInputSuggestorAccessor;
+import net.legitimoose.bot.mixin.client.ChatScreenAccessor;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static me.omrih.legitimooseBot.client.LegitimooseBotClient.CONFIG;
+import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 
 public class DiscordBot extends ListenerAdapter {
     public static JDA jda;

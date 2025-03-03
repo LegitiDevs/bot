@@ -1,6 +1,5 @@
 plugins {
     id("fabric-loom") version "1.9-SNAPSHOT"
-    id("com.gradleup.shadow") version "9.0.0-beta4"
 }
 
 version = project.property("mod_version") as String
@@ -37,10 +36,10 @@ dependencies {
 
     annotationProcessor(modImplementation("io.wispforest:owo-lib:${project.property("owo_version")}")!!)
 
-    shadow(implementation("org.mongodb:mongodb-driver-sync:5.2.1")!!)
-    shadow(implementation("org.mongodb:mongodb-driver-core:5.2.1")!!)
-    shadow(implementation("org.mongodb:bson:5.2.1")!!)
-    shadow(implementation("net.dv8tion:JDA:5.3.0") {
+    include(implementation("org.mongodb:mongodb-driver-sync:5.2.1")!!)
+    include(implementation("org.mongodb:mongodb-driver-core:5.2.1")!!)
+    include(implementation("org.mongodb:bson:5.2.1")!!)
+    include(implementation("net.dv8tion:JDA:5.3.0") {
         exclude(module = "opus-java")
     })
 
@@ -51,34 +50,21 @@ tasks.processResources {
     inputs.property("version", project.version)
     inputs.property("minecraft_version", project.property("minecraft_version"))
     inputs.property("loader_version", project.property("loader_version"))
+    inputs.property("owo_version", project.property("owo_version"))
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand(
             "version" to inputs.properties["version"],
             "minecraft_version" to inputs.properties["minecraft_version"],
-            "loader_version" to inputs.properties["loader_version"]
+            "loader_version" to inputs.properties["loader_version"],
+            "owo_version" to inputs.properties["owo_version"]
         )
     }
 }
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
-}
-
-tasks {
-    shadowJar {
-        archiveClassifier = ""
-        from(sourceSets["main"].output)
-        from(sourceSets["client"].output)
-        configurations = listOf(project.configurations.shadow.get())
-        minimize()
-    }
-    remapJar {
-        dependsOn(shadowJar)
-        mustRunAfter(shadowJar)
-        inputFile = shadowJar.get().archiveFile
-    }
 }
 
 java {

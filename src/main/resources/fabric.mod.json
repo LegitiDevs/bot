@@ -10,10 +10,10 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "me.omrih.legitimooseBot.client.LegitimooseBotClient"
+      "net.legitimoose.bot.LegitimooseBotClient"
     ],
     "main": [
-      "me.omrih.legitimooseBot.LegitimooseBot"
+      "net.legitimoose.bot.LegitimooseBot"
     ]
   },
   "mixins": [
@@ -25,7 +25,8 @@
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
-    "fabric": "*",
-    "minecraft": "${minecraft_version}"
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}",
+    "owo-lib": "${owo_version}"
   }
 }
