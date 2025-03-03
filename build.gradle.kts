@@ -43,9 +43,8 @@ dependencies {
 
     include(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.3.0")!!)
     include(implementation("org.mongodb:bson-kotlinx:5.3.0")!!)
-    include(implementation("net.dv8tion:JDA:5.3.0") {
-        exclude(module = "opus-java")
-    })
+    include(implementation("net.dv8tion:JDA:5.3.0")!!)
+    include("com.squareup.okhttp3:okhttp:4.12.0")
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
 }
