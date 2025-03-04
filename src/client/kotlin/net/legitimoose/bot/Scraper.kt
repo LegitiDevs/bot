@@ -30,11 +30,9 @@ class Scraper {
             client.player!!.networkHandler.sendChatCommand("worlds")
 
             waitSeconds(1)
-            val title = client.currentScreen!!.title.string
-            logger.info(title)
             val max_pages: Int
             try {
-                max_pages = title.substring(23, title.length - 2).toInt()
+                max_pages = client.currentScreen!!.title.siblings[0].string.substring(3).toInt()
             } catch (e: NumberFormatException) {
                 logger.error("Cannot start scraping: failed to parse integer amount of worlds!")
                 logger.error(e.message)
