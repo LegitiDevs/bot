@@ -72,7 +72,7 @@ object LegitimooseBotClient {
                     MinecraftClient.getInstance().player?.networkHandler?.sendChatCommand("lc <br><red>I am a bot that syncs lobby chat to a community Discord")
                     MinecraftClient.getInstance().player?.networkHandler?.sendChatCommand("lc <br><red>If you wish to not have your messages sent to discord, prefix your messages with <u>::</u>")
                     MinecraftClient.getInstance().player?.networkHandler?.sendChatCommand("lc You can check out the API at <bold>https://legitimoose.net/api</bold>")
-                    TimeUnit.MINUTES.sleep(5)
+                    TimeUnit.MINUTES.sleep(20)
                 } catch (e: InterruptedException) {
                     logger.warn(e.message)
                 }
