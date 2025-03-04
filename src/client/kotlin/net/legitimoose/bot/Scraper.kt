@@ -31,6 +31,7 @@ class Scraper {
 
             waitSeconds(1)
             val title = client.currentScreen!!.title.toString()
+            logger.info(title)
             val max_pages: Int
             try {
                 max_pages = title.substring(31, title.length - 2).toInt()
