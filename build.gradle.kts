@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "2.1.10"
     id("com.google.devtools.ksp") version "2.1.10-1.0.29"
     id("fabric-loom") version "1.9-SNAPSHOT"
+    id("com.gradleup.shadow") version "9.0.0-beta9"
 }
 
 version = project.property("mod_version") as String
@@ -41,14 +42,11 @@ dependencies {
     modImplementation("io.wispforest:owo-lib:${project.property("owo_version")}")
     ksp("dev.kosmx.kowoconfig:ksp-owo-config:0.1.0")
 
-    include(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.3.0")!!)
-    include(implementation("org.mongodb:bson-kotlinx:5.3.0")!!)
-    include(implementation("net.dv8tion:JDA:5.3.0")!!)
-    include("com.squareup.okhttp3:okhttp:4.12.0")
-    include("com.squareup.okio:okio:3.6.0")
-    include("com.fasterxml.jackson.core:jackson-databind:2.17.2")
-    include("com.fasterxml.jackson.core:jackson-core:2.17.2")
-    include("net.sf.trove4j:core:3.1.0")
+    shadow(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.3.0")!!)
+    shadow(implementation("org.mongodb:bson-kotlinx:5.3.0")!!)
+    shadow(implementation("net.dv8tion:JDA:5.3.0") {
+        exclude("opus-java")
+    })
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
 }
@@ -72,6 +70,19 @@ tasks.processResources {
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
+}
+
+tasks {
+    shadowJar {
+        configurations = listOf(project.configurations.shadow.get())
+        archiveClassifier = ""
+        minimize()
+    }
+    remapJar {
+        dependsOn(shadowJar)
+        mustRunAfter(shadowJar)
+        inputFile = file(shadowJar.get().archiveFile)
+    }
 }
 
 java {
