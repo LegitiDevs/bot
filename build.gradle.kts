@@ -74,6 +74,8 @@ tasks.withType<JavaCompile> {
 
 tasks {
     shadowJar {
+        from(sourceSets["main"].output)
+        from(sourceSets["client"].output)
         configurations = listOf(project.configurations.shadow.get())
         archiveClassifier = ""
         minimize()
