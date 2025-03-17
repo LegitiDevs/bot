@@ -28,6 +28,7 @@ repositories {
     maven("https://maven.wispforest.io")
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://maven.kosmx.dev/")
+    maven("https://maven.parchmentmc.org")
 }
 
 dependencies {
