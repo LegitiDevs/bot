@@ -11,12 +11,12 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.legitimoose.bot.LegitimooseBot.config
 import net.legitimoose.bot.LegitimooseBot.logger
-import net.legitimoose.bot.mixin.client.ChatInputSuggestorAccessor
 import net.legitimoose.bot.mixin.client.ChatScreenAccessor
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.ChatScreen
-import net.minecraft.client.network.PlayerListEntry
-import net.minecraft.text.Text
+import net.legitimoose.bot.mixin.client.CommandSuggestionsAccessor
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.client.multiplayer.PlayerInfo
+import net.minecraft.network.chat.Component
 import java.util.concurrent.TimeUnit
 
 class DiscordBot : ListenerAdapter() {
@@ -42,16 +42,16 @@ class DiscordBot : ListenerAdapter() {
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         if (event.name == "list") {
             if (event.getOption("lobby") != null && event.getOption("lobby")!!.asBoolean) {
-                val playerList: MutableCollection<PlayerListEntry>? =
-                    MinecraftClient.getInstance().networkHandler?.playerList
+                val playerList: MutableCollection<PlayerInfo>? =
+                    Minecraft.getInstance().connection?.onlinePlayers
                 val players = StringBuilder()
                 for (player in playerList!!) {
-                    players.append(player.displayName!!.string).append('\n')
+                    players.append(player.tabListDisplayName!!.string).append('\n')
                 }
                 event.reply(players.toString()).queue()
             } else {
                 event.deferReply().queue()
-                MinecraftClient.getInstance().execute { MinecraftClient.getInstance().setScreen(ChatScreen("/find ")) }
+                Minecraft.getInstance().execute { Minecraft.getInstance().setScreen(ChatScreen("/find ")) }
 
                 try {
                     TimeUnit.SECONDS.sleep(1)
@@ -59,10 +59,10 @@ class DiscordBot : ListenerAdapter() {
                     logger.warn(e.message)
                 }
 
-                if (MinecraftClient.getInstance().currentScreen is ChatScreen) {
-                    val chatInputSuggestor =
-                        (MinecraftClient.getInstance().currentScreen as ChatScreenAccessor).chatInputSuggestor
-                    chatInputSuggestor.show(false)
+                if (Minecraft.getInstance().screen is ChatScreen) {
+                    val commandSuggestions =
+                        (Minecraft.getInstance().screen as ChatScreenAccessor).commandSuggestions
+                    commandSuggestions.showSuggestions(false)
 
                     try {
                         TimeUnit.SECONDS.sleep(1)
@@ -71,7 +71,7 @@ class DiscordBot : ListenerAdapter() {
                     }
 
                     val suggestions = StringBuilder()
-                    for (suggestion in (chatInputSuggestor as ChatInputSuggestorAccessor).getPendingSuggestions()
+                    for (suggestion in (commandSuggestions as CommandSuggestionsAccessor).getPendingSuggestions()
                         .get().list) {
                         suggestions.append(suggestion.text + '\n')
                     }
@@ -83,17 +83,17 @@ class DiscordBot : ListenerAdapter() {
                 }
             }
         } else if (event.name == "find") {
-            MinecraftClient.getInstance().player?.networkHandler?.sendChatCommand(
+            Minecraft.getInstance().player?.connection?.sendCommand(
                 "find " + event.getOption("player")!!.asString
             )
             val bool: BooleanArray = booleanArrayOf(true)
-            ClientReceiveMessageEvents.GAME.register { message: Text, _: Boolean ->
+            ClientReceiveMessageEvents.GAME.register { message: Component, _: Boolean ->
                 if (!bool[0]) return@register
                 event.reply(message.string.replace(" Click HERE to join.", "").trim()).queue()
                 bool[0] = false
             }
         } else if (event.name == "msg") {
-            MinecraftClient.getInstance().player?.networkHandler?.sendChatCommand(
+            Minecraft.getInstance().player?.connection?.sendCommand(
                 "msg " + event.getOption("player")!!.asString + " [ᴅɪsᴄᴏʀᴅ] " + event.member
                 !!.effectiveName + ": " + event.getOption("message")!!.asString.replace("\n", "<br>")
                     .replace("§", "?")
@@ -115,7 +115,7 @@ class DiscordBot : ListenerAdapter() {
             ).replace("§", "?")
         if (message.length >= 200) return
         if (event.channel.id == config.channelId) {
-            MinecraftClient.getInstance().player?.networkHandler?.sendChatCommand("lc $message")
+            Minecraft.getInstance().player?.connection?.sendCommand("lc $message")
         }
     }
 }

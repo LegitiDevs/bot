@@ -6,14 +6,12 @@ package net.legitimoose.bot.discord;
  */
 
 import javax.net.ssl.HttpsURLConnection;
-import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.*;
 
 public class DiscordWebhook {
@@ -22,7 +20,6 @@ public class DiscordWebhook {
     private String content;
     private String username;
     private String avatarUrl;
-    private boolean tts;
 
     /**
      * Constructs a new DiscordWebhook instance
@@ -55,7 +52,7 @@ public class DiscordWebhook {
         json.put("content", this.content);
         json.put("username", this.username);
         json.put("avatar_url", this.avatarUrl);
-        json.put("tts", this.tts);
+        json.put("tts", false);
 
         URL url = new URI(this.url).toURL();
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
@@ -73,7 +70,7 @@ public class DiscordWebhook {
         connection.disconnect();
     }
 
-    private class JSONObject {
+    private static class JSONObject {
 
         private final HashMap<String, Object> map = new HashMap<>();
 
