@@ -6,14 +6,12 @@ package net.legitimoose.bot.discord;
  */
 
 import javax.net.ssl.HttpsURLConnection;
-import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.*;
 
 public class DiscordWebhook {

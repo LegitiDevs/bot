@@ -6,14 +6,14 @@ import net.legitimoose.bot.LegitimooseBot.config
 import net.legitimoose.bot.LegitimooseBot.logger
 import net.legitimoose.bot.discord.DiscordBot
 import net.legitimoose.bot.discord.DiscordWebhook
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.screen.TitleScreen
-import net.minecraft.client.gui.screen.multiplayer.ConnectScreen
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
-import net.minecraft.client.network.ServerAddress
-import net.minecraft.client.network.ServerInfo
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.TitleScreen
+import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen
+import net.minecraft.client.gui.screens.ConnectScreen
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.multiplayer.ServerData
+import net.minecraft.client.multiplayer.resolver.ServerAddress
+import net.minecraft.network.chat.Component
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import kotlin.concurrent.thread
@@ -26,13 +26,13 @@ object LegitimooseBotClient {
     fun init() {
         thread { DiscordBot.runBot() }
 
-        ScreenEvents.AFTER_INIT.register { _: MinecraftClient, screen: Screen, _: Int, _: Int ->
+        ScreenEvents.AFTER_INIT.register { _: Minecraft, screen: Screen, _: Int, _: Int ->
             if (screen is TitleScreen) {
-                val info = ServerInfo("Server", "legitimoose.com", ServerInfo.ServerType.OTHER)
-                ConnectScreen.connect(
-                    MultiplayerScreen(null),
-                    MinecraftClient.getInstance(),
-                    ServerAddress.parse("legitimoose.com"),
+                val info = ServerData("Server", "legitimoose.com", ServerData.Type.OTHER)
+                    ConnectScreen.startConnecting(
+                    JoinMultiplayerScreen(null),
+                    Minecraft.getInstance(),
+                    ServerAddress.parseString("legitimoose.com"),
                     info,
                     false,
                     null
@@ -69,9 +69,9 @@ object LegitimooseBotClient {
 
             while (true) {
                 try {
-                    MinecraftClient.getInstance().player?.networkHandler?.sendChatCommand("lc <br><red>I am a bot that syncs lobby chat to a community Discord")
-                    MinecraftClient.getInstance().player?.networkHandler?.sendChatCommand("lc <br><red>If you wish to not have your messages sent to discord, prefix your messages with <u>::</u>")
-                    MinecraftClient.getInstance().player?.networkHandler?.sendChatCommand("lc You can check out the API at <bold>https://legitimoose.net/api</bold>")
+                    Minecraft.getInstance().player?.connection?.sendCommand("lc <br><red>I am a bot that syncs lobby chat to a community Discord")
+                    Minecraft.getInstance().player?.connection?.sendCommand("lc <br><red>If you wish to not have your messages sent to discord, prefix your messages with <u>::</u>")
+                    Minecraft.getInstance().player?.connection?.sendCommand("lc You can check out the API at <bold>https://legitimoose.net/api</bold>")
                     TimeUnit.MINUTES.sleep(20)
                 } catch (e: InterruptedException) {
                     logger.warn(e.message)
@@ -79,7 +79,7 @@ object LegitimooseBotClient {
             }
         }
 
-        ClientReceiveMessageEvents.GAME.register { message: Text, _: Boolean ->
+        ClientReceiveMessageEvents.GAME.register { message: Component, _: Boolean ->
             thread {
                 val msg = message.string
                 var username = ""
