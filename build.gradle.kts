@@ -47,7 +47,7 @@ dependencies {
     ksp("dev.kosmx.kowoconfig:ksp-owo-config:0.1.0")
 
     shadow(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.3.0")!!)
-    shadow(implementation("org.mongodb:bson-kotlinx:5.3.0")!!)
+    shadow(implementation("org.mongodb:bson-kotlinx:5.4.0")!!)
     shadow(implementation("net.dv8tion:JDA:5.3.1") {
         exclude("opus-java")
     })
