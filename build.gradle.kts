@@ -25,6 +25,7 @@ loom {
 
 repositories {
     mavenCentral()
+    maven("https://maven.fabricmc.net/")
     maven("https://maven.wispforest.io")
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://maven.kosmx.dev/")
