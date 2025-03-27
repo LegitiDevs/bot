@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     id("com.google.devtools.ksp") version "2.1.20-1.0.32"
-    id("fabric-loom") version "1.9-SNAPSHOT"
+    id("fabric-loom") version "1.10-SNAPSHOT"
     id("com.gradleup.shadow") version "9.0.0-beta11"
 }
 
