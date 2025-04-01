@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "2.1.20"
     id("com.google.devtools.ksp") version "2.1.20-1.0.32"
     id("fabric-loom") version "1.10.5"
-    id("com.gradleup.shadow") version "9.0.0-beta11"
+    id("com.gradleup.shadow") version "9.0.0-beta12"
 }
 
 version = project.property("mod_version") as String
