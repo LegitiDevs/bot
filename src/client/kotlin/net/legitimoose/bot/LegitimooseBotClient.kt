@@ -113,7 +113,7 @@ object LegitimooseBotClient {
                 if (username == "Legitimooseapi") return@thread
 
                 if (username.isNotEmpty() && !cleanMessage.startsWith(config.secretPrefix)) {
-                    if (username == "Legitermoose"){
+                    if (username == "Legitermoose") {
                         webhook.setContent(cleanMessage.replace("@", "") + "@everyone")
                         webhook.execute()
                     } else {
