@@ -53,7 +53,7 @@ dependencies {
         exclude("opus-java")
     })
 
-    modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
+    // modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
 }
 
 tasks.processResources {
