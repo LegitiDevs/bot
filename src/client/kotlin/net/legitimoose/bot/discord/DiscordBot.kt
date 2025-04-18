@@ -83,8 +83,13 @@ class DiscordBot : ListenerAdapter() {
                 }
             }
         } else if (event.name == "find") {
+            val player: String = event.getOption("player")!!.asString
+            if (player.length >= 200) {
+                event.reply("player name too long, sorry!").setEphemeral(true).queue()
+                return
+            }
             Minecraft.getInstance().player?.connection?.sendCommand(
-                "find " + event.getOption("player")!!.asString
+                "find " + player.replace("§", "?")
             )
             val bool: BooleanArray = booleanArrayOf(true)
             ClientReceiveMessageEvents.GAME.register { message: Component, _: Boolean ->
@@ -93,13 +98,18 @@ class DiscordBot : ListenerAdapter() {
                 bool[0] = false
             }
         } else if (event.name == "msg") {
+            val message: String = event.getOption("message")!!.asString
+            val player: String = event.getOption("player")!!.asString
+            if ((message.length + player.length) >= 200) {
+                event.reply("Failed to send, message and/or player name too long!").setEphemeral(true).queue()
+                return
+            }
             Minecraft.getInstance().player?.connection?.sendCommand(
-                "msg " + event.getOption("player")!!.asString + " [ᴅɪsᴄᴏʀᴅ] " + event.member
-                !!.effectiveName + ": " + event.getOption("message")!!.asString.replace("\n", "<br>")
-                    .replace("§", "?")
+                "msg " + player.replace("§", "?") + " [ᴅɪsᴄᴏʀᴅ] " + event.member
+                !!.effectiveName + ": " + message.replace("\n", "<br>").replace("§", "?")
             )
             event.reply(
-                "Sent `" + event.getOption("message")!!.asString.trim() + "` to " + event.getOption("player")
+                "Sent `" + message.trim() + "` to " + event.getOption("player")
                 !!.asString
             ).setEphemeral(true).queue()
         }
