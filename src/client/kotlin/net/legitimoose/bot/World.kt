@@ -30,60 +30,68 @@ data class World(
         val icon: String,
         val last_scraped: Long
 ) {
-    fun upload(db: MongoDatabase) {
-        val coll: MongoCollection<Document> = db.getCollection("worlds")
-        val doc = coll.find(eq("world_uuid", this.world_uuid)).first()
-        coll.deleteMany(lt("last_scraped", System.currentTimeMillis() / 1000L - 86400))
-        if (!doc.isEmpty()) {
-            logger.info("updating world")
-            val updates =
-                    Updates.combine(
-                            Updates.set("enforce_whitelist", this.enforce_whitelist),
-                            Updates.set("locked", this.locked),
-                            Updates.set("owner_uuid", this.owner_uuid),
-                            Updates.set("player_count", this.player_count),
-                            Updates.set("resource_pack_url", this.resource_pack_url),
-                            Updates.set("version", this.version),
-                            Updates.set("visits", this.visits),
-                            Updates.set("votes", this.votes),
-                            Updates.set(
-                                    "whitelist_on_version_change",
-                                    this.whitelist_on_version_change
-                            ),
-                            Updates.set("name", this.name),
-                            Updates.set("description", this.description),
-                            Updates.set("raw_name", this.raw_name),
-                            Updates.set("raw_description", this.raw_description),
-                            Updates.set("icon", this.icon),
-                            Updates.set("last_scraped", this.last_scraped)
-                    )
-            coll.updateOne(eq("world_uuid", this.world_uuid), updates, UpdateOptions())
-            logger.info("Updated world")
-            return
+        fun upload(db: MongoDatabase) {
+                logger.info("1")
+                val coll: MongoCollection<Document> = db.getCollection("worlds")
+                logger.info("2")
+                val doc = coll.find(eq("world_uuid", this.world_uuid)).first()
+                logger.info("3")
+                coll.deleteMany(lt("last_scraped", System.currentTimeMillis() / 1000L - 86400))
+                if (!doc.isEmpty()) {
+                        logger.info("updating world")
+                        val updates =
+                                Updates.combine(
+                                        Updates.set("enforce_whitelist", this.enforce_whitelist),
+                                        Updates.set("locked", this.locked),
+                                        Updates.set("owner_uuid", this.owner_uuid),
+                                        Updates.set("player_count", this.player_count),
+                                        Updates.set("resource_pack_url", this.resource_pack_url),
+                                        Updates.set("version", this.version),
+                                        Updates.set("visits", this.visits),
+                                        Updates.set("votes", this.votes),
+                                        Updates.set(
+                                                "whitelist_on_version_change",
+                                                this.whitelist_on_version_change
+                                        ),
+                                        Updates.set("name", this.name),
+                                        Updates.set("description", this.description),
+                                        Updates.set("raw_name", this.raw_name),
+                                        Updates.set("raw_description", this.raw_description),
+                                        Updates.set("icon", this.icon),
+                                        Updates.set("last_scraped", this.last_scraped)
+                                )
+                        coll.updateOne(eq("world_uuid", this.world_uuid), updates, UpdateOptions())
+                        logger.info("Updated world")
+                        return
+                }
+                coll.insertOne(
+                        Document()
+                                .append("_id", ObjectId())
+                                .append("creation_date", this.creation_date)
+                                .append(
+                                        "creation_date_unix_seconds",
+                                        this.creation_date_unix_seconds
+                                )
+                                .append("enforce_whitelist", this.enforce_whitelist)
+                                .append("locked", this.locked)
+                                .append("owner_uuid", this.owner_uuid)
+                                .append("player_count", this.player_count)
+                                .append("resource_pack_url", this.resource_pack_url)
+                                .append("world_uuid", this.world_uuid)
+                                .append("version", this.version)
+                                .append("visits", this.visits)
+                                .append("votes", this.votes)
+                                .append(
+                                        "whitelist_on_version_change",
+                                        this.whitelist_on_version_change
+                                )
+                                .append("name", this.name)
+                                .append("description", this.description)
+                                .append("raw_name", this.raw_name)
+                                .append("raw_description", this.raw_description)
+                                .append("icon", this.icon)
+                                .append("last_scraped", this.last_scraped)
+                )
+                logger.info("Created world")
         }
-        logger.info("creating world")
-        coll.insertOne(
-                Document()
-                        .append("_id", ObjectId())
-                        .append("creation_date", this.creation_date)
-                        .append("creation_date_unix_seconds", this.creation_date_unix_seconds)
-                        .append("enforce_whitelist", this.enforce_whitelist)
-                        .append("locked", this.locked)
-                        .append("owner_uuid", this.owner_uuid)
-                        .append("player_count", this.player_count)
-                        .append("resource_pack_url", this.resource_pack_url)
-                        .append("world_uuid", this.world_uuid)
-                        .append("version", this.version)
-                        .append("visits", this.visits)
-                        .append("votes", this.votes)
-                        .append("whitelist_on_version_change", this.whitelist_on_version_change)
-                        .append("name", this.name)
-                        .append("description", this.description)
-                        .append("raw_name", this.raw_name)
-                        .append("raw_description", this.raw_description)
-                        .append("icon", this.icon)
-                        .append("last_scraped", this.last_scraped)
-        )
-        logger.info("Created world")
-    }
 }
