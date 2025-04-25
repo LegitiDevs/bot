@@ -29,7 +29,7 @@ object LegitimooseBotClient {
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             dispatcher.register(
                     ClientCommandManager.literal("scrape").executes {
-                        Scraper.scrape()
+                        thread { Scraper.scrape() }
                         1
                     }
             )

@@ -1,5 +1,6 @@
 package net.legitimoose.bot
 
+import com.mongodb.MongoClientException
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Filters.lt
 import com.mongodb.client.model.UpdateOptions
@@ -31,13 +32,15 @@ data class World(
         val last_scraped: Long
 ) {
         fun upload(db: MongoDatabase) {
-                logger.info("1")
                 val coll: MongoCollection<Document> = db.getCollection("worlds")
-                logger.info("2")
-                val doc = coll.find(eq("world_uuid", this.world_uuid)).first()
-                logger.info("3")
+                var doc: Document?
+                try {
+                        doc = coll.find(eq("world_uuid", this.world_uuid)).first()
+                } catch (e: MongoClientException) {
+                        doc = null
+                }
                 coll.deleteMany(lt("last_scraped", System.currentTimeMillis() / 1000L - 86400))
-                if (!doc.isEmpty()) {
+                if (doc != null) {
                         logger.info("updating world")
                         val updates =
                                 Updates.combine(
