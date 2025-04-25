@@ -4,21 +4,17 @@ import io.wispforest.owo.config.annotation.Config
 
 @Config(name = "legitimoosebot-config", wrapperName = "LegitimooseBotConfig")
 class LegitimooseBotConfigModel {
-    @JvmField
-    var webhookUrl = ""
+    @JvmField var webhookUrl = ""
 
-    @JvmField
-    var secretPrefix = "::"
+    @JvmField var errorWebhookUrl = ""
 
-    @JvmField
-    var mongoUri = ""
+    @JvmField var secretPrefix = "::"
 
-    @JvmField
-    var discordToken = ""
+    @JvmField var mongoUri = ""
 
-    @JvmField
-    var channelId = ""
+    @JvmField var discordToken = ""
 
-    @JvmField
-    var waitMinutesBetweenScrapes: Long = 10
+    @JvmField var channelId = ""
+
+    @JvmField var waitMinutesBetweenScrapes: Long = 10
 }
