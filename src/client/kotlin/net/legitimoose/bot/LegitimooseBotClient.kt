@@ -117,7 +117,11 @@ object LegitimooseBotClient {
                 val webhook = DiscordWebhook(config.webhookUrl)
                 if (joinMatcher.find()) {
                     username = joinMatcher.group(1)
-                    cleanMessage = "**$username Joined the server**"
+                    cleanMessage = "**$username** joined the server."
+                    webhook.setEmbedThumbnail("https://mc-heads.net/head/$username/50/left")
+                    webhook.setContent(cleanMessage.replace("@", ""))
+                    webhook.execute(true)
+                    return@thread
                 } else if (chatMatcher.find()) {
                     username = chatMatcher.group(1)
                     cleanMessage = msg.substring(chatMatcher.end()).trim()
