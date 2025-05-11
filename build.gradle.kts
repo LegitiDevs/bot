@@ -45,7 +45,7 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("fabric_kotlin_version")}")
 
     modImplementation("io.wispforest:owo-lib:${project.property("owo_version")}")
-    ksp("dev.kosmx.kowoconfig:ksp-owo-config:0.1.0")
+    ksp("dev.kosmx.kowoconfig:ksp-owo-config:0.2.0")
 
     shadow(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.4.0")!!)
     shadow(implementation("org.mongodb:bson-kotlinx:5.4.0")!!)
