@@ -85,10 +85,10 @@ object LegitimooseBotClient {
                         "lc <br><red>I am a bot that syncs lobby chat to a community Discord"
                     )
                     mc.player?.connection?.sendCommand(
-                        "lc <br><red>If you wish to not have your messages sent to discord, prefix your messages with <u>::</u>"
+                        "lc <br><red>To prevent messages being sent to discord, prefix your messages with <u><hover:show_text:'<yellow>eg; ::this message is hidden'>::</hover></u>"
                     )
                     mc.player?.connection?.sendCommand(
-                        "lc You can check out the API at <bold>https://legitimoose.net/api</bold>"
+                        "lc You can check out our work at <bold>https://legiti.dev/</bold>"
                     )
                     TimeUnit.MINUTES.sleep(20)
                 } catch (e: InterruptedException) { logger.warn(e.message) }
