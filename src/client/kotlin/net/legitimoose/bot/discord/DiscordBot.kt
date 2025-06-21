@@ -166,7 +166,7 @@ class DiscordBot : ListenerAdapter() {
         }
         if (message.length >= 200) return
         if (event.channel.id == config.channelId) {
-            Minecraft.getInstance().player?.connection?.sendCommand("lc $message")
+            Minecraft.getInstance().player?.connection?.sendChat("$message")
         }
     }
 }

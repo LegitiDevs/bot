@@ -6,11 +6,10 @@ plugins {
 }
 
 version = project.property("mod_version") as String
+
 group = project.property("maven_group") as String
 
-base {
-    archivesName = project.property("archives_base_name") as String
-}
+base { archivesName = project.property("archives_base_name") as String }
 
 loom {
     splitEnvironmentSourceSets()
@@ -35,23 +34,27 @@ repositories {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-    mappings(loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${project.property("minecraft_version")}:${project.property("parchment_mappings")}@zip")
-    })
+    mappings(
+            loom.layered {
+                officialMojangMappings()
+                parchment(
+                        "org.parchmentmc.data:parchment-${project.property("minecraft_version")}:${project.property("parchment_mappings")}@zip"
+                )
+            }
+    )
     modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("fabric_kotlin_version")}")
+    modImplementation(
+            "net.fabricmc:fabric-language-kotlin:${project.property("fabric_kotlin_version")}"
+    )
 
     modImplementation("io.wispforest:owo-lib:${project.property("owo_version")}")
     ksp("dev.kosmx.kowoconfig:ksp-owo-config:0.2.0")
 
     shadow(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.4.0")!!)
     shadow(implementation("org.mongodb:bson-kotlinx:5.4.0")!!)
-    shadow(implementation("net.dv8tion:JDA:5.3.2") {
-        exclude("opus-java")
-    })
+    shadow(implementation("net.dv8tion:JDA:5.3.2") { exclude("opus-java") })
 
     // modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
 }
@@ -65,17 +68,15 @@ tasks.processResources {
 
     filesMatching("fabric.mod.json") {
         expand(
-            "version" to inputs.properties["version"],
-            "minecraft_version" to inputs.properties["minecraft_version"],
-            "loader_version" to inputs.properties["loader_version"],
-            "owo_version" to inputs.properties["owo_version"]
+                "version" to inputs.properties["version"],
+                "minecraft_version" to inputs.properties["minecraft_version"],
+                "loader_version" to inputs.properties["loader_version"],
+                "owo_version" to inputs.properties["owo_version"]
         )
     }
 }
 
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
-}
+tasks.withType<JavaCompile> { options.encoding = "UTF-8" }
 
 tasks {
     shadowJar {
@@ -92,6 +93,8 @@ tasks {
     }
 }
 
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+java { toolchain.languageVersion = JavaLanguageVersion.of(21) }
+
+kotlin {
+    jvmToolchain(21)
 }
