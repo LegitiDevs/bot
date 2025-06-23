@@ -59,6 +59,13 @@ class DiscordBot : ListenerAdapter() {
                                             "message",
                                             "The message you want to send",
                                             true
+                                    ),
+                            Commands.slash("shout", "Send a global message with /shout")
+                                    .addOption(
+                                            OptionType.STRING,
+                                            "message",
+                                            "The message to send",
+                                            true
                                     )
                     )
                     .queue()
@@ -66,32 +73,21 @@ class DiscordBot : ListenerAdapter() {
     }
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-        if (event.name == "list") {
-            if (event.getOption("lobby") != null && event.getOption("lobby")!!.asBoolean) {
-                val playerList: MutableCollection<PlayerInfo>? =
-                        Minecraft.getInstance().connection?.onlinePlayers
-                val players = StringBuilder()
-                for (player in playerList!!) {
-                    players.append(player.tabListDisplayName!!.string).append('\n')
-                }
-                event.reply(players.toString()).queue()
-            } else {
-                event.deferReply().queue()
-                Minecraft.getInstance().execute {
-                    Minecraft.getInstance().setScreen(ChatScreen("/find "))
-                }
-
-                try {
-                    TimeUnit.SECONDS.sleep(1)
-                } catch (e: InterruptedException) {
-                    logger.warn(e.message)
-                }
-
-                if (Minecraft.getInstance().screen is ChatScreen) {
-                    val commandSuggestions =
-                            (Minecraft.getInstance().screen as ChatScreenAccessor)
-                                    .commandSuggestions
-                    commandSuggestions.showSuggestions(false)
+        when (event.name) {
+            "list" -> {
+                if (event.getOption("lobby") != null && event.getOption("lobby")!!.asBoolean) {
+                    val playerList: MutableCollection<PlayerInfo>? =
+                            Minecraft.getInstance().connection?.onlinePlayers
+                    val players = StringBuilder()
+                    for (player in playerList!!) {
+                        players.append(player.tabListDisplayName!!.string).append('\n')
+                    }
+                    event.reply(players.toString()).queue()
+                } else {
+                    event.deferReply().queue()
+                    Minecraft.getInstance().execute {
+                        Minecraft.getInstance().setScreen(ChatScreen("/find "))
+                    }
 
                     try {
                         TimeUnit.SECONDS.sleep(1)
@@ -99,59 +95,96 @@ class DiscordBot : ListenerAdapter() {
                         logger.warn(e.message)
                     }
 
-                    val suggestions = StringBuilder()
-                    for (suggestion in
-                            (commandSuggestions as CommandSuggestionsAccessor)
-                                    .getPendingSuggestions()
-                                    .get()
-                                    .list) {
-                        suggestions.append(suggestion.text + '\n')
-                    }
+                    if (Minecraft.getInstance().screen is ChatScreen) {
+                        val commandSuggestions =
+                                (Minecraft.getInstance().screen as ChatScreenAccessor)
+                                        .commandSuggestions
+                        commandSuggestions.showSuggestions(false)
 
-                    event.hook.sendMessage(suggestions.toString()).queue()
-                } else {
-                    event.hook.sendMessage("it didn't work :shrug:").queue()
+                        try {
+                            TimeUnit.SECONDS.sleep(1)
+                        } catch (e: InterruptedException) {
+                            logger.warn(e.message)
+                        }
+
+                        val suggestions = StringBuilder()
+                        for (suggestion in
+                                (commandSuggestions as CommandSuggestionsAccessor)
+                                        .getPendingSuggestions()
+                                        .get()
+                                        .list) {
+                            suggestions.append(suggestion.text + '\n')
+                        }
+
+                        event.hook.sendMessage(suggestions.toString()).queue()
+                    } else {
+                        event.hook.sendMessage("it didn't work :shrug:").queue()
+                    }
                 }
             }
-        } else if (event.name == "find") {
-            val player: String = event.getOption("player")!!.asString
-            if (player.length >= 200) {
-                event.reply("player name too long, sorry!").setEphemeral(true).queue()
-                return
+            "find" -> {
+                val player: String = event.getOption("player")!!.asString
+                if (player.length >= 200) {
+                    event.reply("player name too long, sorry!").setEphemeral(true).queue()
+                    return
+                }
+                Minecraft.getInstance()
+                        .player
+                        ?.connection
+                        ?.sendCommand("find " + player.replace("§", "?"))
+                val bool: BooleanArray = booleanArrayOf(true)
+                ClientReceiveMessageEvents.GAME.register { message: Component, _: Boolean ->
+                    if (!bool[0]) return@register
+                    event.reply(message.string.replace(" Click HERE to join.", "").trim()).queue()
+                    bool[0] = false
+                }
             }
-            Minecraft.getInstance()
-                    .player
-                    ?.connection
-                    ?.sendCommand("find " + player.replace("§", "?"))
-            val bool: BooleanArray = booleanArrayOf(true)
-            ClientReceiveMessageEvents.GAME.register { message: Component, _: Boolean ->
-                if (!bool[0]) return@register
-                event.reply(message.string.replace(" Click HERE to join.", "").trim()).queue()
-                bool[0] = false
-            }
-        } else if (event.name == "msg") {
-            val message: String = event.getOption("message")!!.asString
-            val player: String = event.getOption("player")!!.asString
-            if ((message.length + player.length) >= 200) {
-                event.reply("Failed to send, message and/or player name too long!")
+            "msg" -> {
+                val message: String = event.getOption("message")!!.asString
+                val player: String = event.getOption("player")!!.asString
+                if ((message.length + player.length) >= 200) {
+                    event.reply("Failed to send, message and/or player name too long!")
+                            .setEphemeral(true)
+                            .queue()
+                    return
+                }
+                Minecraft.getInstance()
+                        .player
+                        ?.connection
+                        ?.sendCommand(
+                                "msg " +
+                                        player.replace("§", "?") +
+                                        " [ᴅɪsᴄᴏʀᴅ] " +
+                                        event.member!!.effectiveName +
+                                        ": " +
+                                        message.replace("\n", "<br>").replace("§", "?")
+                        )
+                event.reply(
+                                "Sent `" +
+                                        message.trim() +
+                                        "` to " +
+                                        event.getOption("player")!!.asString
+                        )
                         .setEphemeral(true)
                         .queue()
-                return
             }
-            Minecraft.getInstance()
-                    .player
-                    ?.connection
-                    ?.sendCommand(
-                            "msg " +
-                                    player.replace("§", "?") +
-                                    " [ᴅɪsᴄᴏʀᴅ] " +
-                                    event.member!!.effectiveName +
-                                    ": " +
-                                    message.replace("\n", "<br>").replace("§", "?")
-                    )
-            event.reply("Sent `" + message.trim() + "` to " + event.getOption("player")!!.asString)
-                    .setEphemeral(true)
-                    .queue()
+            "shout" -> {
+                val message: String = event.getOption("message")!!.asString
+                if (message.length >= 200) {
+                    event.reply("Failed to send, message too long!").setEphemeral(true).queue()
+                    return
+                }
+                Minecraft.getInstance()
+                        .player
+                        ?.connection
+                        ?.sendCommand(
+                                "shout [ᴅɪsᴄᴏʀᴅ] " +
+                                        event.member!!.effectiveName +
+                                        ": " +
+                                        message.replace("\n", "<br>").replace("§", "?")
+                        )
+                event.reply("Successfully shouted `${message.trim()}`").setEphemeral(true).queue()
+            }
         }
     }
 
