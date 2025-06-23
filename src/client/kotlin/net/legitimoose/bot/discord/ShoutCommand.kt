@@ -1,9 +1,9 @@
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.minecraft.client.Minecraft
 
-class ShoutCommand(override val event: SlashCommandInteractionEvent, val message: String) : Command {
+class ShoutCommand(override val event: SlashCommandInteractionEvent, val message: String) :
+        Command {
     override fun onCommandReceived() {
-        val message: String = event.getOption("message")!!.asString
         if (message.length >= 200) {
             event.reply("Failed to send, message too long!").setEphemeral(true).queue()
             return
