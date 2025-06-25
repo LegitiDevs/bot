@@ -53,7 +53,7 @@ dependencies {
     ksp("dev.kosmx.kowoconfig:ksp-owo-config:0.2.0")
 
     shadow(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.5.1")!!)
-    shadow(implementation("org.mongodb:bson-kotlinx:5.4.0")!!)
+    shadow(implementation("org.mongodb:bson-kotlinx:5.5.1")!!)
     shadow(implementation("net.dv8tion:JDA:5.6.1") { exclude("opus-java") })
 
     // modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
