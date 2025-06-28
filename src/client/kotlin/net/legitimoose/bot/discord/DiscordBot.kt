@@ -3,7 +3,6 @@ package net.legitimoose.bot.discord
 import FindCommand
 import ListCommand
 import MsgCommand
-import ShoutCommand
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -55,13 +54,6 @@ class DiscordBot : ListenerAdapter() {
                                                         "message",
                                                         "The message you want to send",
                                                         true
-                                                ),
-                                        Commands.slash("shout", "Send a global message with /shout")
-                                                .addOption(
-                                                        OptionType.STRING,
-                                                        "message",
-                                                        "The message to send",
-                                                        true
                                                 )
                                 )
                                 .queue()
@@ -82,9 +74,6 @@ class DiscordBot : ListenerAdapter() {
                                                 event.getOption("message")!!.asString,
                                                 event.getOption("player")!!.asString
                                         )
-                                        .onCommandReceived()
-                        "shout" ->
-                                ShoutCommand(event, event.getOption("message")!!.asString)
                                         .onCommandReceived()
                 }
         }
