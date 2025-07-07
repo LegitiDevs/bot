@@ -27,7 +27,7 @@ object LegitimooseBotClient {
     private val joinPattern: Pattern = Pattern.compile("""^\[\+\]\s*(?:[^|]+\|\s*)?(\S+)""")
     // idk why but it was erroring so i did that lmao -hazel
 
-    private val chatPattern: Pattern = Pattern.compile("^(?:[^|]+\\|\\s*)?([^:]+):")
+    private val chatPattern: Pattern = Pattern.compile("(?:[^|]+\\|\\s*)?([^:]+): (.*)")
     private val msgPattern: Pattern = Pattern.compile("\\[(.*) -> me\\] @(.*) (.*)")
 
     @Volatile private var lastJoinTimestamp: Long = 0L
@@ -130,8 +130,12 @@ object LegitimooseBotClient {
                     return@thread
                 } else if (chatMatcher.find()) {
                     username = chatMatcher.group(1)
-                    cleanMessage = msg.substring(chatMatcher.end()).trim()
-                    webhook.setUsername(username)
+                    cleanMessage = chatMatcher.group(2)
+                    if (msg.startsWith("[SHOUT]")) {
+                        webhook.setUsername("[SHOUT] $username")
+                    } else {
+                        webhook.setUsername(username)
+                    }
                     webhook.setAvatarUrl("https://mc-heads.net/avatar/$username")
                 } else if (msgMatcher.find()) {
                     val username1 = msgMatcher.group(1)
