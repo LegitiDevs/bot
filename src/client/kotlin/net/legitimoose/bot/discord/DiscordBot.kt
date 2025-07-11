@@ -19,7 +19,7 @@ class DiscordBot : ListenerAdapter() {
                 lateinit var jda: JDA
                 fun runBot() {
                         jda =
-                                JDABuilder.createDefault(config.discordToken)
+                                JDABuilder.createDefault(config.getOrDefault("discordToken", ""))
                                         .enableIntents(
                                                 GatewayIntent.MESSAGE_CONTENT,
                                                 GatewayIntent.GUILD_MEMBERS
@@ -91,7 +91,7 @@ class DiscordBot : ListenerAdapter() {
                         message += " <blue>[Attachment Included]</blue>"
                 }
                 if (message.length >= 200) return
-                if (event.channel.id == config.channelId) {
+                if (event.channel.id == config.getOrDefault("channelId", "")) {
                         Minecraft.getInstance().player?.connection?.sendChat("$message")
                 }
         }
