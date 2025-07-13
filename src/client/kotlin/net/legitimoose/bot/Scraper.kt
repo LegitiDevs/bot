@@ -14,8 +14,8 @@ import net.minecraft.world.inventory.ClickType
 
 class Scraper {
     companion object {
-        private val mongoClient = MongoClient.create(config.mongoUri)
-        private val errorWebhook = DiscordWebhook(config.errorWebhookUrl)
+        private val mongoClient = MongoClient.create(config.getOrDefault("mongoUri", ""))
+        private val errorWebhook = DiscordWebhook(config.getOrDefault("errorWebhookUrl", ""))
         private val db = mongoClient.getDatabase("legitimooseapi")
 
         private fun waitSeconds(time: Long) {
@@ -71,50 +71,50 @@ class Scraper {
                                             publicBukkitValues.get(
                                                             "datapackserverpaper:creation_date"
                                                     )!!
-                                                    .asString,
+                                                    .asString().get(),
                                     creation_date_unix_seconds =
                                             publicBukkitValues.get(
                                                             "datapackserverpaper:creation_date_unix_seconds"
                                                     )!!
-                                                    .asString.toInt(),
+                                                    .asString().get().toInt(),
                                     enforce_whitelist =
                                             publicBukkitValues.get(
                                                             "datapackserverpaper:enforce_whitelist"
                                                     )!!
-                                                    .asString.toBoolean(),
+                                                    .asString().get().toBoolean(),
                                     locked =
                                             publicBukkitValues.get("datapackserverpaper:locked")!!
-                                                    .asString.toBoolean(),
+                                                    .asString().get().toBoolean(),
                                     owner_uuid =
                                             publicBukkitValues.get("datapackserverpaper:owner")!!
-                                                    .asString,
+                                                    .asString().get(),
                                     player_count =
                                             publicBukkitValues.get(
                                                             "datapackserverpaper:player_count"
                                                     )!!
-                                                    .asString.toInt(),
+                                                    .asString().get().toInt(),
                                     resource_pack_url =
                                             publicBukkitValues.get(
                                                             "datapackserverpaper:resource_pack_url"
                                                     )!!
-                                                    .asString,
+                                                    .asString().get(),
                                     world_uuid =
                                             publicBukkitValues.get("datapackserverpaper:uuid")!!
-                                                    .asString,
+                                                    .asString().get(),
                                     version =
                                             publicBukkitValues.get("datapackserverpaper:version")!!
-                                                    .asString,
+                                                    .asString().get(),
                                     visits =
                                             publicBukkitValues.get("datapackserverpaper:visits")!!
-                                                    .asString.toInt(),
+                                                    .asString().get().toInt(),
                                     votes =
                                             publicBukkitValues.get("datapackserverpaper:votes")!!
-                                                    .asString.toInt(),
+                                                    .asString().get().toInt(),
                                     whitelist_on_version_change =
                                             publicBukkitValues.get(
                                                             "datapackserverpaper:whitelist_on_version_change"
                                                     )!!
-                                                    .asString.toBoolean(),
+                                                    .asString().get().toBoolean(),
                                     name = itemStack.get(DataComponents.CUSTOM_NAME)!!.string,
                                     description =
                                             itemStack.get(DataComponents.LORE)!!.lines[0].string,

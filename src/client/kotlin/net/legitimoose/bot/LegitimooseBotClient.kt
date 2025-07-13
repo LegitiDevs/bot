@@ -79,7 +79,9 @@ object LegitimooseBotClient {
                     Scraper.scrape()
                 } catch (_: Exception) {}
                 try {
-                    TimeUnit.MINUTES.sleep(config.waitMinutesBetweenScrapes)
+                    TimeUnit.MINUTES.sleep(
+                            config.getOrDefault("waitMinutesBetweenScrapes", 10).toLong()
+                    )
                 } catch (e: InterruptedException) {
                     logger.warn(e.message)
                 }
@@ -120,7 +122,7 @@ object LegitimooseBotClient {
                 val chatMatcher = chatPattern.matcher(msg)
                 val msgMatcher = msgPattern.matcher(msg)
 
-                val webhook = DiscordWebhook(config.webhookUrl)
+                val webhook = DiscordWebhook(config.getOrDefault("webhookUrl", ""))
                 if (joinMatcher.find()) {
                     username = joinMatcher.group(1)
                     cleanMessage = "**$username** joined the server."
@@ -154,7 +156,9 @@ object LegitimooseBotClient {
 
                 if (username == "Legitimooseapi") return@thread
 
-                if (username.isNotEmpty() && !cleanMessage.startsWith(config.secretPrefix)) {
+                if (username.isNotEmpty() &&
+                                !cleanMessage.startsWith(config.getOrDefault("secretPrefix", ""))
+                ) {
                     webhook.setContent(cleanMessage.replace("@", ""))
                     webhook.execute()
                 }
