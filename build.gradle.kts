@@ -69,13 +69,14 @@ tasks {
         from(sourceSets["main"].output)
         from(sourceSets["client"].output)
         configurations = listOf(project.configurations.shadow.get())
-        archiveClassifier = ""
+        archiveClassifier = "shadowed-only"
         minimize()
     }
     remapJar {
         dependsOn(shadowJar)
         mustRunAfter(shadowJar)
         inputFile = file(shadowJar.get().archiveFile)
+        archiveClassifier = ""
     }
 }
 
