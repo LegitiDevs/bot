@@ -38,8 +38,6 @@ dependencies {
             "net.fabricmc:fabric-language-kotlin:${project.property("fabric_kotlin_version")}"
     )
 
-    modImplementation("dev.isxander:yet-another-config-lib:${project.property("yacl_version")}")
-
     shadow(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.5.1")!!)
     shadow(implementation("org.mongodb:bson-kotlinx:5.5.1")!!)
     shadow(implementation("net.dv8tion:JDA:5.6.1") { exclude("opus-java") })
@@ -49,7 +47,6 @@ tasks.processResources {
     inputs.property("version", project.version)
     inputs.property("minecraft_version", project.property("minecraft_version"))
     inputs.property("loader_version", project.property("loader_version"))
-    inputs.property("yacl_version", project.property("yacl_version"))
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
@@ -57,7 +54,6 @@ tasks.processResources {
                 "version" to inputs.properties["version"],
                 "minecraft_version" to inputs.properties["minecraft_version"],
                 "loader_version" to inputs.properties["loader_version"],
-                "yacl_version" to inputs.properties["yacl_version"]
         )
     }
 }
