@@ -12,6 +12,7 @@ import net.legitimoose.bot.LegitimooseBot.logger
 import net.legitimoose.bot.discord.DiscordBot
 import net.legitimoose.bot.discord.DiscordWebhook
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen
 import net.minecraft.client.gui.screens.ConnectScreen
 import net.minecraft.client.gui.screens.DisconnectedScreen
 import net.minecraft.client.gui.screens.TitleScreen
@@ -27,8 +28,8 @@ object LegitimooseBotClient {
     private val joinPattern: Pattern = Pattern.compile("""^\[\+\]\s*(?:[^|]+\|\s*)?(\S+)""")
     // idk why but it was erroring so i did that lmao -hazel
 
-    private val chatPattern: Pattern = Pattern.compile("(?:[^|]+\\|\\s*)?([^:]+): (.*)")
-    private val msgPattern: Pattern = Pattern.compile("\\[(.*) -> me\\] @(.*) (.*)")
+    private val chatPattern: Pattern = Pattern.compile("""(?:[^|]+\|\s*)?([^:]+): (.*)""")
+    private val msgPattern: Pattern = Pattern.compile("""\[(.*) -> me\] @(.*) (.*)""")
 
     @Volatile private var lastJoinTimestamp: Long = 0L
     private const val REJOIN_COOLDOWN_MS = 5_000L
@@ -46,26 +47,17 @@ object LegitimooseBotClient {
         thread { DiscordBot.runBot() }
 
         ClientTickEvents.END_CLIENT_TICK.register {
-            val screen = mc.screen
-            if (screen is DisconnectedScreen ||
-                            screen is JoinMultiplayerScreen ||
-                            screen is TitleScreen
-            ) {
-                val now = System.currentTimeMillis()
-                if (now - lastJoinTimestamp >= REJOIN_COOLDOWN_MS) {
-                    lastJoinTimestamp = now
-                    logger.info("Attempting to reconnect to server")
-                    val info = ServerData("Server", "legitimoose.com", ServerData.Type.OTHER)
-                    ConnectScreen.startConnecting(
-                            JoinMultiplayerScreen(null),
-                            mc,
-                            ServerAddress.parseString("legitimoose.com"),
-                            info,
-                            false,
-                            null
-                    )
-                }
+            rejoin()
+        }
+
+        thread {
+            try {
+                TimeUnit.SECONDS.sleep(10)
+            } catch (e: InterruptedException) {
+                logger.warn(e.message)
             }
+            logger.info("Trying to join for the first time")
+            rejoin()
         }
 
         thread {
@@ -157,11 +149,35 @@ object LegitimooseBotClient {
                 if (username == "Legitimooseapi") return@thread
 
                 if (username.isNotEmpty() &&
-                                !cleanMessage.startsWith(config.getOrDefault("secretPrefix", ""))
+                                !cleanMessage.startsWith(config.getOrDefault("secretPrefix", "::"))
                 ) {
                     webhook.setContent(cleanMessage.replace("@", ""))
                     webhook.execute()
                 }
+            }
+        }
+    }
+
+    fun rejoin() {
+        val screen = mc.screen
+        if (screen is DisconnectedScreen ||
+            screen is JoinMultiplayerScreen ||
+            screen is TitleScreen ||
+            screen is AccessibilityOnboardingScreen
+        ) {
+            val now = System.currentTimeMillis()
+            if (now - lastJoinTimestamp >= REJOIN_COOLDOWN_MS) {
+                lastJoinTimestamp = now
+                logger.info("Attempting to reconnect to server")
+                val info = ServerData("Server", "legitimoose.com", ServerData.Type.OTHER)
+                ConnectScreen.startConnecting(
+                    JoinMultiplayerScreen(null),
+                    mc,
+                    ServerAddress.parseString("legitimoose.com"),
+                    info,
+                    false,
+                    null
+                )
             }
         }
     }
