@@ -1,10 +1,7 @@
-import java.util.concurrent.TimeUnit
+import com.mojang.brigadier.context.CommandContextBuilder
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.legitimoose.bot.LegitimooseBot.logger
-import net.legitimoose.bot.mixin.client.ChatScreenAccessor
-import net.legitimoose.bot.mixin.client.CommandSuggestionsAccessor
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.multiplayer.PlayerInfo
 
 class ListCommand(override val event: SlashCommandInteractionEvent, val lobby: Boolean?) : Command {
@@ -18,41 +15,24 @@ class ListCommand(override val event: SlashCommandInteractionEvent, val lobby: B
                         }
                         event.reply(players.toString()).queue()
                 } else {
-                        event.deferReply().queue()
-                        Minecraft.getInstance().execute {
-                                Minecraft.getInstance().setScreen(ChatScreen("/find "))
-                        }
+                        event.deferReply().queue() // It *does* send a packet to the mc server, so keeping this is safer...
 
-                        try {
-                                TimeUnit.SECONDS.sleep(1)
-                        } catch (e: InterruptedException) {
-                                logger.warn(e.message)
-                        }
+                        // Please ignore the nulls. Only the 'input' is actually used
+                        val context = CommandContextBuilder(null, null, null, 1).build("/find ")
 
-                        if (Minecraft.getInstance().screen is ChatScreen) {
-                                val commandSuggestions =
-                                        (Minecraft.getInstance().screen as ChatScreenAccessor)
-                                                .commandSuggestions
-                                commandSuggestions.showSuggestions(false)
+                        val pendingParse = Minecraft.getInstance().player?.connection?.getSuggestionsProvider()?.customSuggestion(context) ?: return
 
-                                try {
-                                        TimeUnit.SECONDS.sleep(1)
-                                } catch (e: InterruptedException) {
-                                        logger.warn(e.message)
+                        pendingParse.thenRun {
+                                if (!pendingParse.isDone) {
+                                        logger.warn("Pending parse is not done! (somehow??)")
+                                        return@thenRun
                                 }
-
+                                val mcSuggestions = pendingParse.join().list
                                 val suggestions = StringBuilder()
-                                for (suggestion in
-                                        (commandSuggestions as CommandSuggestionsAccessor)
-                                                .getPendingSuggestions()
-                                                .get()
-                                                .list) {
+                                for (suggestion in mcSuggestions) {
                                         suggestions.append(suggestion.text + '\n')
                                 }
-
-                                event.hook.sendMessage(suggestions.toString()).queue()
-                        } else {
-                                event.hook.sendMessage("it didn't work :shrug:").queue()
+                                event.hook.sendMessage("There are ${mcSuggestions.size} player(s) online:\n```\n${suggestions.toString()}```").queue()
                         }
                 }
         }
