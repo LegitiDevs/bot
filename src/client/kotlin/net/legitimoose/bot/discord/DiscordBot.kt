@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.legitimoose.bot.LegitimooseBot
 import net.legitimoose.bot.LegitimooseBot.config
 import net.minecraft.client.Minecraft
 
@@ -91,6 +92,8 @@ class DiscordBot : ListenerAdapter() {
                         message += " <blue>[Attachment Included]</blue>"
                 }
                 if (message.length >= 200) return
+                if (config.getOrDefault("channelId", "").isEmpty())
+                        LegitimooseBot.logger.error("Discord channel ID is not set in config!")
                 if (event.channel.id == config.getOrDefault("channelId", "")) {
                         Minecraft.getInstance().player?.connection?.sendChat("$message")
                 }
