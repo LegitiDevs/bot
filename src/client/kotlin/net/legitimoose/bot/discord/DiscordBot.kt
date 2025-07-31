@@ -5,9 +5,12 @@ import ListCommand
 import MsgCommand
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.events.guild.GuildReadyEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
@@ -76,6 +79,9 @@ class DiscordBot : ListenerAdapter() {
                                                 event.getOption("player")!!.asString
                                         )
                                         .onCommandReceived()
+                        "staff-commands" ->
+                                StaffCommands(event, event.getOption("command")!!.asString)
+                                        .onCommandReceived()
                 }
         }
 
@@ -97,5 +103,20 @@ class DiscordBot : ListenerAdapter() {
                 if (event.channel.id == config.getOrDefault("channelId", "")) {
                         Minecraft.getInstance().player?.connection?.sendChat("$message")
                 }
+        }
+
+        override fun onGuildReady(event: GuildReadyEvent) {
+                if (event.guild.id != config.getOrDefault("discordGuildId", "1311574348989071440")) return
+                event.guild.updateCommands()
+                        .addCommands(
+                                Commands.slash("staff-commands", "Internal commands for Legitidevs")
+                                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL, Permission.MODERATE_MEMBERS))
+                                        .addOption(
+                                                OptionType.STRING,
+                                                "command",
+                                                "The command string to execute",
+                                                true
+                                        ),
+                        ).queue()
         }
 }

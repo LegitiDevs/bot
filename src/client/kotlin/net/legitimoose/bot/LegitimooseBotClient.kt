@@ -22,7 +22,7 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress
 import net.minecraft.network.chat.Component
 
 object LegitimooseBotClient {
-    private val mc
+    val mc
         get() = Minecraft.getInstance()
 
     private val joinPattern: Pattern = Pattern.compile("""^\[\+\]\s*(?:[^|]+\|\s*)?(\S+)""")
@@ -158,26 +158,29 @@ object LegitimooseBotClient {
         }
     }
 
-    fun rejoin() {
+    fun rejoin(force: Boolean = false) {
         val screen = mc.screen
         if (screen is DisconnectedScreen ||
             screen is JoinMultiplayerScreen ||
             screen is TitleScreen ||
-            screen is AccessibilityOnboardingScreen
+            screen is AccessibilityOnboardingScreen ||
+            (mc.connection != null && force)
         ) {
-            val now = System.currentTimeMillis()
-            if (now - lastJoinTimestamp >= REJOIN_COOLDOWN_MS) {
-                lastJoinTimestamp = now
-                logger.info("Attempting to reconnect to server")
-                val info = ServerData("Server", "legitimoose.com", ServerData.Type.OTHER)
-                ConnectScreen.startConnecting(
-                    JoinMultiplayerScreen(null),
-                    mc,
-                    ServerAddress.parseString("legitimoose.com"),
-                    info,
-                    false,
-                    null
-                )
+            Minecraft.getInstance().schedule {
+                val now = System.currentTimeMillis()
+                if (now - lastJoinTimestamp >= REJOIN_COOLDOWN_MS) {
+                    lastJoinTimestamp = now
+                    logger.info("Attempting to reconnect to server")
+                    val info = ServerData("Server", "legitimoose.com", ServerData.Type.OTHER)
+                    ConnectScreen.startConnecting(
+                        JoinMultiplayerScreen(null),
+                        mc,
+                        ServerAddress.parseString("legitimoose.com"),
+                        info,
+                        false,
+                        null
+                    )
+                }
             }
         }
     }
