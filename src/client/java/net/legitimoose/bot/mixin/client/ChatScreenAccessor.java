@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ChatScreen.class)
 public interface ChatScreenAccessor {
-    @Accessor
-    CommandSuggestions getCommandSuggestions();
+  @Accessor
+  CommandSuggestions getCommandSuggestions();
 }
