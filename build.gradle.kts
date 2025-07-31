@@ -51,9 +51,9 @@ tasks.processResources {
 
   filesMatching("fabric.mod.json") {
     expand(
-        "version" to inputs.properties["version"],
-        "minecraft_version" to inputs.properties["minecraft_version"],
-        "loader_version" to inputs.properties["loader_version"],
+        "version" to inputs.properties["version"]!!,
+        "minecraft_version" to inputs.properties["minecraft_version"]!!,
+        "loader_version" to inputs.properties["loader_version"]!!,
     )
   }
 }
