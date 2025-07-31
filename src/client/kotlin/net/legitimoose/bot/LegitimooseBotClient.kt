@@ -146,7 +146,7 @@ object LegitimooseBotClient {
                     return@thread
                 }
 
-                if (username == "Legitimooseapi") return@thread
+                if (username == mc.player?.name?.string) return@thread
 
                 if (username.isNotEmpty() &&
                                 !cleanMessage.startsWith(config.getOrDefault("secretPrefix", "::"))
