@@ -1,7 +1,6 @@
 plugins {
-  kotlin("jvm") version "2.2.10"
+  kotlin("jvm") version "2.2.0"
   id("fabric-loom") version "1.11-SNAPSHOT"
-  id("com.google.devtools.ksp") version "2.2.10-2.0.2"
   id("com.gradleup.shadow") version "9.0.2"
   id("com.diffplug.spotless") version "7.2.1"
 }
@@ -40,7 +39,7 @@ dependencies {
 
   shadow(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.5.1")!!)
   shadow(implementation("org.mongodb:bson-kotlinx:5.5.1")!!)
-  shadow(implementation("net.dv8tion:JDA:5.6.1") { exclude("opus-java") })
+  shadow(implementation("net.dv8tion:JDA:6.0.0-rc.5") { exclude("opus-java") })
 }
 
 tasks.processResources {
