@@ -1,6 +1,7 @@
 plugins {
   kotlin("jvm") version "2.2.10"
   id("fabric-loom") version "1.11-SNAPSHOT"
+  id("com.gradleup.shadow") version "9.0.2"
   id("com.diffplug.spotless") version "7.2.1"
 }
 
@@ -36,9 +37,9 @@ dependencies {
   modImplementation(
       "net.fabricmc:fabric-language-kotlin:${project.property("fabric_kotlin_version")}")
 
-  include(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.5.1")!!)
-  include(implementation("org.mongodb:bson-kotlinx:5.5.1")!!)
-  include(implementation("net.dv8tion:JDA:5.6.1") { exclude("opus-java") })
+  shadow(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.5.1")!!)
+  shadow(implementation("org.mongodb:bson-kotlinx:5.5.1")!!)
+  shadow(implementation("net.dv8tion:JDA:5.6.1") { exclude("opus-java") })
 }
 
 tasks.processResources {
@@ -66,6 +67,30 @@ spotless {
   kotlinGradle {
     target("*.gradle.kts")
     ktfmt()
+  }
+}
+
+tasks {
+  shadowJar {
+    from(sourceSets["main"].output)
+
+    from(sourceSets["client"].output)
+
+    configurations = listOf(project.configurations.shadow.get())
+
+    archiveClassifier = "shadowed-only"
+
+    minimize()
+  }
+
+  remapJar {
+    dependsOn(shadowJar)
+
+    mustRunAfter(shadowJar)
+
+    inputFile = file(shadowJar.get().archiveFile)
+
+    archiveClassifier = ""
   }
 }
 
