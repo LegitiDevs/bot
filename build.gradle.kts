@@ -1,6 +1,7 @@
 plugins {
   kotlin("jvm") version "2.2.10"
   id("fabric-loom") version "1.11-SNAPSHOT"
+  id("com.google.devtools.ksp") version "2.2.10-2.0.2"
   id("com.gradleup.shadow") version "9.0.2"
   id("com.diffplug.spotless") version "7.2.1"
 }
