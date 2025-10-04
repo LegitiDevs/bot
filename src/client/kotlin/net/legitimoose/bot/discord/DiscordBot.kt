@@ -3,6 +3,9 @@ package net.legitimoose.bot.discord
 import FindCommand
 import ListCommand
 import MsgCommand
+import Rejoin
+import Restart
+import Send
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.Permission
@@ -53,6 +56,24 @@ class DiscordBot : ListenerAdapter() {
     }
   }
 
+  override fun onGuildReady(event: GuildReadyEvent) {
+    if (event.guild.id != config.getOrDefault("discordGuildId", "1311574348989071440")) return
+    event.guild
+        .updateCommands()
+        .addCommands(
+            Commands.slash("rejoin", "Rejoin server")
+                .setDefaultPermissions(
+                    DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+            Commands.slash("restart", "Restart bot")
+                .setDefaultPermissions(
+                    DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+            Commands.slash("send", "Send message")
+                .setDefaultPermissions(
+                    DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
+                .addOption(OptionType.STRING, "message", "The message to send", true))
+        .queue()
+  }
+
   override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
     when (event.name) {
       "list" -> ListCommand(event, event.getOption("lobby")?.asBoolean).onCommandReceived()
@@ -63,8 +84,10 @@ class DiscordBot : ListenerAdapter() {
                   event.getOption("message")!!.asString,
                   event.getOption("player")!!.asString)
               .onCommandReceived()
-      "staff-commands" ->
-          StaffCommands(event, event.getOption("command")!!.asString).onCommandReceived()
+
+      "rejoin" -> Rejoin(event).onCommandReceived()
+      "restart" -> Restart(event).onCommandReceived()
+      "send" -> Send(event, event.getOption("message")!!.asString).onCommandReceived()
     }
   }
 
@@ -83,19 +106,5 @@ class DiscordBot : ListenerAdapter() {
     if (event.channel.id == config.getOrDefault("channelId", "")) {
       Minecraft.getInstance().player?.connection?.sendChat("$message")
     }
-  }
-
-  override fun onGuildReady(event: GuildReadyEvent) {
-    if (event.guild.id != config.getOrDefault("discordGuildId", "1311574348989071440")) return
-    event.guild
-        .updateCommands()
-        .addCommands(
-            Commands.slash("staff-commands", "Internal commands for Legitidevs")
-                .setDefaultPermissions(
-                    DefaultMemberPermissions.enabledFor(
-                        Permission.MANAGE_CHANNEL, Permission.MODERATE_MEMBERS))
-                .addOption(OptionType.STRING, "command", "The command string to execute", true),
-        )
-        .queue()
   }
 }
