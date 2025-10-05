@@ -13,7 +13,8 @@ class Send(override val event: SlashCommandInteractionEvent, val message: String
     }
     LegitimooseBotClient.mc.schedule {
       if (message.startsWith("/")) {
-        LegitimooseBotClient.mc.connection?.sendCommand(message)
+        LegitimooseBotClient.mc.connection?.sendCommand(message.substring(1))
+        event.hook.sendMessage("Command sent: `$message`").queue()
         return@schedule
       }
       LegitimooseBotClient.mc.connection?.sendChat(message)
