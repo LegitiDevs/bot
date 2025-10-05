@@ -3,6 +3,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 class Restart(override val event: SlashCommandInteractionEvent) : Command {
   override fun onCommandReceived() {
+    event.deferReply(true).queue()
     event.hook.sendMessage("Restarting bot...").complete()
     exitProcess(0)
   }

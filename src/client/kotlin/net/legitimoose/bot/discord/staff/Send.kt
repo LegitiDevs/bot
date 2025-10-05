@@ -3,6 +3,7 @@ import net.legitimoose.bot.LegitimooseBotClient
 
 class Send(override val event: SlashCommandInteractionEvent, val message: String) : Command {
   override fun onCommandReceived() {
+    event.deferReply(true).queue()
     if (message.isEmpty()) {
       event.hook.sendMessage("Please provide a message to send.").queue()
       return
