@@ -1,3 +1,5 @@
+package net.legitimoose.bot.discord
+
 import com.mojang.brigadier.context.CommandContextBuilder
 import com.mongodb.kotlin.client.MongoCollection
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent

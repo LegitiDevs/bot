@@ -1,11 +1,5 @@
 package net.legitimoose.bot.discord
 
-import FindCommand
-import ListCommand
-import MsgCommand
-import Rejoin
-import Restart
-import Send
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.Permission
@@ -19,6 +13,9 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.legitimoose.bot.LegitimooseBot
 import net.legitimoose.bot.LegitimooseBot.config
+import net.legitimoose.bot.discord.staff.Rejoin
+import net.legitimoose.bot.discord.staff.Restart
+import net.legitimoose.bot.discord.staff.Send
 import net.minecraft.client.Minecraft
 
 class DiscordBot : ListenerAdapter() {
@@ -104,7 +101,7 @@ class DiscordBot : ListenerAdapter() {
     if (config.getOrDefault("channelId", "").isEmpty())
         LegitimooseBot.logger.error("Discord channel ID is not set in config!")
     if (event.channel.id == config.getOrDefault("channelId", "")) {
-      Minecraft.getInstance().player?.connection?.sendChat("$message")
+      Minecraft.getInstance().player?.connection?.sendChat(message)
     }
   }
 }
