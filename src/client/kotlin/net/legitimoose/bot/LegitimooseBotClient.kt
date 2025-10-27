@@ -41,7 +41,7 @@ object LegitimooseBotClient {
   private val timer = Timer()
 
   fun init() {
-    timer.schedule(0L, TimeUnit.HOURS.toMillis(24)) { exitProcess(0) }
+    timer.schedule(TimeUnit.HOURS.toMillis(24), 0L) { exitProcess(0) }
     ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
       dispatcher.register(
           ClientCommandManager.literal("scrape").executes {
