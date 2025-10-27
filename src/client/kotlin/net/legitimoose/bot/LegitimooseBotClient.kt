@@ -1,8 +1,12 @@
 package net.legitimoose.bot
 
+import java.util.Timer
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import kotlin.concurrent.schedule
 import kotlin.concurrent.thread
+import kotlin.concurrent.timer
+import kotlin.system.exitProcess
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -34,7 +38,10 @@ object LegitimooseBotClient {
   @Volatile private var lastJoinTimestamp: Long = 0L
   private const val REJOIN_COOLDOWN_MS = 5_000L
 
+  private val timer = Timer()
+
   fun init() {
+    timer.schedule(0L, TimeUnit.HOURS.toMillis(24)) { exitProcess(0) }
     ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
       dispatcher.register(
           ClientCommandManager.literal("scrape").executes {
