@@ -2,7 +2,6 @@ plugins {
   kotlin("jvm") version "2.2.10"
   id("fabric-loom") version "1.11.5"
   id("com.gradleup.shadow") version "9.0.2"
-  id("com.diffplug.spotless") version "7.2.1"
 }
 
 version = project.property("mod_version") as String
@@ -54,19 +53,6 @@ tasks.processResources {
         "minecraft_version" to inputs.properties["minecraft_version"]!!,
         "loader_version" to inputs.properties["loader_version"]!!,
     )
-  }
-}
-
-spotless {
-  java {
-    googleJavaFormat()
-
-    formatAnnotations()
-  }
-  kotlin { ktfmt() }
-  kotlinGradle {
-    target("*.gradle.kts")
-    ktfmt()
   }
 }
 
