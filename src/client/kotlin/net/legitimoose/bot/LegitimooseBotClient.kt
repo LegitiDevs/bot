@@ -92,14 +92,7 @@ object LegitimooseBotClient {
         try {
           mc.player
               ?.connection
-              ?.sendChat("<br><red>I am a bot that syncs lobby chat to a community Discord")
-          mc.player
-              ?.connection
-              ?.sendChat(
-                  "<br><red>To prevent messages being sent to discord, prefix your messages with <u><hover:show_text:'<yellow>eg; ::this message is hidden'>::</hover></u>")
-          mc.player
-              ?.connection
-              ?.sendChat("You can check out our work at <bold>https://legiti.dev/</bold>")
+              ?.sendChat("<br><red>I am a bot that syncs lobby chat to a community Discord<br>To prevent messages being sent to discord, prefix your messages with <u>::<br><reset>You can check out our work at <b>https://legiti.dev/")
           TimeUnit.MINUTES.sleep(20)
         } catch (e: InterruptedException) {
           logger.warn(e.message)
