@@ -8,6 +8,8 @@ package net.legitimoose.bot.discord;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -51,22 +53,22 @@ public class DiscordWebhook {
   }
 
   public void execute() throws IOException, URISyntaxException {
-    execute(false);
+    execute(null);
   }
 
-  public void execute(Boolean useEmbed) throws IOException, URISyntaxException {
+  public void execute(Integer embedColor) throws IOException, URISyntaxException {
     if (this.content == null) {
       throw new IllegalArgumentException("Content must be set");
     }
 
     JsonObject json = new JsonObject();
 
-    if (!useEmbed) {
+    if (embedColor == null) {
       json.addProperty("content", this.content);
     } else {
       JsonObject embed = new JsonObject();
       embed.addProperty("title", this.content);
-      embed.addProperty("color", 5763719);
+      embed.addProperty("color", embedColor);
 
       if (embedImageUrl != null) {
         JsonObject thumbnail = new JsonObject();

@@ -30,11 +30,11 @@ object LegitimooseBotClient {
     val mc
         get() = Minecraft.getInstance()
 
-    private val joinPattern: Pattern = Pattern.compile("""^\[\+\]\s*(?:[^|]+\|\s*)?(\S+)""")
-    // idk why but it was erroring so i did that lmao -hazel
+    private val joinPattern: Pattern = Pattern.compile("""^\[\+]\s*(?:[^|]+\|\s*)?(\S+)""")
+    private val leavePattern: Pattern = Pattern.compile("""^\[-]\s*(?:[^|]+\|\s*)?(\S+)""")
 
     private val chatPattern: Pattern = Pattern.compile("""(?:[^|]+\|\s*)?([^:]+): (.*)""")
-    private val msgPattern: Pattern = Pattern.compile("""\[(.*) -> me\] @(.*) (.*)""")
+    private val msgPattern: Pattern = Pattern.compile("""\[(.*) -> me] @(.*) (.*)""")
 
     @Volatile
     private var lastJoinTimestamp: Long = 0L
@@ -110,6 +110,7 @@ object LegitimooseBotClient {
                 var cleanMessage = msg
 
                 val joinMatcher = joinPattern.matcher(msg)
+                val leaveMatcher = leavePattern.matcher(msg)
                 val chatMatcher = chatPattern.matcher(msg)
                 val msgMatcher = msgPattern.matcher(msg)
 
@@ -119,9 +120,17 @@ object LegitimooseBotClient {
                     cleanMessage = "**$username** joined the server."
                     webhook.setEmbedThumbnail("https://mc-heads.net/head/$username/50/left")
                     webhook.setContent(cleanMessage.replace("@", ""))
-                    webhook.execute(true)
+                    webhook.execute(0x57F287)
                     return@thread
-                } else if (chatMatcher.find()) {
+                } else if (leaveMatcher.find()) {
+                    username = leaveMatcher.group(1)
+                    cleanMessage = "**$username** left the server."
+                    webhook.setEmbedThumbnail("https://mc-heads.net/head/$username/50/left")
+                    webhook.setContent(cleanMessage.replace("@", ""))
+                    webhook.execute(0xF25757)
+                    return@thread
+                }
+                else if (chatMatcher.find()) {
                     username = chatMatcher.group(1)
                     cleanMessage = chatMatcher.group(2)
                     if (msg.startsWith("[SHOUT]")) {
