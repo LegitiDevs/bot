@@ -31,7 +31,7 @@ object LegitimooseBotClient {
         get() = Minecraft.getInstance()
 
     private val joinPattern: Pattern = Pattern.compile("""^\[\+]\s*(?:[^|]+\|\s*)?(\S+)""")
-    private val leavePattern: Pattern = Pattern.compile("""^\[[→+]]\s*(?:[^|]+\|\s*)?(\S+)""")
+    private val leavePattern: Pattern = Pattern.compile("""^\[[→-]]\s*(?:[^|]+\|\s*)?(\S+)""")
 
     private val chatPattern: Pattern = Pattern.compile("""^(?:\[SHOUT]\s*)?(?:[^|]+\|\s*)?([^:]+): (.*)""")
     private val msgPattern: Pattern = Pattern.compile("""\[(.*) -> me] @(.*) (.*)""")
