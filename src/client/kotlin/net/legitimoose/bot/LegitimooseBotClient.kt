@@ -127,10 +127,10 @@ object LegitimooseBotClient {
                 } 
                 else if (switchMatcher.find()) {
                     username = leaveMatcher.group(1)
-                    cleanMessage = "**$username** left the server."
+                    cleanMessage = "**$username** switched the server."
                     webhook.setEmbedThumbnail("https://mc-heads.net/head/$username/50/left")
                     webhook.setContent(cleanMessage.replace("@", ""))
-                    webhook.execute(0xF"F"57)
+                    webhook.execute(0xF2F257)
                     return@thread
                 }
                 else if (leaveMatcher.find()) {
