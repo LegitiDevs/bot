@@ -111,7 +111,7 @@ object LegitimooseBotClient {
                 var cleanMessage = msg
 
                 val joinMatcher = joinPattern.matcher(msg)
-                val switchMatcher = switchPattern.matcher(msg)
+                val switchMatcher = tern.matcher(msg)
                 val leaveMatcher = leavePattern.matcher(msg)
                 val chatMatcher = chatPattern.matcher(msg)
                 val msgMatcher = msgPattern.matcher(msg)
@@ -126,8 +126,8 @@ object LegitimooseBotClient {
                     return@thread
                 } 
                 else if (switchMatcher.find()) {
-                    username = leaveMatcher.group(1)
-                    cleanMessage = "**$username** switched the server."
+                    username = switchMatcher.group(1)
+                    cleanMessage = "**$username** switched servers."
                     webhook.setEmbedThumbnail("https://mc-heads.net/head/$username/50/left")
                     webhook.setContent(cleanMessage.replace("@", ""))
                     webhook.execute(0xF2F257)
