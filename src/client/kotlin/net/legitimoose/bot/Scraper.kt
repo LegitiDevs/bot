@@ -62,7 +62,7 @@ object  Scraper {
           continue
         }
         val publicBukkitValues = customData.get("PublicBukkitValues") as CompoundTag
-
+        val jam_id = if(!publicBukkitValues.get("datapackserverpaper:jam_id")!!.asString().get().isEmpty()) publicBukkitValues.get("datapackserverpaper:jam_id")!!.asString().get().toInt() else null;
         val world =
             World(
                 creation_date =
@@ -113,8 +113,7 @@ object  Scraper {
                 description = itemStack.get(DataComponents.LORE)!!.lines[0].string,
                 jam_world =
                     publicBukkitValues.get("datapackserverpaper:jam_world")!!.asString().get().toBoolean(),
-                jam_id =
-                    publicBukkitValues.get("datapackserver:jam_id")?.asString()?.get()?.toInt(),
+                jam_id,
                 raw_name =
                     ComponentSerialization.CODEC.encodeStart(
                             JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
