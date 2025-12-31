@@ -31,7 +31,8 @@ object LegitimooseBotClient {
         get() = Minecraft.getInstance()
 
     private val joinPattern: Pattern = Pattern.compile("""^\[\+]\s*(?:[^|]+\|\s*)?(\S+)""")
-    private val leavePattern: Pattern = Pattern.compile("""^\[[→-]]\s*(?:[^|]+\|\s*)?(\S+)""")
+    private val switchPattern: Pattern = Pattern.compile("""^\[→]\s*(?:[^|]+\|\s*)?(\S+)""")
+    private val leavePattern: Pattern = Pattern.compile("""^\[-]\s*(?:[^|]+\|\s*)?(\S+)""")
 
     private val chatPattern: Pattern = Pattern.compile("""^(?:\[SHOUT]\s*)?(?:[^|]+\|\s*)?([^:]+): (.*)""")
     private val msgPattern: Pattern = Pattern.compile("""\[(.*) -> me] @(.*) (.*)""")
@@ -110,6 +111,7 @@ object LegitimooseBotClient {
                 var cleanMessage = msg
 
                 val joinMatcher = joinPattern.matcher(msg)
+                val switchMatcher = tern.matcher(msg)
                 val leaveMatcher = leavePattern.matcher(msg)
                 val chatMatcher = chatPattern.matcher(msg)
                 val msgMatcher = msgPattern.matcher(msg)
@@ -122,7 +124,16 @@ object LegitimooseBotClient {
                     webhook.setContent(cleanMessage.replace("@", ""))
                     webhook.execute(0x57F287)
                     return@thread
-                } else if (leaveMatcher.find()) {
+                } 
+                else if (switchMatcher.find()) {
+                    username = switchMatcher.group(1)
+                    cleanMessage = "**$username** switched servers."
+                    webhook.setEmbedThumbnail("https://mc-heads.net/head/$username/50/left")
+                    webhook.setContent(cleanMessage.replace("@", ""))
+                    webhook.execute(0xF2F257)
+                    return@thread
+                }
+                else if (leaveMatcher.find()) {
                     username = leaveMatcher.group(1)
                     cleanMessage = "**$username** left the server."
                     webhook.setEmbedThumbnail("https://mc-heads.net/head/$username/50/left")
