@@ -111,7 +111,7 @@ object LegitimooseBotClient {
                 var cleanMessage = msg
 
                 val joinMatcher = joinPattern.matcher(msg)
-                val switchMatcher = tern.matcher(msg)
+                val switchMatcher = switchPattern.matcher(msg)
                 val leaveMatcher = leavePattern.matcher(msg)
                 val chatMatcher = chatPattern.matcher(msg)
                 val msgMatcher = msgPattern.matcher(msg)
