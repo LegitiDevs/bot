@@ -12,7 +12,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.ComponentSerialization
 import net.minecraft.world.inventory.ClickType
 
-object Scraper {
+object  Scraper {
   private val mongoClient = MongoClient.create(config.getOrDefault("mongoUri", ""))
   private val errorWebhook = DiscordWebhook(config.getOrDefault("errorWebhookUrl", ""))
   val db = mongoClient.getDatabase("legitimooseapi")
@@ -111,6 +111,10 @@ object Scraper {
                         .toBoolean(),
                 name = itemStack.get(DataComponents.CUSTOM_NAME)!!.string,
                 description = itemStack.get(DataComponents.LORE)!!.lines[0].string,
+                jam_world =
+                    publicBukkitValues.get("datapackserverpaper:jam_world")!!.asString().get().toBoolean(),
+                jam_id =
+                    publicBukkitValues.get("datapackserver:jam_id")?.asString()?.get()?.toInt(),
                 raw_name =
                     ComponentSerialization.CODEC.encodeStart(
                             JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))

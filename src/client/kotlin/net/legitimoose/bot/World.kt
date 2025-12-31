@@ -26,6 +26,8 @@ data class World(
     val whitelist_on_version_change: Boolean,
     val name: String,
     val description: String,
+    val jam_world: Boolean,
+    val jam_id: Int?,
     val raw_name: String,
     val raw_description: String,
     val icon: String,
@@ -55,6 +57,8 @@ data class World(
               Updates.set("whitelist_on_version_change", this.whitelist_on_version_change),
               Updates.set("name", this.name),
               Updates.set("description", this.description),
+              Updates.set("jam_world", this.jam_world),
+              Updates.set("jam_id", this.jam_id),
               Updates.set("raw_name", this.raw_name),
               Updates.set("raw_description", this.raw_description),
               Updates.set("icon", this.icon),
@@ -80,6 +84,8 @@ data class World(
             .append("whitelist_on_version_change", this.whitelist_on_version_change)
             .append("name", this.name)
             .append("description", this.description)
+            .append("jam_world", this.jam_world)
+            .append("jam_id", this.jam_id)
             .append("raw_name", this.raw_name)
             .append("raw_description", this.raw_description)
             .append("icon", this.icon)
