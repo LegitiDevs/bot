@@ -53,11 +53,25 @@ public class LegitimooseBotClient implements ClientModInitializer {
             }
         }, TimeUnit.HOURS.toMillis(24), TimeUnit.HOURS.toMillis(24));
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, commandBuildContext) -> dispatcher.register(
-                ClientCommandManager.literal("scrape").executes((context -> {
-                    new Thread(scraper::scrape).start();
-                    return 1;
-                }))));
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, commandBuildContext) -> {
+            dispatcher.register(
+                    ClientCommandManager.literal("scraper")
+                            .then(ClientCommandManager.literal("scrape")
+                                    .executes((context -> {
+                                        new Thread(scraper::scrape).start();
+                                        return 1;
+                                    })))
+                            .then(ClientCommandManager.literal("reload")
+                                    .executes((context -> {
+                                        try {
+                                            CONFIG.loadConfig();
+                                        } catch (IOException e) {
+                                            LOGGER.error(e.getMessage());
+                                        }
+                                        return 1;
+                                    })))
+            );
+        });
 
         new Thread(DiscordBot::run).start();
 

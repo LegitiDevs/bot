@@ -114,7 +114,7 @@ public class SimpleConfig {
     writer.close();
   }
 
-  private void loadConfig() throws IOException {
+  public void loadConfig() throws IOException {
     Scanner reader = new Scanner(request.file);
     for (int line = 1; reader.hasNextLine(); line++) {
       parseConfigEntry(reader.nextLine(), line);
