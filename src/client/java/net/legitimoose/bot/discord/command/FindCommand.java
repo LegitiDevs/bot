@@ -4,6 +4,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.legitimoose.bot.LegitimooseBotClient;
 import net.minecraft.client.Minecraft;
 
+import java.util.concurrent.TimeUnit;
+
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class FindCommand implements Command {
     final SlashCommandInteractionEvent event;
@@ -21,6 +24,11 @@ public class FindCommand implements Command {
             return;
         }
         Minecraft.getInstance().player.connection.sendCommand("find " + player.replace("§", "?"));
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage());
+        }
         event.reply(LegitimooseBotClient.lastMessage.replace(" Click HERE to join.", "").trim()).queue();
     }
 }
