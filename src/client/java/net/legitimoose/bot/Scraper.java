@@ -1,8 +1,13 @@
 package net.legitimoose.bot;
 
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.context.CommandContextBuilder;
+import com.mojang.brigadier.suggestion.Suggestion;
+import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.serialization.JsonOps;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import net.legitimoose.bot.discord.DiscordWebhook;
 import net.minecraft.client.Minecraft;
@@ -12,9 +17,13 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
@@ -44,6 +53,31 @@ public class Scraper {
 
     public void scrape() {
         Minecraft client = Minecraft.getInstance();
+        MongoCollection<Document> stats = db.getCollection("stats");
+
+        // Please ignore the nulls. Only the 'input' is actually used
+        CommandContext context = new CommandContextBuilder(null, null, null, 1).build("/find ");
+
+        CompletableFuture<Suggestions> pendingParse =
+                Minecraft.getInstance()
+                        .player
+                        .connection
+                        .getSuggestionsProvider()
+                        .customSuggestion(context);
+
+        pendingParse.thenRun(() -> {
+            if (!pendingParse.isDone()) {
+                LOGGER.warn("Pending parse is not done! (somehow??)");
+                return;
+            }
+            List<Suggestion> mcSuggestions = pendingParse.join().getList();
+            StringBuilder suggestions = new StringBuilder();
+            for (Suggestion suggestion : mcSuggestions) {
+                suggestions.append(suggestion.getText() + '\n');
+            }
+            stats.insertOne(new Document().append("_id", new ObjectId()).append("player_count", mcSuggestions.size()));
+        });
+
         client.player.connection.sendCommand("worlds");
 
         waitSeconds(1);
