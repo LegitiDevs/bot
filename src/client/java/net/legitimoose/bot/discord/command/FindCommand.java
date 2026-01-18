@@ -1,11 +1,8 @@
 package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.legitimoose.bot.LegitimooseBot;
 import net.legitimoose.bot.LegitimooseBotClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 
 
 public class FindCommand implements Command {
@@ -24,6 +21,6 @@ public class FindCommand implements Command {
             return;
         }
         Minecraft.getInstance().player.connection.sendCommand("find " + player.replace("§", "?"));
-        event.reply(LegitimooseBotClient.mc.gui.getChat().getRecentChat().get(0).replace(" Click HERE to join.", "").trim()).queue();
+        event.reply(LegitimooseBotClient.lastMessage.replace(" Click HERE to join.", "").trim()).queue();
     }
 }

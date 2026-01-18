@@ -101,7 +101,7 @@ public class DiscordBot extends ListenerAdapter {
         if (event.isWebhookMessage() || event.getAuthor().isBot()) return;
         String discordNick = event.getMember().getEffectiveName().replace("§", "?");
         String message =
-                "<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>$discordNick</yellow><dark_gray>:</dark_gray> " +
+                String.format("<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick) +
                         event.getMessage().getContentStripped().replace("\n", "<br>").replace("§", "?");
         if (!event.getMessage().getAttachments().isEmpty()) {
             message += " <blue>[Attachment Included]</blue>";

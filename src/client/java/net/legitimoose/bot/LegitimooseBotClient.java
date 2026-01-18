@@ -30,6 +30,8 @@ public class LegitimooseBotClient implements ClientModInitializer {
     public static final Minecraft mc = Minecraft.getInstance();
     public static final Scraper scraper = new Scraper();
 
+    public static String lastMessage = ""; // weird workaround
+
     private final Pattern joinPattern = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern switchPattern = Pattern.compile("^\\[→]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern leavePattern = Pattern.compile("^\\[-]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
@@ -105,90 +107,92 @@ public class LegitimooseBotClient implements ClientModInitializer {
             }
         }).start();
 
-        ClientReceiveMessageEvents.GAME.register(((message, overlay) ->
-                new Thread(() -> {
-                    String msg = message.getString();
-                    String username = "";
-                    String cleanMessage = msg;
+        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+            lastMessage = message.getString();
+            new Thread(() -> {
+                String msg = message.getString();
+                String username = "";
+                String cleanMessage = msg;
 
-                    Matcher joinMatcher = joinPattern.matcher(msg);
-                    Matcher switchMatcher = switchPattern.matcher(msg);
-                    Matcher leaveMatcher = leavePattern.matcher(msg);
-                    Matcher chatMatcher = chatPattern.matcher(msg);
-                    Matcher msgMatcher = msgPattern.matcher(msg);
+                Matcher joinMatcher = joinPattern.matcher(msg);
+                Matcher switchMatcher = switchPattern.matcher(msg);
+                Matcher leaveMatcher = leavePattern.matcher(msg);
+                Matcher chatMatcher = chatPattern.matcher(msg);
+                Matcher msgMatcher = msgPattern.matcher(msg);
 
-                    DiscordWebhook webhook = new DiscordWebhook(CONFIG.getOrDefault("webhookUrl", ""));
-                    if (joinMatcher.find()) {
-                        username = joinMatcher.group(1);
-                        cleanMessage = String.format("**%s** joined the server.", username);
-                        webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                        webhook.setContent(cleanMessage.replace("@", ""));
-                        try {
-                            webhook.execute(0x57F287);
-                        } catch (IOException | URISyntaxException e) {
-                            LOGGER.warn(e.getMessage());
-                        }
-                        return;
-                    } else if (switchMatcher.find()) {
-                        username = switchMatcher.group(1);
-                        cleanMessage = String.format("**%s** switched servers.", username);
-                        webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                        webhook.setContent(cleanMessage.replace("@", ""));
-                        try {
-                            webhook.execute(0xF2F257);
-                        } catch (IOException | URISyntaxException e) {
-                            LOGGER.warn(e.getMessage());
-                        }
-                        return;
-                    } else if (leaveMatcher.find()) {
-                        username = leaveMatcher.group(1);
-                        cleanMessage = String.format("**%s** left the server.", username);
-                        webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                        webhook.setContent(cleanMessage.replace("@", ""));
-                        try {
-                            webhook.execute(0xF25757);
-                        } catch (IOException | URISyntaxException e) {
-                            throw new RuntimeException(e);
-                        }
-                        return;
-                    } else if (chatMatcher.find()) {
-                        username = chatMatcher.group(1);
-                        cleanMessage = chatMatcher.group(2);
-                        if (msg.startsWith("[SHOUT]")) {
-                            webhook.setUsername("[SHOUT] $username");
-                        } else {
-                            webhook.setUsername(username);
-                        }
-                        webhook.setAvatarUrl(String.format("https://mc-heads.net/avatar/%s", username));
-                    } else if (msgMatcher.find()) {
-                        String username1 = msgMatcher.group(1);
-                        String username2 = msgMatcher.group(2);
-                        String msg1 = msgMatcher.group(3);
-                        Member member =
-                                DiscordBot.jda
-                                        .getGuildById(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"))
-                                        .findMembers(s -> s.getUser().getName().equals(username2))
-                                        .get().getFirst();
-                        member.getUser()
-                                .openPrivateChannel()
-                                .flatMap(channel -> channel.sendMessage(String.format("%s: %s", username1, msg1)))
-                                .queue();
-                        return;
+                DiscordWebhook webhook = new DiscordWebhook(CONFIG.getOrDefault("webhookUrl", ""));
+                if (joinMatcher.find()) {
+                    username = joinMatcher.group(1);
+                    cleanMessage = String.format("**%s** joined the server.", username);
+                    webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
+                    webhook.setContent(cleanMessage.replace("@", ""));
+                    try {
+                        webhook.execute(0x57F287);
+                    } catch (IOException | URISyntaxException e) {
+                        LOGGER.warn(e.getMessage());
                     }
-
-                    if (username.equals(mc.player.getName().getString())) return;
-
-                    if (!username.isEmpty() &&
-                            !cleanMessage.startsWith(CONFIG.getOrDefault("secretPrefix", "::"))
-                    ) {
-                        webhook.setContent(cleanMessage.replace("@", ""));
-                        try {
-                            webhook.execute();
-                        } catch (IOException | URISyntaxException e) {
-                            LOGGER.warn(e.getMessage());
-                        }
+                    return;
+                } else if (switchMatcher.find()) {
+                    username = switchMatcher.group(1);
+                    cleanMessage = String.format("**%s** switched servers.", username);
+                    webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
+                    webhook.setContent(cleanMessage.replace("@", ""));
+                    try {
+                        webhook.execute(0xF2F257);
+                    } catch (IOException | URISyntaxException e) {
+                        LOGGER.warn(e.getMessage());
                     }
-                }).start()));
+                    return;
+                } else if (leaveMatcher.find()) {
+                    username = leaveMatcher.group(1);
+                    cleanMessage = String.format("**%s** left the server.", username);
+                    webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
+                    webhook.setContent(cleanMessage.replace("@", ""));
+                    try {
+                        webhook.execute(0xF25757);
+                    } catch (IOException | URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return;
+                } else if (chatMatcher.find()) {
+                    username = chatMatcher.group(1);
+                    cleanMessage = chatMatcher.group(2);
+                    if (msg.startsWith("[SHOUT]")) {
+                        webhook.setUsername("[SHOUT] $username");
+                    } else {
+                        webhook.setUsername(username);
+                    }
+                    webhook.setAvatarUrl(String.format("https://mc-heads.net/avatar/%s", username));
+                } else if (msgMatcher.find()) {
+                    String username1 = msgMatcher.group(1);
+                    String username2 = msgMatcher.group(2);
+                    String msg1 = msgMatcher.group(3);
+                    Member member =
+                            DiscordBot.jda
+                                    .getGuildById(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"))
+                                    .findMembers(s -> s.getUser().getName().equals(username2))
+                                    .get().getFirst();
+                    member.getUser()
+                            .openPrivateChannel()
+                            .flatMap(channel -> channel.sendMessage(String.format("%s: %s", username1, msg1)))
+                            .queue();
+                    return;
+                }
+
+                if (username.equals(mc.player.getName().getString())) return;
+
+                if (!username.isEmpty() &&
+                        !cleanMessage.startsWith(CONFIG.getOrDefault("secretPrefix", "::"))
+                ) {
+                    webhook.setContent(cleanMessage.replace("@", ""));
+                    try {
+                        webhook.execute();
+                    } catch (IOException | URISyntaxException e) {
+                        LOGGER.warn(e.getMessage());
+                    }
+                }
+            }).start();
+        });
     }
 
     public static void rejoin(boolean force) {
