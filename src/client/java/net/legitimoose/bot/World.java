@@ -30,7 +30,7 @@ public record World(
         String name,
         String description,
         boolean jam_world,
-        int jam_id,
+        Integer jam_id,
         String raw_name,
         String raw_description,
         String icon,

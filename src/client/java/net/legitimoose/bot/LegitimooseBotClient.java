@@ -79,7 +79,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
             while (true) {
                 scraper.scrape();
                 try {
-                    TimeUnit.MINUTES.sleep((long) CONFIG.getOrDefault("waitMinutesBetweenScrapes", 10));
+                    TimeUnit.MINUTES.sleep((long) CONFIG.getOrDefault("waitMinutesBetweenScrapes", 20));
                 } catch (InterruptedException e) {
                     LOGGER.warn(e.getMessage());
                 }

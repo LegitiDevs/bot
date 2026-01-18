@@ -38,7 +38,7 @@ public class Scraper {
     private void error(String message, Exception exception) throws IOException, URISyntaxException {
         LOGGER.error(message);
         LOGGER.error(exception.getMessage());
-        errorWebhook.setContent("$message\n${exception.message}");
+        errorWebhook.setContent(String.format("%s\n%s", message, exception.getMessage()));
         errorWebhook.execute();
     }
 
@@ -59,7 +59,13 @@ public class Scraper {
                 if (i == max_pages && itemStack.toString().substring(2) == "minecraft:air") break;
                 CompoundTag customData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
                 CompoundTag publicBukkitValues = (CompoundTag) customData.get("PublicBukkitValues");
-                int jam_id = (!publicBukkitValues.get("datapackserverpaper:jam_id").asString().get().isEmpty()) ? Integer.parseInt(publicBukkitValues.get("datapackserverpaper:jam_id").asString().get()) : null;
+                Integer jam_id;
+                if (!publicBukkitValues.get("datapackserverpaper:jam_id").asString().get().isEmpty()) {
+                    jam_id = Integer.parseInt(publicBukkitValues.get("datapackserverpaper:jam_id").asString().get());
+                } else {
+                    jam_id = null;
+                }
+                //int jam_id = !publicBukkitValues.get("datapackserverpaper:jam_id").asString().get().isEmpty() ? Integer.parseInt(publicBukkitValues.get("datapackserverpaper:jam_id").asString().get()) : null;
                 World world =
                         new World(
                                 publicBukkitValues.get("datapackserverpaper:creation_date").asString().get(),
@@ -107,11 +113,11 @@ public class Scraper {
                                 itemStack.toString().substring(2),
                                 System.currentTimeMillis() / 1000L
                         );
-                LOGGER.info("Scraped World $j ${world.world_uuid}: ${world.name}");
+                LOGGER.info("Scraped World {} {}: {}", j, world.world_uuid(), world.name());
                 world.upload(db);
             }
             // finally, click on next page button
-            LOGGER.info("Scraped page #$i");
+            LOGGER.info("Scraped page #{}", i);
             Minecraft.getInstance()
                     .gameMode
                     .handleInventoryMouseClick(
