@@ -1,5 +1,4 @@
 plugins {
-  kotlin("jvm") version "2.2.21"
   id("fabric-loom") version "1.11.5"
   id("com.gradleup.shadow") version "9.0.2"
 }
@@ -33,11 +32,8 @@ dependencies {
   modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
 
   modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
-  modImplementation(
-      "net.fabricmc:fabric-language-kotlin:${project.property("fabric_kotlin_version")}")
 
-  shadow(implementation("org.mongodb:mongodb-driver-kotlin-sync:5.5.1")!!)
-  shadow(implementation("org.mongodb:bson-kotlinx:5.5.1")!!)
+  shadow(implementation("org.mongodb:mongodb-driver-sync:5.5.1")!!)
   shadow(implementation("net.dv8tion:JDA:5.6.1") { exclude("opus-java") })
 }
 
@@ -75,5 +71,3 @@ tasks {
 }
 
 java { toolchain.languageVersion = JavaLanguageVersion.of(21) }
-
-kotlin { jvmToolchain(21) }
