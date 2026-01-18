@@ -158,7 +158,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     username = chatMatcher.group(1);
                     cleanMessage = chatMatcher.group(2);
                     if (msg.startsWith("[SHOUT]")) {
-                        webhook.setUsername("[SHOUT] $username");
+                        webhook.setUsername(String.format("[SHOUT] %s", username));
                     } else {
                         webhook.setUsername(username);
                     }
