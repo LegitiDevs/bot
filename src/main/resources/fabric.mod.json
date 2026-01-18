@@ -10,16 +10,10 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      {
-        "adapter": "kotlin",
-        "value": "net.legitimoose.bot.LegitimooseBotClient::init"
-      }
+      "net.legitimoose.bot.LegitimooseBotClient"
     ],
     "main": [
-      {
-        "adapter": "kotlin",
-        "value": "net.legitimoose.bot.LegitimooseBot::init"
-      }
+      "net.legitimoose.bot.LegitimooseBot"
     ]
   },
   "mixins": [
