@@ -31,7 +31,7 @@ public class ShoutCommand implements Command {
             return;
         }
         LegitimooseBotClient.mc.getConnection().sendCommand("shout " + newMessage);
-        event.reply(String.format("Shouted `%s`", message.trim())).setEphemeral(true).queue();
+        event.reply(String.format("Shouted `%s`", message.trim())).queue();
         cooldown.put(userId, System.currentTimeMillis());
     }
 }
