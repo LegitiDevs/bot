@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.legitimoose.bot.LegitimooseBot;
 import net.legitimoose.bot.discord.command.FindCommand;
 import net.legitimoose.bot.discord.command.ListCommand;
+import net.legitimoose.bot.discord.command.ListallCommand;
 import net.legitimoose.bot.discord.command.MsgCommand;
 import net.legitimoose.bot.discord.command.staff.Rejoin;
 import net.legitimoose.bot.discord.command.staff.Restart;
@@ -52,7 +53,12 @@ public class DiscordBot extends ListenerAdapter {
                                         "player",
                                         "The username of the player you want to message",
                                         true)
-                                .addOption(OptionType.STRING, "message", "The message you want to send", true))
+                                .addOption(OptionType.STRING, "message", "The message you want to send", true),
+                        Commands.slash("listall", "List all online worlds with the players in them")
+                                .addOption(
+                                        OptionType.BOOLEAN,
+                                        "raw",
+                                        "True if you want to output world UUIDs instead of the world name"))
                 .queue();
     }
 
@@ -86,6 +92,15 @@ public class DiscordBot extends ListenerAdapter {
                     lobby = false;
                 }
                 new ListCommand(event, lobby).onCommandReceived();
+            }
+            case "listall" -> {
+                boolean raw;
+                if (event.getOption("raw") != null) {
+                    raw = event.getOption("raw").getAsBoolean();
+                } else {
+                    raw = false;
+                }
+                new ListallCommand(event, raw).onCommandReceived();
             }
             case "find" -> new FindCommand(event, event.getOption("player").getAsString()).onCommandReceived();
             case "msg" ->
