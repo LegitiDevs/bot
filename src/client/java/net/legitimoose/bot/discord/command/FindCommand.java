@@ -29,6 +29,6 @@ public class FindCommand implements Command {
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        event.reply(LegitimooseBotClient.lastMessage.replace(" Click HERE to join.", "").trim()).queue();
+        event.reply(LegitimooseBotClient.lastMessages.getLast().replace(" Click HERE to join.", "").trim()).queue();
     }
 }

@@ -21,22 +21,32 @@ public class ListallCommand implements Command {
     public void onCommandReceived() {
         if (raw) {
             // Get /glist all and output
+            LegitimooseBotClient.lastMessages.clear();
             Minecraft.getInstance().player.connection.sendCommand("glist all");
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 LOGGER.error(e.getMessage());
             }
-            event.reply(String.format("```%s```", LegitimooseBotClient.lastMessage.trim())).queue();
+            StringBuilder list = new StringBuilder();
+            for (String message : LegitimooseBotClient.lastMessages) {
+                list.append(message.trim() + "\n");
+            }
+            event.reply(String.format("```%s```", list)).queue();
         } else {
             // Get /listall and output
+            LegitimooseBotClient.lastMessages.clear();
             Minecraft.getInstance().player.connection.sendCommand("listall");
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 LOGGER.error(e.getMessage());
             }
-            event.reply(String.format("```%s```", LegitimooseBotClient.lastMessage.trim())).queue();
+            StringBuilder list = new StringBuilder();
+            for (String message : LegitimooseBotClient.lastMessages) {
+                list.append(message.trim() + "\n");
+            }
+            event.reply(String.format("```%s```", list)).queue();
         }
     }
 }

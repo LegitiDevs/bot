@@ -17,6 +17,8 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +32,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
     public static final Minecraft mc = Minecraft.getInstance();
     public static final Scraper scraper = new Scraper();
 
-    public static String lastMessage = ""; // weird workaround
+    public static List<String> lastMessages = new ArrayList<>();
 
     private final Pattern joinPattern = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern switchPattern = Pattern.compile("^\\[→]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
@@ -122,7 +124,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
         }).start();
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            lastMessage = message.getString();
+            lastMessages.add(message.getString());
             new Thread(() -> {
                 String msg = message.getString();
                 String username = "";
