@@ -51,19 +51,25 @@ public class Scraper {
         errorWebhook.execute();
     }
 
-    public void scrape() {
+    public void scrape() throws IOException, URISyntaxException {
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = db.getCollection("stats");
 
         // Please ignore the nulls. Only the 'input' is actually used
         CommandContext context = new CommandContextBuilder(null, null, null, 1).build("/find ");
 
-        CompletableFuture<Suggestions> pendingParse =
-                Minecraft.getInstance()
-                        .player
-                        .connection
-                        .getSuggestionsProvider()
-                        .customSuggestion(context);
+        CompletableFuture<Suggestions> pendingParse;
+        try {
+            pendingParse =
+                    Minecraft.getInstance()
+                            .player
+                            .connection
+                            .getSuggestionsProvider()
+                            .customSuggestion(context);
+        } catch (Exception e) {
+            error("failed to get playerlist", e);
+            return;
+        }
 
         pendingParse.thenRun(() -> {
             if (!pendingParse.isDone()) {
@@ -81,7 +87,15 @@ public class Scraper {
         client.player.connection.sendCommand("worlds");
 
         waitSeconds(1);
-        int max_pages = Integer.parseInt(client.screen.getTitle().getSiblings().get(0).getString().substring(3));
+        int max_pages;
+
+        try {
+            max_pages = Integer.parseInt(client.screen.getTitle().getSiblings().getFirst().getString().substring(3));
+        } catch (NumberFormatException e) {
+            error("Cannot start scraping: failed to parse integer amount of worlds!", e);
+            return;
+        }
+
         LOGGER.info("Last page is: {}", max_pages);
         for (int i = 0; i <= max_pages; i++) {
             Container inv = client.player.containerMenu.getSlot(0).container;
@@ -91,7 +105,14 @@ public class Scraper {
                 ItemStack itemStack = inv.getItem(j);
                 // last page & air: break, last world was already hit.
                 if (i == max_pages && itemStack.toString().substring(2) == "minecraft:air") break;
-                CompoundTag customData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
+                CompoundTag customData;
+
+                try {
+                    customData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
+                } catch (NullPointerException e) {
+                    error(String.format("could not scrape world %s in page %s", j, i), e);
+                    continue;
+                }
                 CompoundTag publicBukkitValues = (CompoundTag) customData.get("PublicBukkitValues");
                 Integer jam_id;
                 if (!publicBukkitValues.get("datapackserverpaper:jam_id").asString().get().isEmpty()) {
@@ -148,7 +169,11 @@ public class Scraper {
                                 System.currentTimeMillis() / 1000L
                         );
                 LOGGER.info("Scraped World {} {}: {}", j, world.world_uuid(), world.name());
-                world.upload(db);
+                try {
+                    world.upload(db);
+                } catch (Exception e) {
+                    error(String.format("could not upload world %s: %s to db", world.world_uuid(), world.name()), e);
+                }
             }
             // finally, click on next page button
             LOGGER.info("Scraped page #{}", i);

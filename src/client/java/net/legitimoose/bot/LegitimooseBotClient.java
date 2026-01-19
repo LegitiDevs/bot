@@ -60,7 +60,12 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     ClientCommandManager.literal("scraper")
                             .then(ClientCommandManager.literal("scrape")
                                     .executes((context -> {
-                                        new Thread(scraper::scrape).start();
+                                        new Thread(() -> {
+                                            try {
+                                                scraper.scrape();
+                                            } catch (IOException | URISyntaxException ignored) {
+                                            }
+                                        }).start();
                                         return 1;
                                     })))
                             .then(ClientCommandManager.literal("reload")
@@ -95,9 +100,12 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 LOGGER.warn(e.getMessage());
             }
             while (true) {
-                scraper.scrape();
                 try {
-                    TimeUnit.MINUTES.sleep((long) CONFIG.getOrDefault("waitMinutesBetweenScrapes", 20));
+                    scraper.scrape();
+                } catch (IOException | URISyntaxException ignored) {
+                }
+                try {
+                    TimeUnit.MINUTES.sleep(CONFIG.getOrDefault("waitMinutesBetweenScrapes", 20));
                 } catch (InterruptedException e) {
                     LOGGER.warn(e.getMessage());
                 }
