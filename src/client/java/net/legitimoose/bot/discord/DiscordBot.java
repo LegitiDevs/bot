@@ -11,11 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.legitimoose.bot.LegitimooseBot;
-import net.legitimoose.bot.discord.command.FindCommand;
-import net.legitimoose.bot.discord.command.ListCommand;
-import net.legitimoose.bot.discord.command.ListallCommand;
-import net.legitimoose.bot.discord.command.MsgCommand;
+import net.legitimoose.bot.discord.command.*;
 import net.legitimoose.bot.discord.command.staff.Rejoin;
 import net.legitimoose.bot.discord.command.staff.Restart;
 import net.legitimoose.bot.discord.command.staff.Send;
@@ -58,7 +54,14 @@ public class DiscordBot extends ListenerAdapter {
                                 .addOption(
                                         OptionType.BOOLEAN,
                                         "raw",
-                                        "True if you want to output world UUIDs instead of the world name"))
+                                        "True if you want to output world UUIDs instead of the world name"),
+                        Commands.slash("shout", "Send a shout message")
+                                .addOption(
+                                        OptionType.STRING,
+                                        "message",
+                                        "The message to shout",
+                                        true
+                                ))
                 .queue();
     }
 
@@ -105,6 +108,7 @@ public class DiscordBot extends ListenerAdapter {
             case "find" -> new FindCommand(event, event.getOption("player").getAsString()).onCommandReceived();
             case "msg" ->
                     new MsgCommand(event, event.getOption("message").getAsString(), event.getOption("player").getAsString()).onCommandReceived();
+            case "shout" -> new ShoutCommand(event, event.getOption("message").getAsString()).onCommandReceived();
             case "rejoin" -> new Rejoin(event).onCommandReceived();
             case "restart" -> new Restart(event).onCommandReceived();
             case "send" -> new Send(event, event.getOption("message").getAsString()).onCommandReceived();
