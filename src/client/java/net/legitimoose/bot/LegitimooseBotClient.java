@@ -37,6 +37,8 @@ public class LegitimooseBotClient implements ClientModInitializer {
     private final Pattern joinPattern = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern switchPattern = Pattern.compile("^\\[→]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern leavePattern = Pattern.compile("^\\[-]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
+    private final Pattern banPattern = Pattern.compile("^(\\S+)\\s+banned\\s+(\\S+)\\s+for\\s+'(.+)'");
+    private final Pattern broadcastPattern = Pattern.compile("^\\[Broadcast\\]\\s(.*)");
 
     private final Pattern chatPattern = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?([^:]+): (.*)");
     private final Pattern msgPattern = Pattern.compile("\\[(.*) -> me] @(.*) (.*)");
@@ -143,6 +145,8 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 Matcher leaveMatcher = leavePattern.matcher(msg);
                 Matcher chatMatcher = chatPattern.matcher(msg);
                 Matcher msgMatcher = msgPattern.matcher(msg);
+                Matcher banMatcher = banPattern.matcher(msg);
+                Matcher broadcastMatcher = broadcastPattern.matcher(msg);
 
                 DiscordWebhook webhook = new DiscordWebhook(CONFIG.getOrDefault("webhookUrl", ""));
                 if (joinMatcher.find()) {
@@ -200,6 +204,29 @@ public class LegitimooseBotClient implements ClientModInitializer {
                             .openPrivateChannel()
                             .flatMap(channel -> channel.sendMessage(String.format("%s: %s", username1, msg1)))
                             .queue();
+                    return;
+                } else if (banMatcher.find()) {
+                    // TODO: Add Tempban Code
+                    String username1 = banMatcher.group(1);
+                    String username2 = banMatcher.group(2);
+                    String reason = banMatcher.group(3);
+                    webhook.setContent(String.format("**%s** was banned by **%s**\nReason: %s", username2, username1, reason));
+                    webhook.setUsername("Legitimoose Ban Messages");
+                    try {
+                        webhook.execute(0xFF0000);
+                    } catch (IOException | URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return;
+                } else if (broadcastMatcher.find()) {
+                    String msg1 = broadcastMatcher.group(1);
+                    webhook.setUsername("[Broadcast]");
+                    webhook.setContent(msg1);
+                    try {
+                        webhook.execute(0x5757F2);
+                    } catch (IOException | URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
                     return;
                 }
 
