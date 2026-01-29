@@ -1,5 +1,6 @@
 package net.legitimoose.bot;
 
+import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.Member;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -14,9 +15,14 @@ import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -31,6 +37,8 @@ import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 public class LegitimooseBotClient implements ClientModInitializer {
     public static final Minecraft mc = Minecraft.getInstance();
     public static final Scraper scraper = new Scraper();
+
+    private final MongoCollection<Ban> bans = scraper.db.getCollection("bans", Ban.class);
 
     public static List<String> lastMessages = new ArrayList<>();
 
@@ -207,14 +215,20 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     return;
                 } else if (banMatcher.find()) {
                     // TODO: Add Tempban Code
-                    String username1 = banMatcher.group(1);
-                    String username2 = banMatcher.group(2);
+                    long ban_time = System.currentTimeMillis() / 1000L;
+                    String moderator = banMatcher.group(1);
+                    String banned = banMatcher.group(2);
                     String reason = banMatcher.group(3);
-                    webhook.setContent(String.format("**%s** was banned by **%s**\nReason: %s", username2, username1, reason));
-                    webhook.setUsername("Legitimoose Ban Messages");
+                    webhook.setContent(String.format("**%s** was banned by **%s**\nReason: %s", banned, moderator, reason));
+                    webhook.setUsername("Legitimoose Ban");
                     try {
-                        webhook.execute(0xFF0000);
+                        webhook.execute(0xF25757);
                     } catch (IOException | URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                    try {
+                        writeBan(ban_time, moderator, banned, reason, -1);
+                    } catch (URISyntaxException | IOException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                     return;
@@ -244,6 +258,37 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 }
             }).start();
         });
+    }
+
+    private void writeBan(long ban_time, String moderator, String banned, String reason, long duration) throws URISyntaxException, IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest bannedUUIDRequest = HttpRequest.newBuilder()
+                .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", banned)))
+                .GET()
+                .build();
+        String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
+        String banned_uuid = new JSONObject(response).getJSONObject("data").getJSONObject("player").getString("id");
+
+        HttpRequest modUUIDRequest = HttpRequest.newBuilder()
+                .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", moderator)))
+                .GET()
+                .build();
+        response = client.send(modUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
+        String mod_uuid = new JSONObject(response).getJSONObject("data").getJSONObject("player").getString("id");
+
+        bans.insertOne(
+                new Ban(
+                        ban_time,
+                        banned,
+                        banned_uuid,
+                        moderator,
+                        mod_uuid,
+                        reason,
+                        duration,
+                        -1 // For temp bans, calculate expiration time based on duration else -1 for permanent
+                )
+        );
     }
 
     public static void rejoin(boolean force) {
