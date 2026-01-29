@@ -182,7 +182,7 @@ public class Scraper {
                     .handleInventoryMouseClick(
                             client.player.containerMenu.containerId, 32, 0, ClickType.PICKUP, client.player
                     );
-            waitSeconds(3); // wait five seconds to give legmos time to load
+            waitSeconds(1); // wait a sec to give legmos time to load
         }
         client.player.closeContainer();
         LOGGER.info("Finished Scraping");

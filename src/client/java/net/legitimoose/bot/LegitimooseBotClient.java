@@ -115,7 +115,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 } catch (IOException | URISyntaxException ignored) {
                 }
                 try {
-                    TimeUnit.MINUTES.sleep(CONFIG.getOrDefault("waitMinutesBetweenScrapes", 20));
+                    TimeUnit.MINUTES.sleep(CONFIG.getOrDefault("waitMinutesBetweenScrapes", 5));
                 } catch (InterruptedException e) {
                     LOGGER.warn(e.getMessage());
                 }
