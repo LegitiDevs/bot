@@ -1,5 +1,6 @@
 package net.legitimoose.bot;
 
+import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.Member;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -14,9 +15,14 @@ import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -32,11 +38,15 @@ public class LegitimooseBotClient implements ClientModInitializer {
     public static final Minecraft mc = Minecraft.getInstance();
     public static final Scraper scraper = new Scraper();
 
+    private final MongoCollection<Ban> bans = scraper.db.getCollection("bans", Ban.class);
+
     public static List<String> lastMessages = new ArrayList<>();
 
     private final Pattern joinPattern = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern switchPattern = Pattern.compile("^\\[→]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern leavePattern = Pattern.compile("^\\[-]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
+    private final Pattern banPattern = Pattern.compile("^(\\S+)\\s+banned\\s+(\\S+)\\s+for\\s+'(.+)'");
+    private final Pattern broadcastPattern = Pattern.compile("^\\[Broadcast\\]\\s(.*)");
 
     private final Pattern chatPattern = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?([^:]+): (.*)");
     private final Pattern msgPattern = Pattern.compile("\\[(.*) -> me] @(.*) (.*)");
@@ -143,6 +153,8 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 Matcher leaveMatcher = leavePattern.matcher(msg);
                 Matcher chatMatcher = chatPattern.matcher(msg);
                 Matcher msgMatcher = msgPattern.matcher(msg);
+                Matcher banMatcher = banPattern.matcher(msg);
+                Matcher broadcastMatcher = broadcastPattern.matcher(msg);
 
                 DiscordWebhook webhook = new DiscordWebhook(CONFIG.getOrDefault("webhookUrl", ""));
                 if (joinMatcher.find()) {
@@ -201,6 +213,35 @@ public class LegitimooseBotClient implements ClientModInitializer {
                             .flatMap(channel -> channel.sendMessage(String.format("%s: %s", username1, msg1)))
                             .queue();
                     return;
+                } else if (banMatcher.find()) {
+                    // TODO: Add Tempban Code
+                    long ban_time = System.currentTimeMillis() / 1000L;
+                    String moderator = banMatcher.group(1);
+                    String banned = banMatcher.group(2);
+                    String reason = banMatcher.group(3);
+                    webhook.setContent(String.format("**%s** was banned by **%s**\nReason: %s", banned, moderator, reason));
+                    webhook.setUsername("Legitimoose Ban");
+                    try {
+                        webhook.execute(0xF25757);
+                    } catch (IOException | URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                    try {
+                        writeBan(ban_time, moderator, banned, reason, -1);
+                    } catch (URISyntaxException | IOException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return;
+                } else if (broadcastMatcher.find()) {
+                    String msg1 = broadcastMatcher.group(1);
+                    webhook.setUsername("[Broadcast]");
+                    webhook.setContent(msg1);
+                    try {
+                        webhook.execute(0x5757F2);
+                    } catch (IOException | URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return;
                 }
 
                 if (username.equals(mc.player.getName().getString())) return;
@@ -217,6 +258,37 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 }
             }).start();
         });
+    }
+
+    private void writeBan(long ban_time, String moderator, String banned, String reason, long duration) throws URISyntaxException, IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest bannedUUIDRequest = HttpRequest.newBuilder()
+                .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", banned)))
+                .GET()
+                .build();
+        String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
+        String banned_uuid = new JSONObject(response).getJSONObject("data").getJSONObject("player").getString("id");
+
+        HttpRequest modUUIDRequest = HttpRequest.newBuilder()
+                .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", moderator)))
+                .GET()
+                .build();
+        response = client.send(modUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
+        String mod_uuid = new JSONObject(response).getJSONObject("data").getJSONObject("player").getString("id");
+
+        bans.insertOne(
+                new Ban(
+                        ban_time,
+                        banned,
+                        banned_uuid,
+                        moderator,
+                        mod_uuid,
+                        reason,
+                        duration,
+                        -1 // For temp bans, calculate expiration time based on duration else -1 for permanent
+                )
+        );
     }
 
     public static void rejoin(boolean force) {

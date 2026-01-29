@@ -36,6 +36,7 @@ dependencies {
 
   shadow(implementation("org.mongodb:mongodb-driver-sync:5.6.2")!!)
   shadow(implementation("net.dv8tion:JDA:6.3.0") { exclude("opus-java") })
+  shadow(implementation("org.json:json:20251224")!!)
 
   modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
 }
