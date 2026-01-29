@@ -10,7 +10,6 @@ public class Restart implements Command {
         this.event = event;
     }
 
-
     @Override
     public void onCommandReceived() {
         event.deferReply(true).queue();

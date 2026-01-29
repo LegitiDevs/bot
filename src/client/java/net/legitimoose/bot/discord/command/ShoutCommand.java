@@ -1,11 +1,14 @@
 package net.legitimoose.bot.discord.command;
 
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.legitimoose.bot.LegitimooseBotClient;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 
 public class ShoutCommand implements Command {
     final SlashCommandInteractionEvent event;
@@ -21,7 +24,8 @@ public class ShoutCommand implements Command {
     public void onCommandReceived() {
         long userId = event.getUser().getIdLong();
         Long lastUsed = cooldown.get(userId);
-        if (lastUsed != null && System.currentTimeMillis() - lastUsed < TimeUnit.MINUTES.toMillis(1)) {
+        boolean bypassCooldown = event.getMember().getPermissions().contains(Permission.MANAGE_SERVER) && event.getGuild().getId().equals(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"));
+        if (lastUsed != null && System.currentTimeMillis() - lastUsed < TimeUnit.SECONDS.toMillis(30) && !bypassCooldown) {
             event.reply(String.format("Can't shout now. Try again in %.0f seconds", Math.abs((System.currentTimeMillis() - lastUsed) * 0.001 - 60))).setEphemeral(true).queue();
             return;
         }
