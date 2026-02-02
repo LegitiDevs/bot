@@ -36,7 +36,7 @@ public class ShoutCommand implements Command {
         }
 
         if (lastUsed != null && System.currentTimeMillis() - lastUsed < TimeUnit.SECONDS.toMillis(30) && !bypassCooldown) {
-            event.reply(String.format("Can't shout now. Try again in %.0f seconds", Math.abs((System.currentTimeMillis() - lastUsed) * 0.001 - 60))).setEphemeral(true).queue();
+            event.reply(String.format("Can't shout now. Try again in %.0f seconds", Math.abs((System.currentTimeMillis() - lastUsed) * 0.001 - 30))).setEphemeral(true).queue();
             return;
         }
 
