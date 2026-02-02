@@ -24,12 +24,23 @@ public class ShoutCommand implements Command {
     public void onCommandReceived() {
         long userId = event.getUser().getIdLong();
         Long lastUsed = cooldown.get(userId);
-        boolean bypassCooldown = event.getMember().getPermissions().contains(Permission.MANAGE_SERVER) && event.getGuild().getId().equals(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"));
+
+        boolean bypassCooldown;
+        String username;
+        if (event.getMember() == null) {
+            bypassCooldown = false;
+            username = event.getUser().getEffectiveName();
+        } else {
+            bypassCooldown = event.getMember().getPermissions().contains(Permission.MANAGE_SERVER) && event.getGuild().getId().equals(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"));
+            username = event.getMember().getEffectiveName();
+        }
+
         if (lastUsed != null && System.currentTimeMillis() - lastUsed < TimeUnit.SECONDS.toMillis(30) && !bypassCooldown) {
             event.reply(String.format("Can't shout now. Try again in %.0f seconds", Math.abs((System.currentTimeMillis() - lastUsed) * 0.001 - 60))).setEphemeral(true).queue();
             return;
         }
-        String newMessage = ("[ᴅɪsᴄᴏʀᴅ] " + event.getMember().getEffectiveName() + ": " + message).replace("\n", "<br>").replace("§", "?");
+
+        String newMessage = ("[ᴅɪsᴄᴏʀᴅ] " + username + ": " + message).replace("\n", "<br>").replace("§", "?");
         if (newMessage.length() >= 100) {
             event.reply("Failed to send, message too long!").setEphemeral(true).queue();
             return;

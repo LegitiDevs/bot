@@ -3,6 +3,8 @@ package net.legitimoose.bot.discord.command;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.minecraft.client.Minecraft;
 
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+
 public class MsgCommand implements Command {
     final SlashCommandInteractionEvent event;
     final String message;
@@ -16,7 +18,10 @@ public class MsgCommand implements Command {
 
     @Override
     public void onCommandReceived() {
-        if ((message.length() + player.length()) >= 200) {
+        String newMessage = player.replace("§", "?") + " [ᴅɪsᴄᴏʀᴅ] @" + event.getUser().getName() + ": " + message.replace("\n", "<br>").replace("§", "?");
+        LOGGER.info(newMessage);
+
+        if (newMessage.length() >= 200) {
             event.reply("Failed to send, message and/or player name too long!").setEphemeral(true).queue();
             return;
         }
@@ -24,13 +29,8 @@ public class MsgCommand implements Command {
         Minecraft.getInstance()
                 .player
                 .connection
-                .sendCommand(
-                        "msg " +
-                                player.replace("§", "?") +
-                                " [ᴅɪsᴄᴏʀᴅ] " +
-                                event.getMember().getEffectiveName() +
-                                ": " +
-                                message.replace("\n", "<br>").replace("§", "?"));
+                .sendCommand("msg " + newMessage);
+
         event.reply("Sent `" + message.trim() + "` to " + player).setEphemeral(true).queue();
     }
 }
