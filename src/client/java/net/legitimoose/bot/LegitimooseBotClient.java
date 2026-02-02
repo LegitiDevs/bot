@@ -2,6 +2,7 @@ package net.legitimoose.bot;
 
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -10,6 +11,8 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.DiscordWebhook;
+import net.legitimoose.bot.discord.command.MsgCommand;
+import net.legitimoose.bot.discord.command.ReplyCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
@@ -49,7 +52,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
     private final Pattern broadcastPattern = Pattern.compile("^\\[Broadcast\\]\\s(.*)");
 
     private final Pattern chatPattern = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?([^:]+): (.*)");
-    private final Pattern msgPattern = Pattern.compile("\\[(.*) -> me] @(.*) (.*)");
+    private final Pattern msgPattern = Pattern.compile("\\[(.*) -> me] (?:(@\\S+) )?(.*)");
 
     static volatile private long lastJoinTimestamp = 0L;
     private static final long REJOIN_COOLDOWN_MS = 5_000L;
@@ -203,15 +206,21 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     String username1 = msgMatcher.group(1);
                     String username2 = msgMatcher.group(2);
                     String msg1 = msgMatcher.group(3);
-                    Member member =
-                            DiscordBot.jda
-                                    .getGuildById(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"))
-                                    .findMembers(s -> s.getUser().getName().equals(username2))
-                                    .get().getFirst();
-                    member.getUser()
-                            .openPrivateChannel()
+                    User user;
+                    if (username2 != null) {
+                        String finalUsername = username2.replace("@", "");
+                        user =
+                                DiscordBot.jda
+                                        .getGuildById(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"))
+                                        .findMembers(s -> s.getUser().getName().equals(finalUsername))
+                                        .get().getFirst().getUser();
+                    } else {
+                        user = DiscordBot.jda.retrieveUserById(MsgCommand.lastSent.get(username1)).complete();
+                    }
+                    user.openPrivateChannel()
                             .flatMap(channel -> channel.sendMessage(String.format("%s: %s", username1, msg1)))
                             .queue();
+                    ReplyCommand.lastSentReply.put(user.getIdLong(), username1);
                     return;
                 } else if (banMatcher.find()) {
                     // TODO: Add Tempban Code

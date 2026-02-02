@@ -61,6 +61,13 @@ public class DiscordBot extends ListenerAdapter {
                                         "message",
                                         "The message to shout",
                                         true
+                                ),
+                        Commands.slash("reply", "Reply to an incoming message")
+                                .addOption(
+                                        OptionType.STRING,
+                                        "message",
+                                        "The reply to send",
+                                        true
                                 ))
                 .queue();
     }
@@ -108,6 +115,7 @@ public class DiscordBot extends ListenerAdapter {
             case "find" -> new FindCommand(event, event.getOption("player").getAsString()).onCommandReceived();
             case "msg" ->
                     new MsgCommand(event, event.getOption("message").getAsString(), event.getOption("player").getAsString()).onCommandReceived();
+            case "reply" -> new ReplyCommand(event, event.getOption("message").getAsString()).onCommandReceived();
             case "shout" -> new ShoutCommand(event, event.getOption("message").getAsString()).onCommandReceived();
             case "rejoin" -> new Rejoin(event).onCommandReceived();
             case "restart" -> new Restart(event).onCommandReceived();

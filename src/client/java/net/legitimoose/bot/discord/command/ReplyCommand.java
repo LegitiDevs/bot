@@ -6,22 +6,24 @@ import net.minecraft.client.Minecraft;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
-
-public class MsgCommand implements Command {
+public class ReplyCommand implements Command {
     final SlashCommandInteractionEvent event;
     final String message;
-    final String player;
-    public static final Map<String, Long> lastSent = new HashMap<>();
+    public static final Map<Long, String> lastSentReply = new HashMap<>();
 
-    public MsgCommand(SlashCommandInteractionEvent event, String message, String player) {
+    public ReplyCommand(SlashCommandInteractionEvent event, String message) {
         this.event = event;
         this.message = message;
-        this.player = player;
     }
 
     @Override
     public void onCommandReceived() {
+        if (lastSentReply.get(event.getUser().getIdLong()) == null) {
+            event.reply("You have no incoming messages to reply.").setEphemeral(true).queue();
+            return;
+        }
+
+        String player = lastSentReply.get(event.getUser().getIdLong());
         String newMessage = player.replace("§", "?") + " [ᴅɪsᴄᴏʀᴅ] @" + event.getUser().getName() + ": " + message.replace("\n", "<br>").replace("§", "?");
 
         if (newMessage.length() >= 200) {
@@ -35,6 +37,5 @@ public class MsgCommand implements Command {
                 .sendCommand("msg " + newMessage);
 
         event.reply("Sent `" + message.trim() + "` to " + player).setEphemeral(true).queue();
-        lastSent.put(player, event.getUser().getIdLong());
     }
 }
