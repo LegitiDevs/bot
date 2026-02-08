@@ -38,6 +38,8 @@ dependencies {
   shadow(implementation("net.dv8tion:JDA:6.3.0") { exclude("opus-java") })
   shadow(implementation("org.json:json:20251224")!!)
 
+  shadow(implementation("com.sparkjava:spark-core:2.9.4")!!)
+
   modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
 }
 
