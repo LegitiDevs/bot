@@ -122,7 +122,7 @@ public class Scraper {
                 } else {
                     jam_id = null;
                 }
-                //int jam_id = !publicBukkitValues.get("datapackserverpaper:jam_id").asString().get().isEmpty() ? Integer.parseInt(publicBukkitValues.get("datapackserverpaper:jam_id").asString().get()) : null;
+
                 World world =
                         new World(
                                 publicBukkitValues.get("datapackserverpaper:creation_date").asString().get(),
@@ -141,6 +141,10 @@ public class Scraper {
                                 publicBukkitValues.get("datapackserverpaper:owner").asString().get(),
                                 Integer.parseInt(publicBukkitValues
                                         .get("datapackserverpaper:player_count")
+                                        .asString()
+                                        .get()),
+                                Integer.parseInt(publicBukkitValues
+                                        .get("datapackserverpaper:max_players")
                                         .asString()
                                         .get()),
                                 publicBukkitValues

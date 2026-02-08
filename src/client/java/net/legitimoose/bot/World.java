@@ -21,6 +21,7 @@ public record World(
         boolean locked,
         String owner_uuid,
         int player_count,
+        int max_players,
         String resource_pack_url,
         String world_uuid,
         String version,
@@ -53,6 +54,7 @@ public record World(
                             Updates.set("locked", this.locked),
                             Updates.set("owner_uuid", this.owner_uuid),
                             Updates.set("player_count", this.player_count),
+                            Updates.set("max_players", this.max_players),
                             Updates.set("resource_pack_url", this.resource_pack_url),
                             Updates.set("version", this.version),
                             Updates.set("visits", this.visits),
@@ -79,6 +81,7 @@ public record World(
                         .append("locked", this.locked)
                         .append("owner_uuid", this.owner_uuid)
                         .append("player_count", this.player_count)
+                        .append("max_players", this.max_players)
                         .append("resource_pack_url", this.resource_pack_url)
                         .append("world_uuid", this.world_uuid)
                         .append("version", this.version)
