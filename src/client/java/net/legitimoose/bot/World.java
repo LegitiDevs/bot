@@ -64,8 +64,8 @@ public record World(
                             Updates.set("description", this.description),
                             Updates.set("jam_world", this.jam_world),
                             Updates.set("jam_id", this.jam_id),
-                            Updates.set("raw_name", this.raw_name),
-                            Updates.set("raw_description", this.raw_description),
+                            Updates.set("raw_name", Document.parse(this.raw_name)),
+                            Updates.set("raw_description", Document.parse(this.raw_description)),
                             Updates.set("icon", this.icon),
                             Updates.set("last_scraped", this.last_scraped));
             coll.updateOne(eq("world_uuid", this.world_uuid), updates, new UpdateOptions());
@@ -92,8 +92,8 @@ public record World(
                         .append("description", this.description)
                         .append("jam_world", this.jam_world)
                         .append("jam_id", this.jam_id)
-                        .append("raw_name", this.raw_name)
-                        .append("raw_description", this.raw_description)
+                        .append("raw_name", Document.parse(this.raw_name))
+                        .append("raw_description", Document.parse(this.raw_description))
                         .append("icon", this.icon)
                         .append("last_scraped", this.last_scraped));
         LOGGER.info("Created world");
