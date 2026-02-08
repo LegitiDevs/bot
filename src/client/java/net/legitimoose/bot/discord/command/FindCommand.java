@@ -1,6 +1,7 @@
 package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.legitimoose.bot.EventHandler;
 import net.legitimoose.bot.LegitimooseBotClient;
 import net.minecraft.client.Minecraft;
 
@@ -29,6 +30,6 @@ public class FindCommand implements Command {
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        event.reply(LegitimooseBotClient.lastMessages.getLast().replace(" Click HERE to join.", "").trim()).queue();
+        event.reply(EventHandler.getInstance().lastMessages.getLast().replace(" Click HERE to join.", "").trim()).queue();
     }
 }

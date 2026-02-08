@@ -3,6 +3,7 @@ package net.legitimoose.bot.discord.command;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.legitimoose.bot.LegitimooseBotClient;
+import net.minecraft.client.Minecraft;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class ShoutCommand implements Command {
             event.reply("Failed to send, message too long!").setEphemeral(true).queue();
             return;
         }
-        LegitimooseBotClient.mc.getConnection().sendCommand("shout " + newMessage);
+        Minecraft.getInstance().getConnection().sendCommand("shout " + newMessage);
         event.reply(String.format("Shouted `%s`", message.trim())).queue();
         cooldown.put(userId, System.currentTimeMillis());
     }

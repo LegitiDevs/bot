@@ -3,6 +3,7 @@ package net.legitimoose.bot.discord.command.staff;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.discord.command.Command;
+import net.minecraft.client.Minecraft;
 
 public class Send implements Command {
     final SlashCommandInteractionEvent event;
@@ -20,13 +21,13 @@ public class Send implements Command {
             event.getHook().sendMessage("Please provide a message to send.").queue();
             return;
         }
-        LegitimooseBotClient.mc.schedule(() -> {
+        Minecraft.getInstance().schedule(() -> {
             if (message.startsWith("/")) {
-                LegitimooseBotClient.mc.getConnection().sendCommand(message.substring(1));
+                Minecraft.getInstance().getConnection().sendCommand(message.substring(1));
                 event.getHook().sendMessage(String.format("Command sent: `%s`", message)).queue();
                 return;
             }
-            LegitimooseBotClient.mc.getConnection().sendChat(message);
+            Minecraft.getInstance().getConnection().sendChat(message);
             event.getHook().sendMessage(String.format("Message sent: `%s`", message)).queue();
         });
     }

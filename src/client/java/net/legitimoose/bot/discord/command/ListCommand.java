@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static net.legitimoose.bot.LegitimooseBotClient.scraper;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class ListCommand implements Command {
@@ -40,7 +39,7 @@ public class ListCommand implements Command {
             }
             event.reply(players.toString()).queue();
         } else {
-            MongoCollection<Document> coll = scraper.db.getCollection("stats");
+            MongoCollection<Document> coll = Scraper.getInstance().db.getCollection("stats");
 
             event
                     .deferReply()
