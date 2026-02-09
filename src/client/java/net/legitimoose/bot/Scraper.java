@@ -99,7 +99,7 @@ public class Scraper {
         }
 
         LOGGER.info("Last page is: {}", max_pages);
-        for (int i = 0; i <= max_pages; i++) {
+        for (int i = 1; i < max_pages; i++) {
             Container inv = client.player.containerMenu.getSlot(0).container;
             for (int j = 0; j <= 26; j++) {
                 if (client.player.containerMenu.containerId == 0)
@@ -122,6 +122,28 @@ public class Scraper {
                 } else {
                     jam_id = null;
                 }
+
+                int descriptionLines = 0;
+                while (!itemStack.get(DataComponents.LORE).lines().get(descriptionLines).getString().isEmpty()) {
+                    descriptionLines++;
+                }
+
+                String description = "";
+                for (int k = 0; k < descriptionLines; k++) {
+                    description += itemStack.get(DataComponents.LORE).lines().get(k).getString();
+                    if (k != descriptionLines - 1) description += "\n";
+                }
+
+                String raw_description = "[";
+                for (int k = 0; k < descriptionLines; k++) {
+                    raw_description += (ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.LORE).lines().get(k))
+                            .result()
+                            .get()
+                            .toString());
+                    if (k != descriptionLines - 1) raw_description += ",";
+                }
+                raw_description += "]";
+                LOGGER.info(raw_description);
 
                 World world =
                         new World(
@@ -160,17 +182,14 @@ public class Scraper {
                                         .asString()
                                         .get()),
                                 itemStack.get(DataComponents.CUSTOM_NAME).getString(),
-                                itemStack.get(DataComponents.LORE).lines().get(0).getString(),
+                                description,
                                 Boolean.parseBoolean(publicBukkitValues.get("datapackserverpaper:jam_world").asString().get()),
                                 jam_id,
                                 ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
                                         .result()
                                         .get()
                                         .toString(),
-                                ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.LORE).lines().get(0))
-                                        .result()
-                                        .get()
-                                        .toString(),
+                                raw_description,
                                 itemStack.toString().substring(2),
                                 System.currentTimeMillis() / 1000L
                         );
@@ -188,7 +207,7 @@ public class Scraper {
                     .handleInventoryMouseClick(
                             client.player.containerMenu.containerId, 32, 0, ClickType.PICKUP, client.player
                     );
-            waitSeconds(2); // wait a sec to give legmos time to load
+            waitSeconds(1); // wait a sec to give legmos time to load
         }
         client.player.closeContainer();
         LOGGER.info("Finished Scraping");

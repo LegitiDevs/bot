@@ -5,9 +5,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
+import net.legitimoose.bot.db.MongoUtil;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.json.JSONArray;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.lt;
@@ -65,7 +67,7 @@ public record World(
                             Updates.set("jam_world", this.jam_world),
                             Updates.set("jam_id", this.jam_id),
                             Updates.set("raw_name", Document.parse(this.raw_name)),
-                            Updates.set("raw_description", Document.parse(this.raw_description)),
+                            Updates.set("raw_description", MongoUtil.encode(new JSONArray(this.raw_description))),
                             Updates.set("icon", this.icon),
                             Updates.set("last_scraped", this.last_scraped));
             coll.updateOne(eq("world_uuid", this.world_uuid), updates, new UpdateOptions());
@@ -93,7 +95,7 @@ public record World(
                         .append("jam_world", this.jam_world)
                         .append("jam_id", this.jam_id)
                         .append("raw_name", Document.parse(this.raw_name))
-                        .append("raw_description", Document.parse(this.raw_description))
+                        .append("raw_description", MongoUtil.encode(new JSONArray(this.raw_description)))
                         .append("icon", this.icon)
                         .append("last_scraped", this.last_scraped));
         LOGGER.info("Created world");
