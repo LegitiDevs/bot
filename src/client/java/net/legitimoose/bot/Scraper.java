@@ -143,7 +143,6 @@ public class Scraper {
                     if (k != descriptionLines - 1) raw_description += ",";
                 }
                 raw_description += "]";
-                LOGGER.info(raw_description);
 
                 World world =
                         new World(
