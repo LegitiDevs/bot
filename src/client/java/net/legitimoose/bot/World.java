@@ -32,10 +32,10 @@ public record World(
         boolean whitelist_on_version_change,
         String name,
         String description,
-        boolean jam_world,
-        Integer jam_id,
         String raw_name,
         String raw_description,
+        boolean jam_world,
+        Integer jam_id,
         String icon,
         long last_scraped
 ) {
@@ -64,10 +64,10 @@ public record World(
                             Updates.set("whitelist_on_version_change", this.whitelist_on_version_change),
                             Updates.set("name", this.name),
                             Updates.set("description", this.description),
-                            Updates.set("jam_world", this.jam_world),
-                            Updates.set("jam_id", this.jam_id),
                             Updates.set("raw_name", Document.parse(this.raw_name)),
                             Updates.set("raw_description", MongoUtil.encode(new JSONArray(this.raw_description))),
+                            Updates.set("jam_world", this.jam_world),
+                            Updates.set("jam_id", this.jam_id),
                             Updates.set("icon", this.icon),
                             Updates.set("last_scraped", this.last_scraped));
             coll.updateOne(eq("world_uuid", this.world_uuid), updates, new UpdateOptions());
@@ -92,10 +92,10 @@ public record World(
                         .append("whitelist_on_version_change", this.whitelist_on_version_change)
                         .append("name", this.name)
                         .append("description", this.description)
-                        .append("jam_world", this.jam_world)
-                        .append("jam_id", this.jam_id)
                         .append("raw_name", Document.parse(this.raw_name))
                         .append("raw_description", MongoUtil.encode(new JSONArray(this.raw_description)))
+                        .append("jam_world", this.jam_world)
+                        .append("jam_id", this.jam_id)
                         .append("icon", this.icon)
                         .append("last_scraped", this.last_scraped));
         LOGGER.info("Created world");

@@ -117,8 +117,8 @@ public class Scraper {
                 }
                 CompoundTag publicBukkitValues = (CompoundTag) customData.get("PublicBukkitValues");
                 Integer jam_id;
-                if (!publicBukkitValues.get("datapackserverpaper:jam_id").asString().get().isEmpty()) {
-                    jam_id = Integer.parseInt(publicBukkitValues.get("datapackserverpaper:jam_id").asString().get());
+                if (!getNbtField(publicBukkitValues, "jam_id").isEmpty()) {
+                    jam_id = Integer.parseInt(getNbtField(publicBukkitValues, "jam_id"));
                 } else {
                     jam_id = null;
                 }
@@ -147,49 +147,38 @@ public class Scraper {
 
                 World world =
                         new World(
-                                publicBukkitValues.get("datapackserverpaper:creation_date").asString().get(),
-                                Integer.parseInt(publicBukkitValues
-                                        .get("datapackserverpaper:creation_date_unix_seconds")
-                                        .asString()
-                                        .get()),
-                                Boolean.parseBoolean(publicBukkitValues
-                                        .get("datapackserverpaper:enforce_whitelist")
-                                        .asString()
-                                        .get()),
-                                Boolean.parseBoolean(publicBukkitValues
-                                        .get("datapackserverpaper:locked")
-                                        .asString()
-                                        .get()),
-                                publicBukkitValues.get("datapackserverpaper:owner").asString().get(),
-                                Integer.parseInt(publicBukkitValues
-                                        .get("datapackserverpaper:player_count")
-                                        .asString()
-                                        .get()),
-                                Integer.parseInt(publicBukkitValues
-                                        .get("datapackserverpaper:max_players")
-                                        .asString()
-                                        .get()),
-                                publicBukkitValues
-                                        .get("datapackserverpaper:resource_pack_url")
-                                        .asString()
-                                        .get(),
-                                publicBukkitValues.get("datapackserverpaper:uuid").asString().get(),
-                                publicBukkitValues.get("datapackserverpaper:version").asString().get(),
-                                Integer.parseInt(publicBukkitValues.get("datapackserverpaper:visits").asString().get()),
-                                Integer.parseInt(publicBukkitValues.get("datapackserverpaper:votes").asString().get()),
-                                Boolean.parseBoolean(publicBukkitValues
-                                        .get("datapackserverpaper:whitelist_on_version_change")
-                                        .asString()
-                                        .get()),
+                                getNbtField(publicBukkitValues, "creation_date"),
+                                Integer.parseInt(getNbtField(publicBukkitValues, "creation_date_unix_seconds")),
+
+                                Boolean.parseBoolean(getNbtField(publicBukkitValues, "enforce_whitelist")),
+                                Boolean.parseBoolean(getNbtField(publicBukkitValues, "locked")),
+
+                                getNbtField(publicBukkitValues, "owner"),
+
+                                Integer.parseInt(getNbtField(publicBukkitValues, "player_count")),
+                                Integer.parseInt(getNbtField(publicBukkitValues, "max_players")),
+
+                                getNbtField(publicBukkitValues, "resource_pack_url"),
+                                getNbtField(publicBukkitValues, "uuid"),
+                                getNbtField(publicBukkitValues, "version"),
+
+                                Integer.parseInt(getNbtField(publicBukkitValues, "visits")),
+                                Integer.parseInt(getNbtField(publicBukkitValues, "votes")),
+
+                                Boolean.parseBoolean(getNbtField(publicBukkitValues, "whitelist_on_version_change")),
+
                                 itemStack.get(DataComponents.CUSTOM_NAME).getString(),
                                 description,
-                                Boolean.parseBoolean(publicBukkitValues.get("datapackserverpaper:jam_world").asString().get()),
-                                jam_id,
+
                                 ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
                                         .result()
                                         .get()
                                         .toString(),
                                 raw_description,
+
+                                Boolean.parseBoolean(getNbtField(publicBukkitValues, "jam_world")),
+                                jam_id,
+
                                 itemStack.toString().substring(2),
                                 System.currentTimeMillis() / 1000L
                         );
@@ -211,6 +200,10 @@ public class Scraper {
         }
         client.player.closeContainer();
         LOGGER.info("Finished Scraping");
+    }
+
+    private String getNbtField(CompoundTag tag, String field) {
+        return tag.get("datapackserverpaper:" + field).asString().get();
     }
 
     public static Scraper getInstance() {
