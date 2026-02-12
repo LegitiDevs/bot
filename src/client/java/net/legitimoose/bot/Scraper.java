@@ -183,7 +183,7 @@ public class Scraper {
                         );
                 LOGGER.info("Scraped World {} {}: {}", j, world.world_uuid(), world.name());
                 try {
-                    world.upload(db);
+                    world.write(db);
                 } catch (Exception e) {
                     error(String.format("could not upload world %s: %s to db", world.world_uuid(), world.name()), e);
                 }

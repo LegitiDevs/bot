@@ -38,14 +38,14 @@ public class ListallCommand implements Command {
             // Get /listall and output
             EventHandler.getInstance().lastMessages.clear();
             Minecraft.getInstance().player.connection.sendCommand("listall");
-            EventHandler.getInstance().joinLeaveMessages = false;
+            EventHandler.getInstance().handleChat = false;
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 LOGGER.error(e.getMessage());
-                EventHandler.getInstance().joinLeaveMessages = true;
+                EventHandler.getInstance().handleChat = true;
             }
-            EventHandler.getInstance().joinLeaveMessages = true;
+            EventHandler.getInstance().handleChat = true;
             StringBuilder list = new StringBuilder();
             for (String message : EventHandler.getInstance().lastMessages) {
                 list.append(message.trim() + "\n");
