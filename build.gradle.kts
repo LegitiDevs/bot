@@ -1,6 +1,6 @@
 plugins {
-  id("fabric-loom") version "1.14-SNAPSHOT"
-  id("com.gradleup.shadow") version "9.0.2"
+  id("fabric-loom") version "1.15-SNAPSHOT"
+  id("com.gradleup.shadow") version "9.3.1"
 }
 
 version = project.property("mod_version") as String
@@ -34,7 +34,7 @@ dependencies {
 
   modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
-  shadow(implementation("org.mongodb:mongodb-driver-sync:5.6.2")!!)
+  shadow(implementation("org.mongodb:mongodb-driver-sync:5.6.3")!!)
   shadow(implementation("net.dv8tion:JDA:6.3.0") { exclude("opus-java") })
   shadow(implementation("org.json:json:20251224")!!)
 
