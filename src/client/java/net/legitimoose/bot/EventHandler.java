@@ -9,6 +9,7 @@ import net.legitimoose.bot.util.DiscordWebhook;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import org.bson.Document;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.mongodb.client.model.Filters.eq;
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
@@ -57,17 +57,21 @@ public class EventHandler {
 
                 username = joinMatcher.group(2);
                 String uuid;
+
                 try {
                     uuid = McUtil.getUuid(username);
-                    new Player(uuid, username, Rank.getEnum(joinMatcher.group(1))).write();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                if (players.find(eq("uuid", uuid)).first() == null) {
+                String rank = joinMatcher.group(1);
+                if (rank == null) rank = "";
+                if (players.countDocuments(new Document("uuid", uuid)) == 0) {
                     cleanMessage = String.format("**%s** joined the server for the first time!", username);
                 } else {
                     cleanMessage = String.format("**%s** joined the server.", username);
                 }
+
+                new Player(uuid, username, Rank.getEnum(rank)).write();
                 webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 webhook.setContent(cleanMessage.replace("@", ""));
                 try {
