@@ -6,21 +6,28 @@ public enum Rank {
     AM("ᴀᴍ"),
     FM("ꜰᴍ"),
     FM2("ꜰᴍ²"),
-    XM("xᴍ");
+    XM("xᴍ"),
+    MM("ᴍᴍ\uD83D\uDCB0"),
+    Bot("ʙᴏᴛ"),
+    Mod("ᴍᴏᴅ"),
+    Admin("ᴀᴅᴍɪɴ", "xᴍ³"),
+    Moose("ᴍᴏᴏꜱᴇ");
 
-    private final String name;
+    private final String[] name;
 
-    Rank(String name) {
+    Rank(String... name) {
         this.name = name;
     }
 
-    public String getName() {
+    public String[] getNames() {
         return this.name;
     }
 
     public static Rank getEnum(String rank) {
         for (Rank v : values()) {
-            if (v.getName().equalsIgnoreCase(rank)) return v;
+            for (String name : v.getNames()) {
+                if (name.equalsIgnoreCase(rank)) return v;
+            }
         }
         throw new IllegalArgumentException();
     }
