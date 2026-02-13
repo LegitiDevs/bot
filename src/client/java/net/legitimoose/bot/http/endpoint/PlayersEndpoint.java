@@ -1,5 +1,6 @@
 package net.legitimoose.bot.http.endpoint;
 
+import jdk.jfr.Event;
 import net.legitimoose.bot.EventHandler;
 import net.minecraft.client.Minecraft;
 import org.json.JSONArray;
@@ -52,7 +53,7 @@ public class PlayersEndpoint {
         Minecraft.getInstance().player.connection.sendCommand("listall");
         EventHandler.getInstance().handleChat = false;
         try {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(1);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
             EventHandler.getInstance().handleChat = true;
@@ -70,6 +71,7 @@ public class PlayersEndpoint {
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
+        while (EventHandler.getInstance().lastMessages.getLast().startsWith("["));
         return EventHandler.getInstance().lastMessages;
     }
 

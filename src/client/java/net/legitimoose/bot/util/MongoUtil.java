@@ -1,4 +1,4 @@
-package net.legitimoose.bot.db;
+package net.legitimoose.bot.util;
 
 // Source - https://stackoverflow.com/a/5711200
 // Posted by Simon

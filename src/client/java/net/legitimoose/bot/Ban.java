@@ -15,17 +15,6 @@ public record Ban(
     public void write() {
         MongoCollection<Ban> bans = Scraper.getInstance().db.getCollection("bans", Ban.class);
 
-        bans.insertOne(
-                new Ban(
-                        ban_time,
-                        banned_player,
-                        banned_uuid,
-                        moderator,
-                        mod_uuid,
-                        reason,
-                        duration,
-                        expires_at
-                )
-        );
+        bans.insertOne(this);
     }
 }

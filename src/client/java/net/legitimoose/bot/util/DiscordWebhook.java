@@ -1,4 +1,4 @@
-package net.legitimoose.bot.discord;
+package net.legitimoose.bot.util;
 
 /*
  * Used to do webhook stuff easily
@@ -8,14 +8,12 @@ package net.legitimoose.bot.discord;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
 import javax.net.ssl.HttpsURLConnection;
 
 public class DiscordWebhook {

@@ -1,21 +1,16 @@
 package net.legitimoose.bot;
 
-import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
 import net.legitimoose.bot.discord.DiscordBot;
-import net.legitimoose.bot.discord.DiscordWebhook;
 import net.legitimoose.bot.discord.command.MsgCommand;
 import net.legitimoose.bot.discord.command.ReplyCommand;
+import net.legitimoose.bot.util.DiscordWebhook;
+import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -27,10 +22,10 @@ import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 public class EventHandler {
     private static EventHandler INSTANCE;
 
-    public List<String> lastMessages = new ArrayList<>();
+    public volatile List<String> lastMessages = new ArrayList<>();
     public boolean handleChat = true;
 
-    private final Pattern joinPattern = Pattern.compile("^\\[\\+]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
+    private final Pattern joinPattern = Pattern.compile("^\\[\\+] (?:([^|]+) \\| )?(\\S+)");
     private final Pattern switchPattern = Pattern.compile("^\\[→]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern leavePattern = Pattern.compile("^\\[-]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern banPattern = Pattern.compile("^(\\S+)\\s+banned\\s+(\\S+)\\s+for\\s+'(.+)'");
@@ -56,7 +51,12 @@ public class EventHandler {
         DiscordWebhook webhook = new DiscordWebhook(CONFIG.getOrDefault("webhookUrl", ""));
         if (handleChat) {
             if (joinMatcher.find()) {
-                username = joinMatcher.group(1);
+                username = joinMatcher.group(2);
+                try {
+                    new Player(McUtil.getUuid(username), username, Rank.getEnum(joinMatcher.group(1))).write();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 cleanMessage = String.format("**%s** joined the server.", username);
                 webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 webhook.setContent(cleanMessage.replace("@", ""));
@@ -131,24 +131,7 @@ public class EventHandler {
                     throw new RuntimeException(e);
                 }
                 try {
-                    HttpClient client = HttpClient.newHttpClient();
-
-                    HttpRequest bannedUUIDRequest = HttpRequest.newBuilder()
-                            .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", banned)))
-                            .GET()
-                            .build();
-                    String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
-                    String banned_uuid = new JSONObject(response).getJSONObject("data").getJSONObject("player").getString("id");
-
-                    HttpRequest modUUIDRequest = HttpRequest.newBuilder()
-                            .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", moderator)))
-                            .GET()
-                            .build();
-                    response = client.send(modUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
-                    String mod_uuid = new JSONObject(response).getJSONObject("data").getJSONObject("player").getString("id");
-
-
-                    new Ban(ban_time, banned, banned_uuid, moderator, mod_uuid, reason, -1, -1).write(); // For temp bans, calculate expiration time based on duration else -1 for permanent
+                    new Ban(ban_time, banned, McUtil.getUuid(banned), moderator, McUtil.getUuid(moderator), reason, -1, -1).write(); // For temp bans, calculate expiration time based on duration else -1 for permanent
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
