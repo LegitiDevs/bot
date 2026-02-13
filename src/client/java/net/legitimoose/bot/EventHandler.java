@@ -1,5 +1,6 @@
 package net.legitimoose.bot;
 
+import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.MsgCommand;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.mongodb.client.model.Filters.eq;
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
@@ -51,13 +53,21 @@ public class EventHandler {
         DiscordWebhook webhook = new DiscordWebhook(CONFIG.getOrDefault("webhookUrl", ""));
         if (handleChat) {
             if (joinMatcher.find()) {
+                MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
+
                 username = joinMatcher.group(2);
+                String uuid;
                 try {
-                    new Player(McUtil.getUuid(username), username, Rank.getEnum(joinMatcher.group(1))).write();
+                    uuid = McUtil.getUuid(username);
+                    new Player(uuid, username, Rank.getEnum(joinMatcher.group(1))).write();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                cleanMessage = String.format("**%s** joined the server.", username);
+                if (players.find(eq("uuid", uuid)).first() == null) {
+                    cleanMessage = String.format("**%s** joined the server for the first time!", username);
+                } else {
+                    cleanMessage = String.format("**%s** joined the server.", username);
+                }
                 webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 webhook.setContent(cleanMessage.replace("@", ""));
                 try {
