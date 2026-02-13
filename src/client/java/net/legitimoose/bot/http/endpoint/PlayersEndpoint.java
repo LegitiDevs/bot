@@ -53,7 +53,7 @@ public class PlayersEndpoint {
         Minecraft.getInstance().player.connection.sendCommand("listall");
         EventHandler.getInstance().handleChat = false;
         try {
-            TimeUnit.MILLISECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
             EventHandler.getInstance().handleChat = true;
