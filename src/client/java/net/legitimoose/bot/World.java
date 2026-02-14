@@ -4,7 +4,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
-import net.legitimoose.bot.util.McUtil;
 import net.legitimoose.bot.util.MongoUtil;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -45,6 +44,8 @@ public record World(
         LOGGER.info("writing world");
         Bson updates =
                 Updates.combine(
+                        Updates.set("creation_date", this.creation_date),
+                        Updates.set("creation_date_unix_seconds", this.creation_date_unix_seconds),
                         Updates.set("enforce_whitelist", this.enforce_whitelist),
                         Updates.set("locked", this.locked),
                         Updates.set("owner_uuid", this.owner_uuid),
