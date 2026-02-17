@@ -116,11 +116,18 @@ public class Scraper {
                     continue;
                 }
                 CompoundTag publicBukkitValues = (CompoundTag) customData.get("PublicBukkitValues");
-                Integer jam_id;
+                int jam_id;
                 if (!getNbtField(publicBukkitValues, "jam_id").isEmpty()) {
                     jam_id = Integer.parseInt(getNbtField(publicBukkitValues, "jam_id"));
                 } else {
-                    jam_id = null;
+                    jam_id = -1;
+                }
+
+                int featured_instant;
+                if (!getNbtField(publicBukkitValues, "featured_instant").isEmpty()) {
+                    featured_instant = Integer.parseInt(getNbtField(publicBukkitValues, "featured_instant"));
+                } else {
+                    featured_instant = -1;
                 }
 
                 int descriptionLines = 0;
@@ -174,6 +181,8 @@ public class Scraper {
                                         .get()
                                         .toString(),
                                 raw_description,
+
+                                featured_instant,
 
                                 Boolean.parseBoolean(getNbtField(publicBukkitValues, "jam_world")),
                                 jam_id,

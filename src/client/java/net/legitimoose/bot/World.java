@@ -31,8 +31,9 @@ public record World(
         String description,
         String raw_name,
         String raw_description,
+        int featured_instant,
         boolean jam_world,
-        Integer jam_id,
+        int jam_id,
         String icon,
         long last_scraped
 ) {
@@ -60,6 +61,7 @@ public record World(
                         Updates.set("description", this.description),
                         Updates.set("raw_name", Document.parse(this.raw_name)),
                         Updates.set("raw_description", MongoUtil.encode(new JSONArray(this.raw_description))),
+                        Updates.set("featured_instant", this.featured_instant),
                         Updates.set("jam_world", this.jam_world),
                         Updates.set("jam_id", this.jam_id),
                         Updates.set("icon", this.icon),
