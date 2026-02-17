@@ -128,8 +128,13 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.isWebhookMessage() || event.getAuthor().isBot()) return;
-        String discordNick = event.getMember().getEffectiveName().replace("§", "?");
+        String discordNick;
+        if (event.isWebhookMessage()) {
+            if (!event.getAuthor().getId().equals(CONFIG.getString("bridgeWebhookId"))) return;
+            discordNick = event.getAuthor().getEffectiveName().replace("§", "?");
+        } else {
+            discordNick = event.getMember().getEffectiveName().replace("§", "?");
+        }
         Component formattedMesssage = MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
         String message =
                 String.format("<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick) +
