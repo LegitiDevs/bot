@@ -32,7 +32,7 @@ public class ShoutCommand implements Command {
             bypassCooldown = false;
             username = event.getUser().getEffectiveName();
         } else {
-            bypassCooldown = event.getMember().getPermissions().contains(Permission.MANAGE_SERVER) && event.getGuild().getId().equals(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"));
+            bypassCooldown = event.getMember().getPermissions().contains(Permission.MANAGE_SERVER) && event.getGuild().getId().equals(CONFIG.getString("guildId"));
             username = event.getMember().getEffectiveName();
         }
 

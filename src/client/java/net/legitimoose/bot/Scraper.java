@@ -32,8 +32,8 @@ import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 public class Scraper {
     private static Scraper INSTANCE;
 
-    private final MongoClient mongoClient = MongoClients.create(CONFIG.getOrDefault("mongoUri", ""));
-    private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getOrDefault("errorWebhookUrl", ""));
+    private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
+    private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
 
     public final MongoDatabase db = mongoClient.getDatabase("legitimooseapi");
 

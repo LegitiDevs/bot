@@ -56,8 +56,8 @@ public class LegitimooseBotClient implements ClientModInitializer {
                             .then(ClientCommandManager.literal("reload")
                                     .executes((context -> {
                                         try {
-                                            CONFIG.loadConfig();
-                                        } catch (IOException e) {
+                                            CONFIG.reloadConfiguration();
+                                        } catch (Exception e) {
                                             LOGGER.error(e.getMessage());
                                         }
                                         return 1;
@@ -90,7 +90,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 } catch (IOException | URISyntaxException ignored) {
                 }
                 try {
-                    TimeUnit.MINUTES.sleep(CONFIG.getOrDefault("waitMinutesBetweenScrapes", 5));
+                    TimeUnit.MINUTES.sleep(CONFIG.getInt("waitMinutesBetweenScrapes"));
                 } catch (InterruptedException e) {
                     LOGGER.warn(e.getMessage());
                 }

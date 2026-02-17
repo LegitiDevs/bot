@@ -28,7 +28,7 @@ public class DiscordBot extends ListenerAdapter {
 
     public static void run() {
         jda =
-                JDABuilder.createDefault(CONFIG.getOrDefault("discordToken", ""))
+                JDABuilder.createDefault(CONFIG.getString("token"))
                         .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
                         .build();
 
@@ -77,7 +77,7 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onGuildReady(GuildReadyEvent event) {
-        if (!event.getGuild().getId().equals(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"))) return;
+        if (!event.getGuild().getId().equals(CONFIG.getString("guildId"))) return;
         event.getGuild()
                 .updateCommands()
                 .addCommands(
@@ -138,9 +138,9 @@ public class DiscordBot extends ListenerAdapter {
             message += " <blue>[Attachment Included]</blue>";
         }
         if (message.length() >= 200) return;
-        if (CONFIG.getOrDefault("channelId", "").isEmpty())
+        if (CONFIG.getString("channelId").isEmpty())
             LOGGER.error("Discord channel ID is not set in config!");
-        if (event.getChannel().getId().equals(CONFIG.getOrDefault("channelId", ""))) {
+        if (event.getChannel().getId().equals(CONFIG.getString("channelId"))) {
             Minecraft.getInstance().player.connection.sendChat(message);
         }
     }

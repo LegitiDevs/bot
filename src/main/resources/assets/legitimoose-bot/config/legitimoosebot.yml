@@ -1,0 +1,8 @@
+token: ''
+webhook: ''
+errorWebhook: ''
+mongoUri: 'mongodb://127.0.0.1:27017/'
+secretPrefix: '::'
+channelId: ''
+guildId: '1311574348989071440'
+waitMinutesBetweenScrapes: 5

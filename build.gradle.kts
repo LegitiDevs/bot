@@ -24,6 +24,17 @@ repositories {
   mavenCentral()
   maven("https://maven.isxander.dev/releases")
   maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
+  exclusiveContent {
+    forRepository {
+      maven {
+        name = "Modrinth"
+        url = uri("https://api.modrinth.com/maven")
+      }
+    }
+    filter {
+      includeGroup("maven.modrinth")
+    }
+  }
 }
 
 dependencies {
@@ -37,6 +48,7 @@ dependencies {
   shadow(implementation("org.mongodb:mongodb-driver-sync:5.6.3")!!)
   shadow(implementation("net.dv8tion:JDA:6.3.0") { exclude("opus-java") })
   shadow(implementation("org.json:json:20251224")!!)
+  shadow(modImplementation("maven.modrinth:fabric-yaml-configuration:1.0.1")!!)
 
   shadow(implementation("dev.vankka:mcdiscordreserializer:4.3.0")!!)
   shadow(modImplementation("net.kyori:adventure-platform-mod-shared-fabric-repack:6.8.0")!!)

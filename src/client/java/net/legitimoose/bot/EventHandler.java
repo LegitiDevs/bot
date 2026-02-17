@@ -50,7 +50,7 @@ public class EventHandler {
         Matcher banMatcher = banPattern.matcher(msg);
         Matcher broadcastMatcher = broadcastPattern.matcher(msg);
 
-        DiscordWebhook webhook = new DiscordWebhook(CONFIG.getOrDefault("webhookUrl", ""));
+        DiscordWebhook webhook = new DiscordWebhook(CONFIG.getString("webhook"));
         if (handleChat) {
             if (joinMatcher.find()) {
                 MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
@@ -120,7 +120,7 @@ public class EventHandler {
                     String finalUsername = username2.replace("@", "");
                     user =
                             DiscordBot.jda
-                                    .getGuildById(CONFIG.getOrDefault("discordGuildId", "1311574348989071440"))
+                                    .getGuildById(CONFIG.getString("guildId"))
                                     .findMembers(s -> s.getUser().getName().equals(finalUsername))
                                     .get().getFirst().getUser();
                 } else {
@@ -165,7 +165,7 @@ public class EventHandler {
             if (username.equals(Minecraft.getInstance().player.getName().getString())) return;
 
             if (!username.isEmpty() &&
-                    !cleanMessage.startsWith(CONFIG.getOrDefault("secretPrefix", "::"))
+                    !cleanMessage.startsWith(CONFIG.getString("secretPrefix"))
             ) {
                 webhook.setContent(cleanMessage.replace("@", ""));
                 try {
