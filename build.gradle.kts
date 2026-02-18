@@ -47,7 +47,6 @@ dependencies {
 
   shadow(implementation("org.mongodb:mongodb-driver-sync:5.6.3")!!)
   shadow(implementation("net.dv8tion:JDA:6.3.0") { exclude("opus-java") })
-  shadow(implementation("org.json:json:20251224")!!)
   shadow(modImplementation("maven.modrinth:fabric-yaml-configuration:1.0.1")!!)
 
   shadow(implementation("dev.vankka:mcdiscordreserializer:4.3.0")!!)

@@ -1,10 +1,10 @@
 package net.legitimoose.bot.http.endpoint;
 
-import jdk.jfr.Event;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.legitimoose.bot.EventHandler;
 import net.minecraft.client.Minecraft;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -15,33 +15,45 @@ import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class PlayersEndpoint {
     private final Pattern glistPattern = Pattern.compile("\\[(.*)] \\(\\d*\\): (.*)");
+    private final Gson gson = new Gson();
 
-    public JSONArray handleRequest() {
-        JSONArray response = new JSONArray();
+    public JsonArray handleRequest() {
+        JsonArray response = new JsonArray();
         List<String> glist = getGlist();
         for (String worldMessage : glist) {
             Matcher matcher = glistPattern.matcher(worldMessage);
             if (!matcher.matches()) continue;
-            JSONObject world = new JSONObject();
+            JsonObject world = new JsonObject();
 
             String[] usernames = matcher.group(2).split(", ", -1);
-            world.put("world", matcher.group(1));
-            world.put("players", usernames);
-            response.put(world);
+            JsonArray players = new JsonArray();
+
+            for (String username : usernames) {
+                players.add(username);
+            }
+
+            world.addProperty("world", matcher.group(1));
+            world.add("players", players);
+            response.add(world);
         }
 
         return response;
     }
 
-    public JSONObject handleRequest(String uuid) {
-        JSONObject response = new JSONObject();
+    public JsonObject handleRequest(String uuid) {
+        JsonObject response = new JsonObject();
         List<String> glist = getGlist(uuid);
         for (String worldMessage : glist) {
             Matcher matcher = glistPattern.matcher(worldMessage);
             if (!matcher.matches()) continue;
 
             String[] usernames = matcher.group(2).split(", ", -1);
-            response.put("players", usernames);
+
+            JsonArray players = new JsonArray();
+            for (String username : usernames) {
+                players.add(username);
+            }
+            response.add("players", players);
         }
 
         return response;
@@ -71,7 +83,7 @@ public class PlayersEndpoint {
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        while (EventHandler.getInstance().lastMessages.getLast().startsWith("["));
+        while (EventHandler.getInstance().lastMessages.getLast().startsWith("[")) ;
         return EventHandler.getInstance().lastMessages;
     }
 

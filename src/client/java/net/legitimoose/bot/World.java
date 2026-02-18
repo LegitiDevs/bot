@@ -4,10 +4,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
-import net.legitimoose.bot.util.MongoUtil;
+import org.bson.BsonArray;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.json.JSONArray;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.lt;
@@ -60,7 +59,7 @@ public record World(
                         Updates.set("name", this.name),
                         Updates.set("description", this.description),
                         Updates.set("raw_name", Document.parse(this.raw_name)),
-                        Updates.set("raw_description", MongoUtil.encode(new JSONArray(this.raw_description))),
+                        Updates.set("raw_description", BsonArray.parse(this.raw_description)),
                         Updates.set("featured_instant", this.featured_instant),
                         Updates.set("jam_world", this.jam_world),
                         Updates.set("jam_id", this.jam_id),

@@ -1,6 +1,7 @@
 package net.legitimoose.bot.util;
 
-import org.json.JSONObject;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,7 +19,9 @@ public class McUtil {
                 .GET()
                 .build();
         String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
-        return (new JSONObject(response).getJSONObject("data").getJSONObject("player").getString("id"));
+        JsonObject data = JsonParser.parseString(response).getAsJsonObject();
+
+        return (data.getAsJsonObject("data").getAsJsonObject("player").get("id").getAsString());
     }
 
     public static String getName(String uuid) throws URISyntaxException, IOException, InterruptedException {
@@ -27,6 +30,8 @@ public class McUtil {
                 .GET()
                 .build();
         String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
-        return (new JSONObject(response).getJSONObject("data").getJSONObject("player").getString("id"));
+        JsonObject data = JsonParser.parseString(response).getAsJsonObject();
+
+        return (data.getAsJsonObject("data").getAsJsonObject("player").get("username").getAsString());
     }
 }
