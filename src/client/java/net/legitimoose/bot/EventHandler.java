@@ -2,6 +2,7 @@ package net.legitimoose.bot;
 
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
+import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.MsgCommand;
 import net.legitimoose.bot.discord.command.ReplyCommand;
@@ -28,7 +29,7 @@ public class EventHandler {
     public volatile List<String> lastMessages = new ArrayList<>();
     public boolean handleChat = true;
 
-    private final Pattern chatPattern = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?([^:]+): (.*)");
+    private final Pattern chatPattern = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?([^:]+): (.*)", Pattern.DOTALL);
     private final Pattern msgPattern = Pattern.compile("\\[(.*) -> me] (?:(@\\S+) )?(.*)");
 
     private final Pattern joinPattern = Pattern.compile("^\\[\\+] (?:([^|]+) \\| )?(\\S+)");
@@ -199,7 +200,7 @@ public class EventHandler {
                 return;
             }
 
-            if (username.equals(Minecraft.getInstance().player.getName().getString())) return;
+            if (username.equals(Minecraft.getInstance().player.getName().getString()) && !FabricLoader.getInstance().isDevelopmentEnvironment()) return;
 
             if (!username.isEmpty() &&
                     !cleanMessage.startsWith(CONFIG.getString("secretPrefix"))
