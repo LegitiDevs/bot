@@ -4,8 +4,6 @@
   "package": "net.legitimoose.bot.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "CommandSuggestionsAccessor",
-    "ChatScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
