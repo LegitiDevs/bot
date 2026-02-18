@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,14 +28,17 @@ public class EventHandler {
     public volatile List<String> lastMessages = new ArrayList<>();
     public boolean handleChat = true;
 
+    private final Pattern chatPattern = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?([^:]+): (.*)");
+    private final Pattern msgPattern = Pattern.compile("\\[(.*) -> me] (?:(@\\S+) )?(.*)");
+
     private final Pattern joinPattern = Pattern.compile("^\\[\\+] (?:([^|]+) \\| )?(\\S+)");
     private final Pattern switchPattern = Pattern.compile("^\\[→]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern leavePattern = Pattern.compile("^\\[-]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
-    private final Pattern banPattern = Pattern.compile("^(\\S+)\\s+banned\\s+(\\S+)\\s+for\\s+'(.+)'");
     private final Pattern broadcastPattern = Pattern.compile("^\\[Broadcast\\]\\s(.*)");
 
-    private final Pattern chatPattern = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?([^:]+): (.*)");
-    private final Pattern msgPattern = Pattern.compile("\\[(.*) -> me] (?:(@\\S+) )?(.*)");
+    private final Pattern banPattern = Pattern.compile("^(\\S+)\\s+banned\\s+(\\S+)\\s+for\\s+'(.+)'");
+    private final Pattern tempBanPattern = Pattern.compile("^(\\S+)\\s+tempbanned\\s+(\\S+)\\s+for\\s+(.+)\\s+hours\\s+for\\s+'(.+)'");
+    private final Pattern unbanPattern = Pattern.compile("^(\\S+)\\s+unbanned\\s+(\\S+)\\s+for\\s+'(.+)'");
 
     public void onRecieveMessage(Component message, boolean overlay) {
         lastMessages.add(message.getString());
@@ -48,6 +52,8 @@ public class EventHandler {
         Matcher chatMatcher = chatPattern.matcher(msg);
         Matcher msgMatcher = msgPattern.matcher(msg);
         Matcher banMatcher = banPattern.matcher(msg);
+        Matcher tempBanMatcher = tempBanPattern.matcher(msg);
+        Matcher unbanMatcher = unbanPattern.matcher(msg);
         Matcher broadcastMatcher = broadcastPattern.matcher(msg);
 
         DiscordWebhook webhook = new DiscordWebhook(CONFIG.getString("webhook"));
@@ -132,7 +138,6 @@ public class EventHandler {
                 ReplyCommand.lastSentReply.put(user.getIdLong(), username1);
                 return;
             } else if (banMatcher.find()) {
-                // TODO: Add Tempban Code
                 long ban_time = System.currentTimeMillis() / 1000L;
                 String moderator = banMatcher.group(1);
                 String banned = banMatcher.group(2);
@@ -147,6 +152,38 @@ public class EventHandler {
                 try {
                     new Ban(ban_time, banned, McUtil.getUuid(banned), moderator, McUtil.getUuid(moderator), reason, -1, -1).write(); // For temp bans, calculate expiration time based on duration else -1 for permanent
                 } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return;
+            } else if (tempBanMatcher.find()) {
+                long ban_time = System.currentTimeMillis() / 1000L;
+                String moderator = tempBanMatcher.group(1);
+                String banned = tempBanMatcher.group(2);
+                int hours = Integer.parseInt(tempBanMatcher.group(3));
+                String reason = tempBanMatcher.group(4);
+                webhook.setContent(String.format("**%s** was banned by **%s** for **%s** hours\nReason: %s", banned, moderator, hours, reason));
+                webhook.setUsername("Legitimoose Ban");
+                try {
+                    webhook.execute(0xF25757);
+                } catch (IOException | URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+                long duration = TimeUnit.HOURS.toSeconds(hours);
+                try {
+                    new Ban(ban_time, banned, McUtil.getUuid(banned), moderator, McUtil.getUuid(moderator), reason, duration, ban_time + duration).write(); // For temp bans, calculate expiration time based on duration else -1 for permanent
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return;
+            } else if (unbanMatcher.find()) {
+                String moderator = unbanMatcher.group(1);
+                String banned = unbanMatcher.group(2);
+                String reason = unbanMatcher.group(3);
+                webhook.setContent(String.format("**%s** was unbanned by **%s**\nReason: %s", banned, moderator, reason));
+                webhook.setUsername("Legitimoose Ban");
+                try {
+                    webhook.execute(0x57F287);
+                } catch (IOException | URISyntaxException e) {
                     throw new RuntimeException(e);
                 }
                 return;
