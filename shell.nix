@@ -3,11 +3,11 @@ let
   runtimeLibs = with pkgs; lib.makeLibraryPath [
     glfw
     libGL
-    xorg.libX11
-    xorg.libXcursor
-    xorg.libXext
-    xorg.libXrandr
-    xorg.libXxf86vm
+    libX11
+    libXcursor
+    libXext
+    libXrandr
+    libXxf86vm
     libglvnd
   ];
 in pkgs.mkShell {
