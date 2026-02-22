@@ -173,10 +173,10 @@ public class Scraper {
 
                                 Boolean.parseBoolean(getNbtField(publicBukkitValues, "whitelist_on_version_change")),
 
-                                itemStack.get(DataComponents.CUSTOM_NAME).getString(),
+                                itemStack.get(DataComponents.ITEM_NAME).getString(),
                                 description,
 
-                                ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
+                                ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.ITEM_NAME))
                                         .result()
                                         .get()
                                         .toString(),
