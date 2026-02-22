@@ -197,6 +197,7 @@ public class Scraper {
 
                                 getNbtInt(publicBukkitValues, "player_count"),
                                 getNbtInt(publicBukkitValues, "max_players"),
+                                getNbtInt(publicBukkitValues, "max_datapack_size"),
 
                                 getNbtString(publicBukkitValues, "resource_pack_url"),
                                 getNbtString(publicBukkitValues, "uuid"),
