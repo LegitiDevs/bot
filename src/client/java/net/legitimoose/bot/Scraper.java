@@ -1,5 +1,6 @@
 package net.legitimoose.bot;
 
+import com.google.gson.JsonObject;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.suggestion.Suggestion;
@@ -13,6 +14,7 @@ import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ClickType;
@@ -25,6 +27,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
@@ -34,6 +38,8 @@ public class Scraper {
 
     private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
+
+    private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.), score=(.*)\\)");
 
     public final MongoDatabase db = mongoClient.getDatabase("legitimooseapi");
 
@@ -117,15 +123,15 @@ public class Scraper {
                 }
                 CompoundTag publicBukkitValues = (CompoundTag) customData.get("PublicBukkitValues");
                 int jam_id;
-                if (!getNbtField(publicBukkitValues, "jam_id").isEmpty()) {
-                    jam_id = Integer.parseInt(getNbtField(publicBukkitValues, "jam_id"));
+                if (!getNbtString(publicBukkitValues, "jam_id").isEmpty()) {
+                    jam_id = getNbtInt(publicBukkitValues, "jam_id");
                 } else {
                     jam_id = -1;
                 }
 
                 int featured_instant;
-                if (!getNbtField(publicBukkitValues, "featured_instant").isEmpty()) {
-                    featured_instant = Integer.parseInt(getNbtField(publicBukkitValues, "featured_instant"));
+                if (!getNbtString(publicBukkitValues, "featured_instant").isEmpty()) {
+                    featured_instant = getNbtInt(publicBukkitValues, "featured_instant");
                 } else {
                     featured_instant = -1;
                 }
@@ -151,27 +157,55 @@ public class Scraper {
                 }
                 raw_description += "]";
 
+                boolean jam_world = getNbtBoolean(publicBukkitValues, "jam_world");
+                JsonObject jam = new JsonObject();
+                if (jam_id != -1) {
+                    jam.addProperty("id", jam_id);
+                    jam.addProperty("upgraded", !jam_world);
+
+                    if (jam_id > 1 && getNbtField(publicBukkitValues, "jam_rating_count") != null) {
+                        JsonObject scores = new JsonObject();
+                        String[] categories = {"overall", "originality", "aesthetics", "fun", "theme"};
+                        for (String category : categories) {
+                            LOGGER.info(category);
+
+                            JsonObject score = new JsonObject();
+
+                            Matcher scoreMatcher = jamScorePattern.matcher(getNbtString(publicBukkitValues, "jam_score_" + category));
+                            if (scoreMatcher.find()) {
+                                score.addProperty("rank", Integer.parseInt(scoreMatcher.group(1)));
+                                score.addProperty("score", Double.parseDouble(scoreMatcher.group(2)));
+                            }
+
+                            scores.add(category, score);
+                        }
+
+                        jam.addProperty("rating_count", getNbtInt(publicBukkitValues, "jam_rating_count"));
+                        jam.add("scores", scores);
+                    }
+                }
+
                 World world =
                         new World(
-                                getNbtField(publicBukkitValues, "creation_date"),
-                                Integer.parseInt(getNbtField(publicBukkitValues, "creation_date_unix_seconds")),
+                                getNbtString(publicBukkitValues, "creation_date"),
+                                getNbtInt(publicBukkitValues, "creation_date_unix_seconds"),
 
-                                Boolean.parseBoolean(getNbtField(publicBukkitValues, "enforce_whitelist")),
-                                Boolean.parseBoolean(getNbtField(publicBukkitValues, "locked")),
+                                getNbtBoolean(publicBukkitValues, "enforce_whitelist"),
+                                getNbtBoolean(publicBukkitValues, "locked"),
 
-                                getNbtField(publicBukkitValues, "owner"),
+                                getNbtString(publicBukkitValues, "owner"),
 
-                                Integer.parseInt(getNbtField(publicBukkitValues, "player_count")),
-                                Integer.parseInt(getNbtField(publicBukkitValues, "max_players")),
+                                getNbtInt(publicBukkitValues, "player_count"),
+                                getNbtInt(publicBukkitValues, "max_players"),
 
-                                getNbtField(publicBukkitValues, "resource_pack_url"),
-                                getNbtField(publicBukkitValues, "uuid"),
-                                getNbtField(publicBukkitValues, "version"),
+                                getNbtString(publicBukkitValues, "resource_pack_url"),
+                                getNbtString(publicBukkitValues, "uuid"),
+                                getNbtString(publicBukkitValues, "version"),
 
-                                Integer.parseInt(getNbtField(publicBukkitValues, "visits")),
-                                Integer.parseInt(getNbtField(publicBukkitValues, "votes")),
+                                getNbtInt(publicBukkitValues, "visits"),
+                                getNbtInt(publicBukkitValues, "votes"),
 
-                                Boolean.parseBoolean(getNbtField(publicBukkitValues, "whitelist_on_version_change")),
+                                getNbtBoolean(publicBukkitValues, "whitelist_on_version_change"),
 
                                 itemStack.get(DataComponents.CUSTOM_NAME).getString(),
                                 description,
@@ -184,8 +218,10 @@ public class Scraper {
 
                                 featured_instant,
 
-                                Boolean.parseBoolean(getNbtField(publicBukkitValues, "jam_world")),
+                                jam_world,
                                 jam_id,
+
+                                jam,
 
                                 itemStack.toString().substring(2),
                                 System.currentTimeMillis() / 1000L
@@ -210,8 +246,20 @@ public class Scraper {
         LOGGER.info("Finished Scraping");
     }
 
-    private String getNbtField(CompoundTag tag, String field) {
-        return tag.get("datapackserverpaper:" + field).asString().get();
+    private String getNbtString(CompoundTag tag, String field) {
+        return getNbtField(tag, field).asString().get();
+    }
+
+    private boolean getNbtBoolean(CompoundTag tag, String field) {
+        return Boolean.parseBoolean(getNbtField(tag, field).asString().get());
+    }
+
+    private int getNbtInt(CompoundTag tag, String field) {
+        return Integer.parseInt(getNbtField(tag, field).asString().get());
+    }
+
+    private Tag getNbtField(CompoundTag tag, String field) {
+        return tag.get("datapackserverpaper:" + field);
     }
 
     public static Scraper getInstance() {

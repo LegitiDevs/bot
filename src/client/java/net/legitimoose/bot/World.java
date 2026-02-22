@@ -1,5 +1,6 @@
 package net.legitimoose.bot;
 
+import com.google.gson.JsonObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
@@ -7,6 +8,7 @@ import com.mongodb.client.model.Updates;
 import org.bson.BsonArray;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.ApiStatus;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.lt;
@@ -31,8 +33,17 @@ public record World(
         String raw_name,
         String raw_description,
         int featured_instant,
+
+        @Deprecated
+        @ApiStatus.ScheduledForRemoval(inVersion = "3.0.0") // API v4
         boolean jam_world,
+
+        @Deprecated
+        @ApiStatus.ScheduledForRemoval(inVersion = "3.0.0") // API v4
         int jam_id,
+
+        JsonObject jam,
+
         String icon,
         long last_scraped
 ) {
@@ -63,6 +74,7 @@ public record World(
                         Updates.set("featured_instant", this.featured_instant),
                         Updates.set("jam_world", this.jam_world),
                         Updates.set("jam_id", this.jam_id),
+                        Updates.set("jam", Document.parse(this.jam.toString())),
                         Updates.set("icon", this.icon),
                         Updates.set("last_scraped", this.last_scraped));
         coll.updateOne(eq("world_uuid", this.world_uuid), updates, new UpdateOptions().upsert(true));
