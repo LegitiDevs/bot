@@ -3,13 +3,16 @@ package net.legitimoose.bot;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
-import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.serialization.JsonOps;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOneModel;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.WriteModel;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -19,17 +22,21 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
+import org.bson.BsonArray;
 import org.bson.Document;
-import org.bson.types.ObjectId;
+import org.bson.conversions.Bson;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.lt;
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
@@ -39,7 +46,7 @@ public class Scraper {
     private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
 
-    private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.), score=(.*)\\)");
+    private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.*), score=(.*)\\)");
 
     public final MongoDatabase db = mongoClient.getDatabase("legitimooseapi");
 
@@ -49,6 +56,20 @@ public class Scraper {
         } catch (InterruptedException e) {
             LOGGER.warn("Failed to wait {} seconds:", time);
             LOGGER.warn(e.getMessage());
+        }
+    }
+
+    public void startScraping() {
+        while (true) {
+            try {
+                scrape();
+            } catch (Exception e) {
+                try {
+                    error("Scraper error", e);
+                } catch (Exception ignored) {
+                }
+            }
+            waitSeconds(5);
         }
     }
 
@@ -67,96 +88,62 @@ public class Scraper {
         CommandContext context = new CommandContextBuilder(null, null, null, 1).build("/find ");
 
         CompletableFuture<Suggestions> pendingParse;
-        try {
-            pendingParse =
-                    Minecraft.getInstance()
-                            .player
-                            .connection
-                            .getSuggestionsProvider()
-                            .customSuggestion(context);
-        } catch (Exception e) {
-            error("failed to get playerlist", e);
-            return;
-        }
+        pendingParse =
+                Minecraft.getInstance()
+                        .player
+                        .connection
+                        .getSuggestionsProvider()
+                        .customSuggestion(context);
 
-        pendingParse.thenRun(() -> {
-            if (!pendingParse.isDone()) {
-                LOGGER.warn("Pending parse is not done! (somehow??)");
-                return;
-            }
-            List<Suggestion> mcSuggestions = pendingParse.join().getList();
-            StringBuilder suggestions = new StringBuilder();
-            for (Suggestion suggestion : mcSuggestions) {
-                suggestions.append(suggestion.getText() + '\n');
-            }
-            stats.insertOne(new Document().append("_id", new ObjectId()).append("player_count", mcSuggestions.size()));
-        });
+        pendingParse.thenAccept((suggestions) -> stats.insertOne(new Document().append("player_count", suggestions.getList().size())));
+
+        client.player.closeContainer();
 
         client.player.connection.sendCommand("worlds");
 
         waitSeconds(1);
         int max_pages;
 
-        try {
-            max_pages = Integer.parseInt(client.screen.getTitle().getSiblings().getFirst().getString().substring(3));
-        } catch (NumberFormatException e) {
-            error("Cannot start scraping: failed to parse integer amount of worlds!", e);
-            return;
-        }
+        max_pages = Integer.parseInt(client.screen.getTitle().getSiblings().getFirst().getString().substring(3));
 
         LOGGER.info("Last page is: {}", max_pages);
-        for (int i = 1; i < max_pages; i++) {
+        for (int i = 1; i <= max_pages; i++) {
+            List<World> worlds = new ArrayList<>();
+
             Container inv = client.player.containerMenu.getSlot(0).container;
             for (int j = 0; j <= 26; j++) {
                 if (client.player.containerMenu.containerId == 0)
                     return; // should check if player closed the inventory not sure though
                 ItemStack itemStack = inv.getItem(j);
                 // last page & air: break, last world was already hit.
-                if (i == max_pages && itemStack.toString().substring(2) == "minecraft:air") break;
+                if (i == max_pages && itemStack.toString().substring(2).equals("minecraft:air")) break;
                 CompoundTag customData;
 
-                try {
-                    customData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
-                } catch (NullPointerException e) {
-                    error(String.format("could not scrape world %s in page %s", j, i), e);
-                    continue;
-                }
+                customData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
                 CompoundTag publicBukkitValues = (CompoundTag) customData.get("PublicBukkitValues");
-                int jam_id;
-                if (!getNbtString(publicBukkitValues, "jam_id").isEmpty()) {
-                    jam_id = getNbtInt(publicBukkitValues, "jam_id");
-                } else {
-                    jam_id = -1;
-                }
-
-                int featured_instant;
-                if (!getNbtString(publicBukkitValues, "featured_instant").isEmpty()) {
-                    featured_instant = getNbtInt(publicBukkitValues, "featured_instant");
-                } else {
-                    featured_instant = -1;
-                }
 
                 int descriptionLines = 0;
                 while (!itemStack.get(DataComponents.LORE).lines().get(descriptionLines).getString().isEmpty()) {
                     descriptionLines++;
                 }
 
-                String description = "";
+                StringBuilder description = new StringBuilder();
                 for (int k = 0; k < descriptionLines; k++) {
-                    description += itemStack.get(DataComponents.LORE).lines().get(k).getString();
-                    if (k != descriptionLines - 1) description += "\n";
+                    description.append(itemStack.get(DataComponents.LORE).lines().get(k).getString());
+                    if (k != descriptionLines - 1) description.append("\n");
                 }
 
-                String raw_description = "[";
+                StringBuilder raw_description = new StringBuilder("[");
                 for (int k = 0; k < descriptionLines; k++) {
-                    raw_description += (ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.LORE).lines().get(k))
+                    raw_description.append(ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.LORE).lines().get(k))
                             .result()
-                            .get()
-                            .toString());
-                    if (k != descriptionLines - 1) raw_description += ",";
+                            .get());
+                    if (k != descriptionLines - 1) raw_description.append(",");
                 }
-                raw_description += "]";
+                raw_description.append("]");
 
+                int jam_id = getNbtInt(publicBukkitValues, "jam_id");
+                int featured_instant = getNbtInt(publicBukkitValues, "featured_instant");
                 boolean jam_world = getNbtBoolean(publicBukkitValues, "jam_world");
                 JsonObject jam = new JsonObject();
                 if (jam_id != -1) {
@@ -185,55 +172,51 @@ public class Scraper {
                     }
                 }
 
-                World world =
-                        new World(
-                                getNbtString(publicBukkitValues, "creation_date"),
-                                getNbtInt(publicBukkitValues, "creation_date_unix_seconds"),
+                World world = new World(
+                        getNbtString(publicBukkitValues, "creation_date"),
+                        getNbtInt(publicBukkitValues, "creation_date_unix_seconds"),
 
-                                getNbtBoolean(publicBukkitValues, "enforce_whitelist"),
-                                getNbtBoolean(publicBukkitValues, "locked"),
+                        getNbtBoolean(publicBukkitValues, "enforce_whitelist"),
+                        getNbtBoolean(publicBukkitValues, "locked"),
 
-                                getNbtString(publicBukkitValues, "owner"),
+                        getNbtString(publicBukkitValues, "owner"),
 
-                                getNbtInt(publicBukkitValues, "player_count"),
-                                getNbtInt(publicBukkitValues, "max_players"),
-                                getNbtInt(publicBukkitValues, "max_datapack_size"),
+                        getNbtInt(publicBukkitValues, "player_count"),
+                        getNbtInt(publicBukkitValues, "max_players"),
+                        getNbtInt(publicBukkitValues, "max_datapack_size"),
 
-                                getNbtString(publicBukkitValues, "resource_pack_url"),
-                                getNbtString(publicBukkitValues, "uuid"),
-                                getNbtString(publicBukkitValues, "version"),
+                        getNbtString(publicBukkitValues, "resource_pack_url"),
+                        getNbtString(publicBukkitValues, "uuid"),
+                        getNbtString(publicBukkitValues, "version"),
 
-                                getNbtInt(publicBukkitValues, "visits"),
-                                getNbtInt(publicBukkitValues, "votes"),
+                        getNbtInt(publicBukkitValues, "visits"),
+                        getNbtInt(publicBukkitValues, "votes"),
 
-                                getNbtBoolean(publicBukkitValues, "whitelist_on_version_change"),
+                        getNbtBoolean(publicBukkitValues, "whitelist_on_version_change"),
 
-                                itemStack.get(DataComponents.CUSTOM_NAME).getString(),
-                                description,
+                        itemStack.get(DataComponents.CUSTOM_NAME).getString(),
+                        description.toString(),
 
-                                ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
-                                        .result()
-                                        .get()
-                                        .toString(),
-                                raw_description,
+                        ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
+                                .result()
+                                .get()
+                                .toString(),
+                        raw_description.toString(),
 
-                                featured_instant,
+                        featured_instant,
 
-                                jam_world,
-                                jam_id,
+                        jam_world,
+                        jam_id,
 
-                                jam,
+                        jam,
 
-                                itemStack.toString().substring(2),
-                                System.currentTimeMillis() / 1000L
-                        );
+                        itemStack.toString().substring(2),
+                        System.currentTimeMillis() / 1000L
+                );
+                worlds.add(world);
                 LOGGER.info("Scraped World {} {}: {}", j, world.world_uuid(), world.name());
-                try {
-                    world.write(db);
-                } catch (Exception e) {
-                    error(String.format("could not upload world %s: %s to db", world.world_uuid(), world.name()), e);
-                }
             }
+            bulkUpsert(db, worlds);
             // finally, click on next page button
             LOGGER.info("Scraped page #{}", i);
             Minecraft.getInstance()
@@ -247,6 +230,53 @@ public class Scraper {
         LOGGER.info("Finished Scraping");
     }
 
+    private void bulkUpsert(MongoDatabase db, List<World> worlds) {
+        MongoCollection<World> coll = db.getCollection("worlds", World.class);
+
+        List<WriteModel<World>> operations = new ArrayList<>();
+
+        coll.deleteMany(lt("last_scraped", System.currentTimeMillis() / 1000L - 86400));
+
+        LOGGER.info("writing world");
+        for (World world : worlds) {
+            Bson updates =
+                    Updates.combine(
+                            Updates.set("creation_date", world.creation_date()),
+                            Updates.set("creation_date_unix_seconds", world.creation_date_unix_seconds()),
+                            Updates.set("enforce_whitelist", world.enforce_whitelist()),
+                            Updates.set("locked", world.locked()),
+                            Updates.set("owner_uuid", world.owner_uuid()),
+                            Updates.set("player_count", world.player_count()),
+                            Updates.set("max_players", world.max_players()),
+                            Updates.set("max_datapack_size", world.max_datapack_size()),
+                            Updates.set("resource_pack_url", world.resource_pack_url()),
+                            Updates.set("version", world.version()),
+                            Updates.set("visits", world.visits()),
+                            Updates.set("votes", world.votes()),
+                            Updates.set("whitelist_on_version_change", world.whitelist_on_version_change()),
+                            Updates.set("name", world.name()),
+                            Updates.set("description", world.description()),
+                            Updates.set("raw_name", Document.parse(world.raw_name())),
+                            Updates.set("raw_description", BsonArray.parse(world.raw_description())),
+                            Updates.set("featured_instant", world.featured_instant()),
+                            Updates.set("jam_world", world.jam_world()),
+                            Updates.set("jam_id", world.jam_id()),
+                            Updates.set("jam", Document.parse(world.jam().toString())),
+                            Updates.set("icon", world.icon()),
+                            Updates.set("last_scraped", world.last_scraped()));
+            operations.add(new UpdateOneModel<>(
+                    eq("world_uuid", world.world_uuid()),
+                    updates,
+                    new UpdateOptions().upsert(true)
+            ));
+        }
+
+        if (!operations.isEmpty()) {
+            coll.bulkWrite(operations);
+        }
+        LOGGER.info("Bulk wrote {} worlds", operations.size());
+    }
+
     private String getNbtString(CompoundTag tag, String field) {
         return getNbtField(tag, field).asString().get();
     }
@@ -256,7 +286,11 @@ public class Scraper {
     }
 
     private int getNbtInt(CompoundTag tag, String field) {
-        return Integer.parseInt(getNbtField(tag, field).asString().get());
+        if (!getNbtString(tag, field).isEmpty() && !getNbtString(tag,field).equals("null")) {
+            return Integer.parseInt(getNbtString(tag, field));
+        } else {
+            return -1;
+        }
     }
 
     private Tag getNbtField(CompoundTag tag, String field) {

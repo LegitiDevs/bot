@@ -84,17 +84,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
             } catch (InterruptedException e) {
                 LOGGER.warn(e.getMessage());
             }
-            while (true) {
-                try {
-                    Scraper.getInstance().scrape();
-                } catch (IOException | URISyntaxException ignored) {
-                }
-                try {
-                    TimeUnit.MINUTES.sleep(CONFIG.getInt("waitMinutesBetweenScrapes"));
-                } catch (InterruptedException e) {
-                    LOGGER.warn(e.getMessage());
-                }
-            }
+            Scraper.getInstance().startScraping();
         }).start();
 
         new Thread(() -> {
@@ -105,10 +95,13 @@ public class LegitimooseBotClient implements ClientModInitializer {
             }
             while (true) {
                 try {
-                    Minecraft.getInstance().player
-                            .connection
-                                    .
-                            sendChat("<br><red>I am a bot that syncs lobby chat to a community Discord<br>To prevent messages being sent to discord, prefix your messages with <u>::<br><reset>You can check out our work at <b>https://legiti.dev/");
+                    if (Minecraft.getInstance().player != null) {
+                        Minecraft.getInstance().player
+                                .connection
+                                .sendChat("<br><red>I am a bot that syncs lobby chat to a community Discord<br>" +
+                                        "To prevent messages being sent to discord, prefix your messages with <u>::<br>" +
+                                        "<reset>You can check out our work at <b>https://legiti.dev/");
+                    }
                     TimeUnit.MINUTES.sleep(20);
                 } catch (InterruptedException e) {
                     LOGGER.warn(e.getMessage());
