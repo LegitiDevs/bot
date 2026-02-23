@@ -4,7 +4,12 @@
 # against bad commits.
 
 name: build
-on: [ pull_request, push, workflow_dispatch ]
+on:
+  push:
+    tags:
+      - "**"
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,6 +31,7 @@ jobs:
         with:
           name: Artifacts
           path: build/libs/Legitimoose-Bot*.jar
+
 
 
 
