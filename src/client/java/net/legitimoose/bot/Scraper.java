@@ -97,7 +97,7 @@ public class Scraper {
                         .getSuggestionsProvider()
                         .customSuggestion(context);
 
-        pendingParse.thenAccept((suggestions) -> stats.insertOne(new Document().append("player_count", suggestions.getList().size())));
+        pendingParse.thenAccept((suggestions) -> stats.insertOne(new Document().append("timestamp", new BsonDateTime(System.currentTimeMillis())).append("player_count", suggestions.getList().size())));
 
         client.player.closeContainer();
 
