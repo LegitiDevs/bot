@@ -35,6 +35,10 @@ public record World(
         JsonObject jam,
 
         String icon,
-        long last_scraped
+
+        @Deprecated
+        long last_scraped,
+
+        long last_scraped_ms
 ) {
 }

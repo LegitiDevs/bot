@@ -9,10 +9,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.UpdateOneModel;
-import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.model.Updates;
-import com.mongodb.client.model.WriteModel;
+import com.mongodb.client.model.*;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -23,6 +20,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import org.bson.BsonArray;
+import org.bson.BsonDateTime;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -36,7 +34,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.lt;
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
@@ -49,6 +46,7 @@ public class Scraper {
     private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.*), score=(.*)\\)");
 
     public final MongoDatabase db = mongoClient.getDatabase("legitimooseapi");
+    private final MongoCollection<World> coll = db.getCollection("worlds", World.class);
 
     private void waitSeconds(long time) {
         try {
@@ -83,6 +81,10 @@ public class Scraper {
     public void scrape() throws IOException, URISyntaxException {
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = db.getCollection("stats");
+        List<IndexModel> indexes = new ArrayList<>();
+        indexes.add(new IndexModel(Indexes.ascending("world_uuid")));
+        indexes.add(new IndexModel(Indexes.ascending("last_scraped_ms"), new IndexOptions().expireAfter(24L, TimeUnit.HOURS)));
+        coll.createIndexes(indexes);
 
         // Please ignore the nulls. Only the 'input' is actually used
         CommandContext context = new CommandContextBuilder(null, null, null, 1).build("/find ");
@@ -211,12 +213,13 @@ public class Scraper {
                         jam,
 
                         itemStack.toString().substring(2),
-                        System.currentTimeMillis() / 1000L
+                        System.currentTimeMillis() / 1000L,
+                        System.currentTimeMillis()
                 );
                 worlds.add(world);
                 LOGGER.info("Scraped World {} {}: {}", j, world.world_uuid(), world.name());
             }
-            bulkUpsert(db, worlds);
+            bulkUpsert(worlds);
             // finally, click on next page button
             LOGGER.info("Scraped page #{}", i);
             Minecraft.getInstance()
@@ -230,13 +233,8 @@ public class Scraper {
         LOGGER.info("Finished Scraping");
     }
 
-    private void bulkUpsert(MongoDatabase db, List<World> worlds) {
-        MongoCollection<World> coll = db.getCollection("worlds", World.class);
-
+    private void bulkUpsert(List<World> worlds) {
         List<WriteModel<World>> operations = new ArrayList<>();
-
-        coll.deleteMany(lt("last_scraped", System.currentTimeMillis() / 1000L - 86400));
-
         LOGGER.info("writing world");
         for (World world : worlds) {
             Bson updates =
@@ -263,7 +261,8 @@ public class Scraper {
                             Updates.set("jam_id", world.jam_id()),
                             Updates.set("jam", Document.parse(world.jam().toString())),
                             Updates.set("icon", world.icon()),
-                            Updates.set("last_scraped", world.last_scraped()));
+                            Updates.set("last_scraped", world.last_scraped()),
+                            Updates.set("last_scraped_ms", new BsonDateTime(world.last_scraped_ms())));
             operations.add(new UpdateOneModel<>(
                     eq("world_uuid", world.world_uuid()),
                     updates,
@@ -286,7 +285,7 @@ public class Scraper {
     }
 
     private int getNbtInt(CompoundTag tag, String field) {
-        if (!getNbtString(tag, field).isEmpty() && !getNbtString(tag,field).equals("null")) {
+        if (!getNbtString(tag, field).isEmpty() && !getNbtString(tag, field).equals("null")) {
             return Integer.parseInt(getNbtString(tag, field));
         } else {
             return -1;
