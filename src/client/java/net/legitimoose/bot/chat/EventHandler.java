@@ -1,15 +1,21 @@
 package net.legitimoose.bot.chat;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
 import net.fabricmc.loader.api.FabricLoader;
-import net.legitimoose.bot.discord.DiscordBot;
-import net.legitimoose.bot.discord.command.MsgCommand;
-import net.legitimoose.bot.discord.command.ReplyCommand;
+import net.legitimoose.bot.chat.command.BlockCommands;
+import net.legitimoose.bot.chat.command.CommandSource;
+import net.legitimoose.bot.chat.command.HelpCommand;
 import net.legitimoose.bot.scraper.Ban;
 import net.legitimoose.bot.scraper.Player;
 import net.legitimoose.bot.scraper.Rank;
 import net.legitimoose.bot.scraper.Scraper;
+import net.legitimoose.bot.discord.DiscordBot;
+import net.legitimoose.bot.discord.command.MsgCommand;
+import net.legitimoose.bot.discord.command.ReplyCommand;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -30,6 +36,8 @@ import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 public class EventHandler {
     private static EventHandler INSTANCE;
 
+    private final CommandDispatcher<CommandSource> dispatcher;
+
     public volatile List<String> lastMessages = new ArrayList<>();
     public boolean handleChat = true;
 
@@ -45,7 +53,13 @@ public class EventHandler {
     private final Pattern tempBanPattern = Pattern.compile("^(\\S+)\\s+tempbanned\\s+(\\S+)\\s+for\\s+(.+)\\s+hours\\s+for\\s+'(.+)'");
     private final Pattern unbanPattern = Pattern.compile("^(\\S+)\\s+unbanned\\s+(\\S+)\\s+for\\s+'(.+)'");
 
-    public void onRecieveMessage(Component message, boolean overlay) {
+    public EventHandler(CommandDispatcher<CommandSource> dispatcher) {
+        HelpCommand.register(dispatcher);
+        BlockCommands.register(dispatcher);
+        this.dispatcher = dispatcher;
+    }
+
+    public void onRecieveMessage(Component message, boolean overlay) throws CommandSyntaxException {
         lastMessages.add(message.getString());
         String msg = message.getString();
         String username = "";
@@ -82,7 +96,7 @@ public class EventHandler {
                     cleanMessage = String.format("**%s** joined the server.", username);
                 }
 
-                new Player(uuid, username, Rank.getEnum(rank)).write();
+                new Player(uuid, username, Rank.getEnum(rank), List.of()).write();
                 webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 webhook.setContent(cleanMessage.replace("@", ""));
                 try {
@@ -119,6 +133,9 @@ public class EventHandler {
                 if (msg.startsWith("[SHOUT]")) {
                     webhook.setUsername(String.format("[SHOUT] %s", username));
                 } else {
+                    if (cleanMessage.startsWith("!")) {
+                        dispatcher.execute(cleanMessage.substring(1), new CommandSource(username));
+                    }
                     webhook.setUsername(username);
                 }
                 webhook.setAvatarUrl(String.format("https://mc-heads.net/avatar/%s", username));
@@ -221,7 +238,7 @@ public class EventHandler {
     }
 
     public static EventHandler getInstance() {
-        if (INSTANCE == null) INSTANCE = new EventHandler();
+        if (INSTANCE == null) INSTANCE = new EventHandler(new CommandDispatcher<>());
         return INSTANCE;
     }
 }

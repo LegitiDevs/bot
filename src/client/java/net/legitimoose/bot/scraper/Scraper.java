@@ -40,6 +40,8 @@ import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 public class Scraper {
     private static Scraper INSTANCE;
 
+    private final boolean scrape = CONFIG.getBoolean("scrapeByDefault", true);
+
     private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
 
@@ -79,6 +81,7 @@ public class Scraper {
     }
 
     public void scrape() throws IOException, URISyntaxException {
+        if (!scrape) return;
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = db.getCollection("stats");
         List<IndexModel> indexes = new ArrayList<>();
@@ -156,8 +159,6 @@ public class Scraper {
                         JsonObject scores = new JsonObject();
                         String[] categories = {"overall", "originality", "aesthetics", "fun", "theme"};
                         for (String category : categories) {
-                            LOGGER.info(category);
-
                             JsonObject score = new JsonObject();
 
                             Matcher scoreMatcher = jamScorePattern.matcher(getNbtString(publicBukkitValues, "jam_score_" + category));

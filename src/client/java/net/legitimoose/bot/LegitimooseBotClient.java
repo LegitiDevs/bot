@@ -1,5 +1,6 @@
 package net.legitimoose.bot;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -45,16 +46,6 @@ public class LegitimooseBotClient implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, commandBuildContext) -> {
             dispatcher.register(
                     ClientCommandManager.literal("scraper")
-                            .then(ClientCommandManager.literal("scrape")
-                                    .executes((context -> {
-                                        new Thread(() -> {
-                                            try {
-                                                Scraper.getInstance().scrape();
-                                            } catch (IOException | URISyntaxException ignored) {
-                                            }
-                                        }).start();
-                                        return 1;
-                                    })))
                             .then(ClientCommandManager.literal("reload")
                                     .executes((context -> {
                                         try {
@@ -113,7 +104,12 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
         ExecutorService chatEventExecutor = Executors.newSingleThreadExecutor();
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            chatEventExecutor.execute(() -> EventHandler.getInstance().onRecieveMessage(message, overlay));
+            chatEventExecutor.execute(() -> {
+                try {
+                    EventHandler.getInstance().onRecieveMessage(message, overlay);
+                } catch (CommandSyntaxException ignored) {
+                }
+            });
         });
 
         new Thread(() -> HttpServer.getInstance().start()).start();
