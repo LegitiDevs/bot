@@ -3,7 +3,7 @@ package net.legitimoose.bot.http.endpoint;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.legitimoose.bot.EventHandler;
+import net.legitimoose.bot.chat.EventHandler;
 import net.minecraft.client.Minecraft;
 
 import java.util.List;

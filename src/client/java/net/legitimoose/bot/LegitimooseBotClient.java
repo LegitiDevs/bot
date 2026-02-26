@@ -6,8 +6,10 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.legitimoose.bot.chat.EventHandler;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.http.HttpServer;
+import net.legitimoose.bot.scraper.Scraper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;

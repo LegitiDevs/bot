@@ -1,4 +1,4 @@
-package net.legitimoose.bot;
+package net.legitimoose.bot.scraper;
 
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.context.CommandContext;

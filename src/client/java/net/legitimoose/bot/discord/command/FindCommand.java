@@ -1,8 +1,7 @@
 package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.legitimoose.bot.EventHandler;
-import net.legitimoose.bot.LegitimooseBotClient;
+import net.legitimoose.bot.chat.EventHandler;
 import net.minecraft.client.Minecraft;
 
 import java.util.concurrent.TimeUnit;

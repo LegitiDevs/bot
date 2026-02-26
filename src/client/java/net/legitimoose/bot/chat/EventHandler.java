@@ -1,4 +1,4 @@
-package net.legitimoose.bot;
+package net.legitimoose.bot.chat;
 
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
@@ -6,6 +6,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.MsgCommand;
 import net.legitimoose.bot.discord.command.ReplyCommand;
+import net.legitimoose.bot.scraper.Ban;
+import net.legitimoose.bot.scraper.Player;
+import net.legitimoose.bot.scraper.Rank;
+import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -200,7 +204,8 @@ public class EventHandler {
                 return;
             }
 
-            if (username.equals(Minecraft.getInstance().player.getName().getString()) && !FabricLoader.getInstance().isDevelopmentEnvironment()) return;
+            if (username.equals(Minecraft.getInstance().player.getName().getString()) && !FabricLoader.getInstance().isDevelopmentEnvironment())
+                return;
 
             if (!username.isEmpty() &&
                     !cleanMessage.startsWith(CONFIG.getString("secretPrefix"))

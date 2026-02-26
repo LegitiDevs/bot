@@ -3,9 +3,9 @@ package net.legitimoose.bot.http.endpoint;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mongodb.client.MongoCollection;
-import net.legitimoose.bot.Player;
-import net.legitimoose.bot.Rank;
-import net.legitimoose.bot.Scraper;
+import net.legitimoose.bot.scraper.Player;
+import net.legitimoose.bot.scraper.Rank;
+import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.McUtil;
 
 import java.util.HashMap;
@@ -15,7 +15,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class PlayerEndpoint {
     private final Pattern glistPattern = Pattern.compile("\\[(.*)] \\(\\d*\\): (.*)");

@@ -1,4 +1,4 @@
-package net.legitimoose.bot;
+package net.legitimoose.bot.scraper;
 
 public enum Rank {
     Unknown("unknown"),
