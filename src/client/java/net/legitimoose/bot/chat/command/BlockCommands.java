@@ -27,6 +27,13 @@ public class BlockCommands {
                             coll.updateOne(eq("name", source.username()), Updates.set("blocked", List.of(blocked)));
                             source.sendMessage("Blocked @" + blocked + " from sending you messages");
                             return Command.SINGLE_SUCCESS;
+                        }))
+                .then(LiteralArgumentBuilder.<CommandSource>literal("list")
+                        .executes(context -> {
+                            CommandSource source = context.getSource();
+                            List<String> blockedPlayers = coll.find(eq("name", source.username())).first().blocked();
+                            source.sendMessage("Blocked players:<br>" + String.join("<br>", blockedPlayers));
+                            return Command.SINGLE_SUCCESS;
                         })));
         // Unblock
         dispatcher.register(LiteralArgumentBuilder.<CommandSource>literal("unblock")
