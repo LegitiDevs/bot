@@ -30,6 +30,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/libs/Legitimoose-Bot*.jar
+          token: ${{ secrets.GITHUB_TOKEN }}
 
 
 
