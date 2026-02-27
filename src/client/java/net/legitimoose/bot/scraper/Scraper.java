@@ -40,12 +40,11 @@ import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 public class Scraper {
     private static Scraper INSTANCE;
 
-    private final boolean scrape = CONFIG.getBoolean("scrapeByDefault", true);
-
     private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
 
     private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.*), score=(.*)\\)");
+    private final Pattern ownerNamePattern = Pattern.compile("^by (?:[^|]+\\|\\s*)?(.+)");
 
     public final MongoDatabase db = mongoClient.getDatabase("legitimooseapi");
     private final MongoCollection<World> coll = db.getCollection("worlds", World.class);
@@ -74,14 +73,13 @@ public class Scraper {
     }
 
     private void error(String message, Exception exception) throws IOException, URISyntaxException {
-        LOGGER.error(message);
-        LOGGER.error(exception.getMessage());
+        LOGGER.error(message, exception);
         errorWebhook.setContent(String.format("%s\n%s", message, exception.getMessage()));
         errorWebhook.execute();
     }
 
-    public void scrape() throws IOException, URISyntaxException {
-        if (!scrape) return;
+    public void scrape() {
+        if (!CONFIG.getBoolean("scrape", true)) return;
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = db.getCollection("stats");
         List<IndexModel> indexes = new ArrayList<>();
@@ -130,6 +128,16 @@ public class Scraper {
                 int descriptionLines = 0;
                 while (!itemStack.get(DataComponents.LORE).lines().get(descriptionLines).getString().isEmpty()) {
                     descriptionLines++;
+                }
+
+                String owner_name = "";
+                int ownerLine = descriptionLines;
+                while (!itemStack.get(DataComponents.LORE).lines().get(ownerLine).getString().startsWith("by")) {
+                    ownerLine++;
+                }
+                Matcher ownerNameMatcher = ownerNamePattern.matcher(itemStack.get(DataComponents.LORE).lines().get(ownerLine).getString());
+                if (ownerNameMatcher.find()) {
+                    owner_name = ownerNameMatcher.group(1);
                 }
 
                 StringBuilder description = new StringBuilder();
@@ -183,6 +191,7 @@ public class Scraper {
                         getNbtBoolean(publicBukkitValues, "locked"),
 
                         getNbtString(publicBukkitValues, "owner"),
+                        owner_name,
 
                         getNbtInt(publicBukkitValues, "player_count"),
                         getNbtInt(publicBukkitValues, "max_players"),
@@ -245,6 +254,7 @@ public class Scraper {
                             Updates.set("enforce_whitelist", world.enforce_whitelist()),
                             Updates.set("locked", world.locked()),
                             Updates.set("owner_uuid", world.owner_uuid()),
+                            Updates.set("owner_name", world.owner_name()),
                             Updates.set("player_count", world.player_count()),
                             Updates.set("max_players", world.max_players()),
                             Updates.set("max_datapack_size", world.max_datapack_size()),

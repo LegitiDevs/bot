@@ -9,6 +9,7 @@ public record World(
         boolean enforce_whitelist,
         boolean locked,
         String owner_uuid,
+        String owner_name,
         int player_count,
         int max_players,
         int max_datapack_size,
