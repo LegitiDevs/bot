@@ -26,12 +26,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
       - name: Build
         run: ./gradlew build
-      - name: Capture build artifacts
-        uses: actions/upload-artifact@v6
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: Artifacts
-          path: build/libs/Legitimoose-Bot*.jar
-
+          files: build/libs/Legitimoose-Bot*.jar
 
 
 
