@@ -26,11 +26,16 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
       - name: Build
         run: ./gradlew build
+      - name: Rename jar
+        run: |
+          rm build/libs/Legitimoose-Bot*-shadowed-only.jar
+          mv build/libs/Legitimoose-Bot*.jar Legitimoose-Bot.jar
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/libs/Legitimoose-Bot*.jar
+          files: Legitimoose-Bot.jar
           token: ${{ secrets.GITHUB_TOKEN }}
+
 
 
 
