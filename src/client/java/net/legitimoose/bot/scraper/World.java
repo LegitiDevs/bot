@@ -25,14 +25,6 @@ public record World(
         String raw_description,
         int featured_instant,
 
-        @Deprecated
-        @ApiStatus.ScheduledForRemoval(inVersion = "3.0.0") // API v4
-        boolean jam_world,
-
-        @Deprecated
-        @ApiStatus.ScheduledForRemoval(inVersion = "3.0.0") // API v4
-        int jam_id,
-
         JsonObject jam,
 
         String icon,

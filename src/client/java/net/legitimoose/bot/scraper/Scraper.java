@@ -217,9 +217,6 @@ public class Scraper {
 
                         featured_instant,
 
-                        jam_world,
-                        jam_id,
-
                         jam,
 
                         itemStack.toString().substring(2),
@@ -268,8 +265,6 @@ public class Scraper {
                             Updates.set("raw_name", Document.parse(world.raw_name())),
                             Updates.set("raw_description", BsonArray.parse(world.raw_description())),
                             Updates.set("featured_instant", world.featured_instant()),
-                            Updates.set("jam_world", world.jam_world()),
-                            Updates.set("jam_id", world.jam_id()),
                             Updates.set("jam", Document.parse(world.jam().toString())),
                             Updates.set("icon", world.icon()),
                             Updates.set("last_scraped", world.last_scraped()),
