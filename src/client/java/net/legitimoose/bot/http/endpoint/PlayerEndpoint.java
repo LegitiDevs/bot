@@ -8,6 +8,8 @@ import net.legitimoose.bot.scraper.Rank;
 import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.McUtil;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,19 +34,35 @@ public class PlayerEndpoint {
             }
         }
 
-        for (String user : usernames.keySet()) {
+        for (String username : usernames.keySet()) {
+            try {
+                if (players.find(eq("name", username)).first() == null) {
+                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of()).write();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        for (Player dbPlayer : players.find()) {
             JsonObject player = new JsonObject();
             try {
-                String uuid = McUtil.getUuid(user);
-                Player dbPlayer = players.find(eq("uuid", uuid)).first();
                 Rank rank;
                 if (dbPlayer == null) rank = Rank.Unknown;
                 else rank = dbPlayer.rank();
 
-                player.addProperty("uuid", uuid);
-                player.addProperty("name", user);
+                boolean online = false;
+                String world = "";
+                if (usernames.get(dbPlayer.name()) != null) {
+                    online = true;
+                    world = usernames.get(dbPlayer.name());
+                }
+
+                player.addProperty("uuid", dbPlayer.uuid());
+                player.addProperty("name", dbPlayer.name());
                 player.addProperty("rank", rank.toString());
-                player.addProperty("world", usernames.get(user));
+                player.addProperty("online", online);
+                player.addProperty("world", world);
                 response.add(player);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -66,22 +84,32 @@ public class PlayerEndpoint {
             }
         }
 
-        for (String user : usernames.keySet()) {
+        for (String username : usernames.keySet()) {
             try {
-                if (!McUtil.getUuid(user).equals(uuid)) {
-                    continue;
+                if (players.find(eq("name", username)).first() == null) {
+                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of()).write();
                 }
-                Player dbPlayer = players.find(eq("uuid", uuid)).first();
-                Rank rank;
-                if (dbPlayer == null) rank = Rank.Unknown;
-                else rank = dbPlayer.rank();
-
-                response.addProperty("name", user);
-                response.addProperty("rank", rank.toString());
-                response.addProperty("world", usernames.get(user));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        Player dbPlayer = players.find(eq("uuid", uuid)).first();
+        try {
+            boolean online = false;
+            String world = "";
+            if (usernames.get(dbPlayer.name()) != null) {
+                online = true;
+                world = usernames.get(dbPlayer.name());
+            }
+
+            response.addProperty("uuid", dbPlayer.uuid());
+            response.addProperty("name", dbPlayer.name());
+            response.addProperty("rank", dbPlayer.rank().toString());
+            response.addProperty("online", online);
+            response.addProperty("world", world);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         return response;
