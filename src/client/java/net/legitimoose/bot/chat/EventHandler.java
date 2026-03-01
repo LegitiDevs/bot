@@ -92,11 +92,11 @@ public class EventHandler {
                 if (rank == null) rank = "";
                 if (players.countDocuments(new Document("uuid", uuid)) == 0) {
                     cleanMessage = String.format("**%s** joined the server for the first time!", username);
+                    new Player(uuid, username, Rank.getEnum(rank), List.of()).write();
                 } else {
                     cleanMessage = String.format("**%s** joined the server.", username);
                 }
 
-                new Player(uuid, username, Rank.getEnum(rank), List.of()).write();
                 webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 webhook.setContent(cleanMessage.replace("@", ""));
                 try {

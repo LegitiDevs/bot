@@ -10,6 +10,7 @@ public record World(
         boolean locked,
         String owner_uuid,
         String owner_name,
+        Rank owner_rank,
         int player_count,
         int max_players,
         int max_datapack_size,

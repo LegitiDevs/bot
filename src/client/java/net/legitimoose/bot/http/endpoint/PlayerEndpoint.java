@@ -7,6 +7,7 @@ import net.legitimoose.bot.scraper.Player;
 import net.legitimoose.bot.scraper.Rank;
 import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.McUtil;
+import org.bson.Document;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -36,7 +37,7 @@ public class PlayerEndpoint {
 
         for (String username : usernames.keySet()) {
             try {
-                if (players.find(eq("name", username)).first() == null) {
+                if (players.countDocuments(new Document("name", username)) == 0) {
                     new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of()).write();
                 }
             } catch (Exception e) {
@@ -86,7 +87,7 @@ public class PlayerEndpoint {
 
         for (String username : usernames.keySet()) {
             try {
-                if (players.find(eq("name", username)).first() == null) {
+                if (players.countDocuments(new Document("name", username)) == 0) {
                     new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of()).write();
                 }
             } catch (Exception e) {

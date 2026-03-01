@@ -23,7 +23,7 @@ public record Player(
                         Updates.set("uuid", this.uuid),
                         Updates.set("name", this.name),
                         Updates.set("rank", this.rank),
-                        Updates.set("blocked", this.blocked));
+                        Updates.setOnInsert("blocked", this.blocked));
                 players.updateOne(eq("uuid", this.uuid), updates, new UpdateOptions().upsert(true));
     }
 }
