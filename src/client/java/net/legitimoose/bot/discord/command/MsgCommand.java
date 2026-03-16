@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.legitimoose.bot.scraper.Player;
 import net.legitimoose.bot.scraper.Scraper;
+import net.legitimoose.bot.util.DiscordUtil;
 import net.minecraft.client.Minecraft;
 
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public class MsgCommand implements Command {
                 .connection
                 .sendCommand("msg " + newMessage);
 
-        event.reply("Sent `" + message.trim() + "` to " + player).setEphemeral(true).queue();
+        event.reply(DiscordUtil.sanitizeString("Sent `" + message.trim() + "` to " + player)).setEphemeral(true).queue();
         lastSent.put(player, event.getUser().getIdLong());
     }
 }
