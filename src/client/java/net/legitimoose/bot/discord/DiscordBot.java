@@ -138,7 +138,11 @@ public class DiscordBot extends ListenerAdapter {
         Component formattedMesssage = MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
         String message =
                 String.format("<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick) +
-                        MiniMessage.miniMessage().serialize(formattedMesssage).replace("§", "?").replace("\n", "<br>");
+                        MiniMessage.miniMessage().serialize(formattedMesssage)
+                                .replace("§", "?")
+                                .replace("\u0018", "")
+                                .replace("\u001B", "")
+                                .replace("\n", "<br>");
         if (!event.getMessage().getAttachments().isEmpty()) {
             message += " <blue>[Attachment Included]</blue>";
         }

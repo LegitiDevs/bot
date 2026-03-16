@@ -2,6 +2,7 @@ package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.legitimoose.bot.http.endpoint.PlayersEndpoint;
+import net.legitimoose.bot.util.DiscordUtil;
 
 public class ListallCommand implements Command {
     final SlashCommandInteractionEvent event;
@@ -15,9 +16,9 @@ public class ListallCommand implements Command {
     @Override
     public void onCommandReceived() {
         if (raw) {
-            event.reply(String.format("```%s```", String.join("\n", new PlayersEndpoint().getGlist()))).queue();
+            event.reply(DiscordUtil.sanitizeString(String.format("```%s```", String.join("\n", new PlayersEndpoint().getGlist())))).queue();
         } else {
-            event.reply(String.format("```%s```", String.join("\n", new PlayersEndpoint().getListall()))).queue();
+            event.reply(DiscordUtil.sanitizeString(String.format("```%s```", String.join("\n", new PlayersEndpoint().getListall())))).queue();
         }
     }
 }

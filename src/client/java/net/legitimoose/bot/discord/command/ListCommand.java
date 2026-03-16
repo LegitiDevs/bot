@@ -7,6 +7,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.legitimoose.bot.scraper.Scraper;
+import net.legitimoose.bot.util.DiscordUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import org.bson.Document;
@@ -36,7 +37,7 @@ public class ListCommand implements Command {
             for (PlayerInfo player : playerList) {
                 players.append(player.getTabListDisplayName().getString()).append('\n');
             }
-            event.reply(players.toString()).queue();
+            event.reply(DiscordUtil.sanitizeString(players.toString())).queue();
         } else {
             MongoCollection<Document> coll = Scraper.getInstance().db.getCollection("stats");
 
@@ -66,7 +67,7 @@ public class ListCommand implements Command {
                 }
                 event.getHook()
                         .sendMessage(
-                                String.format("There are %s player(s) online:\n```\n%s```", mcSuggestions.size(), suggestions.toString()))
+                                DiscordUtil.sanitizeString(String.format("There are %s player(s) online:\n```\n%s```", mcSuggestions.size(), suggestions)))
                         .queue();
 
                 coll.insertOne(new Document().append("_id", new ObjectId()).append("player_count", mcSuggestions.size()));

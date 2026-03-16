@@ -16,6 +16,7 @@ import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.MsgCommand;
 import net.legitimoose.bot.discord.command.ReplyCommand;
+import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -98,7 +99,7 @@ public class EventHandler {
 
                 new Player(uuid, username, Rank.getEnum(rank), List.of()).write();
                 webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                webhook.setContent(cleanMessage.replace("@", ""));
+                webhook.setContent(DiscordUtil.sanitizeString(cleanMessage));
                 try {
                     webhook.execute(0x57F287);
                 } catch (IOException | URISyntaxException e) {
