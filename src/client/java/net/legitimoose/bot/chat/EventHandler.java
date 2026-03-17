@@ -110,7 +110,7 @@ public class EventHandler {
                 username = switchMatcher.group(1);
                 cleanMessage = String.format("**%s** switched servers.", username);
                 webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                webhook.setContent(cleanMessage.replace("@", ""));
+                webhook.setContent(DiscordUtil.sanitizeString(cleanMessage));
                 try {
                     webhook.execute(0xF2F257);
                 } catch (IOException | URISyntaxException e) {
@@ -121,7 +121,7 @@ public class EventHandler {
                 username = leaveMatcher.group(1);
                 cleanMessage = String.format("**%s** left the server.", username);
                 webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                webhook.setContent(cleanMessage.replace("@", ""));
+                webhook.setContent(DiscordUtil.sanitizeString(cleanMessage));
                 try {
                     webhook.execute(0xF25757);
                 } catch (IOException | URISyntaxException e) {
@@ -165,7 +165,7 @@ public class EventHandler {
                 String moderator = banMatcher.group(1);
                 String banned = banMatcher.group(2);
                 String reason = banMatcher.group(3);
-                webhook.setContent(String.format("**%s** was banned by **%s**\nReason: %s", banned, moderator, reason));
+                webhook.setContent(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s**\nReason: %s", banned, moderator, reason)));
                 webhook.setUsername("Legitimoose Ban");
                 try {
                     webhook.execute(0xF25757);
@@ -184,7 +184,7 @@ public class EventHandler {
                 String banned = tempBanMatcher.group(2);
                 int hours = Integer.parseInt(tempBanMatcher.group(3));
                 String reason = tempBanMatcher.group(4);
-                webhook.setContent(String.format("**%s** was banned by **%s** for **%s** hours\nReason: %s", banned, moderator, hours, reason));
+                webhook.setContent(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s** for **%s** hours\nReason: %s", banned, moderator, hours, reason)));
                 webhook.setUsername("Legitimoose Ban");
                 try {
                     webhook.execute(0xF25757);
@@ -202,7 +202,7 @@ public class EventHandler {
                 String moderator = unbanMatcher.group(1);
                 String banned = unbanMatcher.group(2);
                 String reason = unbanMatcher.group(3);
-                webhook.setContent(String.format("**%s** was unbanned by **%s**\nReason: %s", banned, moderator, reason));
+                webhook.setContent(DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s**\nReason: %s", banned, moderator, reason)));
                 webhook.setUsername("Legitimoose Ban");
                 try {
                     webhook.execute(0x57F287);
@@ -213,7 +213,7 @@ public class EventHandler {
             } else if (broadcastMatcher.find()) {
                 String msg1 = broadcastMatcher.group(1);
                 webhook.setUsername("[Broadcast]");
-                webhook.setContent(msg1);
+                webhook.setContent(DiscordUtil.sanitizeString(msg1));
                 try {
                     webhook.execute(0x5757F2);
                 } catch (IOException | URISyntaxException e) {
@@ -228,7 +228,7 @@ public class EventHandler {
             if (!username.isEmpty() &&
                     !cleanMessage.startsWith(CONFIG.getString("secretPrefix"))
             ) {
-                webhook.setContent(cleanMessage.replace("@", ""));
+                webhook.setContent(DiscordUtil.sanitizeString(cleanMessage));
                 try {
                     webhook.execute();
                 } catch (IOException | URISyntaxException e) {
