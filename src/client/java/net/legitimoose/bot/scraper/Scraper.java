@@ -10,6 +10,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
+import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -74,7 +75,7 @@ public class Scraper {
 
     private void error(String message, Exception exception) throws IOException, URISyntaxException {
         LOGGER.error(message, exception);
-        errorWebhook.setContent(String.format("%s\n%s", message, exception.getMessage()));
+        errorWebhook.setContent(DiscordUtil.sanitizeString(String.format("%s\n%s", message, exception.getMessage())));
         errorWebhook.execute();
     }
 

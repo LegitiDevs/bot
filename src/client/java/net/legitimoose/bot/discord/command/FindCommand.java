@@ -3,6 +3,7 @@ package net.legitimoose.bot.discord.command;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.legitimoose.bot.chat.EventHandler;
 import net.legitimoose.bot.util.DiscordUtil;
+import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 
 import java.util.concurrent.TimeUnit;
@@ -24,7 +25,7 @@ public class FindCommand implements Command {
             event.reply("player name too long, sorry!").setEphemeral(true).queue();
             return;
         }
-        Minecraft.getInstance().player.connection.sendCommand("find " + player.replace("§", "?"));
+        Minecraft.getInstance().player.connection.sendCommand(McUtil.sanitizeString("find " + player));
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
