@@ -1,7 +1,6 @@
 package net.legitimoose.bot.chat;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
@@ -9,28 +8,31 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.chat.command.BlockCommands;
 import net.legitimoose.bot.chat.command.CommandSource;
 import net.legitimoose.bot.chat.command.HelpCommand;
+import net.legitimoose.bot.chat.command.StreakCommand;
+import net.legitimoose.bot.discord.DiscordBot;
+import net.legitimoose.bot.discord.command.MsgCommand;
+import net.legitimoose.bot.discord.command.ReplyCommand;
 import net.legitimoose.bot.scraper.Ban;
 import net.legitimoose.bot.scraper.Player;
 import net.legitimoose.bot.scraper.Rank;
 import net.legitimoose.bot.scraper.Scraper;
-import net.legitimoose.bot.discord.DiscordBot;
-import net.legitimoose.bot.discord.command.MsgCommand;
-import net.legitimoose.bot.discord.command.ReplyCommand;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import org.bson.Document;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.mongodb.client.model.Filters.eq;
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
@@ -57,6 +59,7 @@ public class EventHandler {
     public EventHandler(CommandDispatcher<CommandSource> dispatcher) {
         HelpCommand.register(dispatcher);
         BlockCommands.register(dispatcher);
+        StreakCommand.register(dispatcher);
         this.dispatcher = dispatcher;
     }
 
@@ -79,10 +82,14 @@ public class EventHandler {
         DiscordWebhook webhook = new DiscordWebhook(CONFIG.getString("webhook"));
         if (handleChat) {
             if (joinMatcher.find()) {
+                Instant now = Instant.now();
                 MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
 
                 username = joinMatcher.group(2);
+                Player dbPlayer = players.find(eq("name", username)).first();
                 String uuid;
+                int streak;
+                Instant last_joined;
 
                 try {
                     uuid = McUtil.getUuid(username);
@@ -91,13 +98,35 @@ public class EventHandler {
                 }
                 String rank = joinMatcher.group(1);
                 if (rank == null) rank = "";
-                if (players.countDocuments(new Document("uuid", uuid)) == 0) {
+                if (dbPlayer == null) {
+                    last_joined = now;
+                    streak = 0;
                     cleanMessage = String.format("**%s** joined the server for the first time!", username);
                 } else {
+                    if (dbPlayer.last_joined() != null) {
+                        last_joined = dbPlayer.last_joined();
+                    } else {
+                        last_joined = now;
+                    }
+                    if (dbPlayer.streak() == null) {
+                        streak = 0;
+                    } else {
+                        streak = dbPlayer.streak();
+                    }
                     cleanMessage = String.format("**%s** joined the server.", username);
                 }
 
-                new Player(uuid, username, Rank.getEnum(rank), List.of()).write();
+                if (streak != 0) {
+                    long difference = ChronoUnit.DAYS.between(last_joined.truncatedTo(ChronoUnit.DAYS), now.truncatedTo(ChronoUnit.DAYS));
+                    if (difference == 1) {
+                        streak++;
+                    } else if (difference > 1) {
+                        Minecraft.getInstance().player.connection.sendChat(String.format("%s's streak of %s has been reset!", username, streak));
+                        streak = 1;
+                    }
+                }
+
+                new Player(uuid, username, Rank.getEnum(rank), List.of(), streak, now).write();
                 webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 webhook.setContent(DiscordUtil.sanitizeString(cleanMessage));
                 try {
