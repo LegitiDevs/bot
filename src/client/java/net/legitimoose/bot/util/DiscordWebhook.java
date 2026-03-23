@@ -16,6 +16,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+
 public class DiscordWebhook {
 
     public static class Embed {
@@ -70,13 +72,12 @@ public class DiscordWebhook {
     }
 
     public void execute(Embed embed) throws IOException, URISyntaxException {
-        if (this.content == null) {
-            throw new IllegalArgumentException("Content must be set");
-        }
-
         JsonObject json = new JsonObject();
 
         if (embed == null) {
+            if (this.content == null) {
+                throw new IllegalArgumentException("Content must be set");
+            }
             json.addProperty("content", this.content);
         } else {
             JsonObject embedJson = new JsonObject();
