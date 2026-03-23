@@ -21,6 +21,8 @@ import net.legitimoose.bot.util.DiscordWebhook;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.legitimoose.bot.util.DiscordWebhook.Embed;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -127,10 +129,10 @@ public class EventHandler {
                 }
 
                 new Player(uuid, username, Rank.getEnum(rank), List.of(), streak, now).write();
-                webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                webhook.setContent(DiscordUtil.sanitizeString(cleanMessage));
+                Embed embed = new Embed(DiscordUtil.sanitizeString(cleanMessage), 0x57F287);
+                embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 try {
-                    webhook.execute(0x57F287);
+                    webhook.execute(embed);
                 } catch (IOException | URISyntaxException e) {
                     LOGGER.warn(e.getMessage());
                 }
@@ -138,10 +140,10 @@ public class EventHandler {
             } else if (switchMatcher.find()) {
                 username = switchMatcher.group(1);
                 cleanMessage = String.format("**%s** switched servers.", username);
-                webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                webhook.setContent(DiscordUtil.sanitizeString(cleanMessage));
+                Embed embed = new Embed(DiscordUtil.sanitizeString(cleanMessage), 0xF2F257);
+                embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 try {
-                    webhook.execute(0xF2F257);
+                    webhook.execute(embed);
                 } catch (IOException | URISyntaxException e) {
                     LOGGER.warn(e.getMessage());
                 }
@@ -149,10 +151,10 @@ public class EventHandler {
             } else if (leaveMatcher.find()) {
                 username = leaveMatcher.group(1);
                 cleanMessage = String.format("**%s** left the server.", username);
-                webhook.setEmbedThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                webhook.setContent(DiscordUtil.sanitizeString(cleanMessage));
+                Embed embed = new Embed(DiscordUtil.sanitizeString(cleanMessage), 0xF25757);
+                embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 try {
-                    webhook.execute(0xF25757);
+                    webhook.execute(embed);
                 } catch (IOException | URISyntaxException e) {
                     throw new RuntimeException(e);
                 }
@@ -194,10 +196,11 @@ public class EventHandler {
                 String moderator = banMatcher.group(1);
                 String banned = banMatcher.group(2);
                 String reason = banMatcher.group(3);
-                webhook.setContent(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s**\nReason: %s", banned, moderator, reason)));
+                Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s**", banned, moderator)), 0xF25757);
+                embed.setDescription(DiscordUtil.sanitizeString(reason));
                 webhook.setUsername("Legitimoose Ban");
                 try {
-                    webhook.execute(0xF25757);
+                    webhook.execute(embed);
                 } catch (IOException | URISyntaxException e) {
                     throw new RuntimeException(e);
                 }
@@ -213,10 +216,11 @@ public class EventHandler {
                 String banned = tempBanMatcher.group(2);
                 int hours = Integer.parseInt(tempBanMatcher.group(3));
                 String reason = tempBanMatcher.group(4);
-                webhook.setContent(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s** for **%s** hours\nReason: %s", banned, moderator, hours, reason)));
+                Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s** for **%s** hours", banned, moderator, hours)), 0xF25757);
+                embed.setDescription(DiscordUtil.sanitizeString(reason));
                 webhook.setUsername("Legitimoose Ban");
                 try {
-                    webhook.execute(0xF25757);
+                    webhook.execute(embed);
                 } catch (IOException | URISyntaxException e) {
                     throw new RuntimeException(e);
                 }
@@ -231,10 +235,11 @@ public class EventHandler {
                 String moderator = unbanMatcher.group(1);
                 String banned = unbanMatcher.group(2);
                 String reason = unbanMatcher.group(3);
-                webhook.setContent(DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s**\nReason: %s", banned, moderator, reason)));
+                Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s**", banned, moderator)), 0x57F287);
+                embed.setDescription(DiscordUtil.sanitizeString(reason));
                 webhook.setUsername("Legitimoose Ban");
                 try {
-                    webhook.execute(0x57F287);
+                    webhook.execute(embed);
                 } catch (IOException | URISyntaxException e) {
                     throw new RuntimeException(e);
                 }
@@ -242,9 +247,9 @@ public class EventHandler {
             } else if (broadcastMatcher.find()) {
                 String msg1 = broadcastMatcher.group(1);
                 webhook.setUsername("[Broadcast]");
-                webhook.setContent(DiscordUtil.sanitizeString(msg1));
+                Embed embed = new Embed(DiscordUtil.sanitizeString(msg1), 0x5757F2);
                 try {
-                    webhook.execute(0x5757F2);
+                    webhook.execute(embed);
                 } catch (IOException | URISyntaxException e) {
                     throw new RuntimeException(e);
                 }
