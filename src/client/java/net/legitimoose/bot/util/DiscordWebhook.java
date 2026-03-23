@@ -81,9 +81,11 @@ public class DiscordWebhook {
         } else {
             JsonObject embedJson = new JsonObject();
             embedJson.addProperty("title", embed.title);
-            embedJson.addProperty("title", embed.description);
             embedJson.addProperty("color", embed.color);
 
+            if (embed.description != null) {
+                embedJson.addProperty("description", embed.description);
+            }
             if (embed.thumbnailUrl != null) {
                 JsonObject thumbnail = new JsonObject();
                 thumbnail.addProperty("url", embed.thumbnailUrl);
