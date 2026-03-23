@@ -51,6 +51,7 @@ public class EventHandler {
 
     private final Pattern joinPattern = Pattern.compile("^\\[\\+] (?:([^|]+) \\| )?(\\S+)");
     private final Pattern switchPattern = Pattern.compile("^\\[→]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
+    private final Pattern worldPattern = Pattern.compile("(?<=joined\\s)(.*)(?=\\s+Click to Join)");
     private final Pattern leavePattern = Pattern.compile("^\\[-]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
     private final Pattern broadcastPattern = Pattern.compile("^\\[Broadcast\\]\\s(.*)");
 
@@ -140,7 +141,13 @@ public class EventHandler {
             } else if (switchMatcher.find()) {
                 username = switchMatcher.group(1);
                 cleanMessage = String.format("**%s** switched servers.", username);
+                Component hover = ((HoverEvent.ShowText) message.getStyle().getHoverEvent()).value();
+                String world = hover.getString();
+                Matcher worldMatcher = worldPattern.matcher(world);
+                worldMatcher.find();
+                String cleanWorld = worldMatcher.group(1);
                 Embed embed = new Embed(DiscordUtil.sanitizeString(cleanMessage), 0xF2F257);
+                embed.setDescription(DiscordUtil.sanitizeString("Joined " +  cleanWorld));
                 embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 try {
                     webhook.execute(embed);
