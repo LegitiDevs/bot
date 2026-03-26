@@ -18,6 +18,7 @@ import net.legitimoose.bot.discord.command.*;
 import net.legitimoose.bot.discord.command.staff.Rejoin;
 import net.legitimoose.bot.discord.command.staff.Restart;
 import net.legitimoose.bot.discord.command.staff.Send;
+import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
@@ -131,22 +132,21 @@ public class DiscordBot extends ListenerAdapter {
         String discordNick;
         if (event.isWebhookMessage()) {
             if (!event.getAuthor().getId().equals(CONFIG.getString("bridgeWebhookId"))) return;
-            discordNick = event.getAuthor().getEffectiveName().replace("§", "?");
+            discordNick = event.getAuthor().getEffectiveName();
         } else {
-            discordNick = event.getMember().getEffectiveName().replace("§", "?");
+            discordNick = event.getMember().getEffectiveName();
         }
         Component formattedMesssage = MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
         String message =
                 String.format("<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick) +
-                        MiniMessage.miniMessage().serialize(formattedMesssage).replace("§", "?");
+                        MiniMessage.miniMessage().serialize(formattedMesssage);
         if (!event.getMessage().getAttachments().isEmpty()) {
             message += " <blue>[Attachment Included]</blue>";
         }
-        if (message.length() >= 200) return;
         if (CONFIG.getString("channelId").isEmpty())
             LOGGER.error("Discord channel ID is not set in config!");
         if (event.getChannel().getId().equals(CONFIG.getString("channelId"))) {
-            Minecraft.getInstance().player.connection.sendChat(message);
+            Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
         }
     }
 }

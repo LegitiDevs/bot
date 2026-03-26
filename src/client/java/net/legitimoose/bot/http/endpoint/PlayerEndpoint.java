@@ -11,6 +11,7 @@ import org.bson.Document;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class PlayerEndpoint {
         for (String username : usernames.keySet()) {
             try {
                 if (players.countDocuments(new Document("name", username)) == 0) {
-                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of()).write();
+                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), 0, Instant.EPOCH).write();
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -88,7 +89,7 @@ public class PlayerEndpoint {
         for (String username : usernames.keySet()) {
             try {
                 if (players.countDocuments(new Document("name", username)) == 0) {
-                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of()).write();
+                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), 0, Instant.EPOCH).write();
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);

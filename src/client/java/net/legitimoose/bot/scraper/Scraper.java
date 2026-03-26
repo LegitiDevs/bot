@@ -10,8 +10,8 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
+import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
-import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -27,6 +27,7 @@ import org.bson.conversions.Bson;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -77,7 +78,7 @@ public class Scraper {
 
     private void error(String message, Exception exception) throws IOException, URISyntaxException {
         LOGGER.error(message, exception);
-        errorWebhook.setContent(String.format("%s\n%s", message, exception.getMessage()));
+        errorWebhook.setContent(DiscordUtil.sanitizeString(String.format("%s\n%s", message, exception.getMessage())));
         errorWebhook.execute();
     }
 
@@ -151,7 +152,25 @@ public class Scraper {
                 }
 
                 String owner_uuid = getNbtString(publicBukkitValues, "owner");
-                players.add(new Player(owner_uuid, owner_name, owner_rank, List.of()));
+                Player dbPlayer = playersColl.find(eq("uuid", owner_uuid)).first();
+                int streak;
+                Instant last_joined;
+                if (dbPlayer == null) {
+                    last_joined = Instant.EPOCH;
+                    streak = 0;
+                } else {
+                    if (dbPlayer.last_joined() != null) {
+                        last_joined = dbPlayer.last_joined();
+                    } else {
+                        last_joined = Instant.EPOCH;
+                    }
+                    if (dbPlayer.streak() == null) {
+                        streak = 0;
+                    } else {
+                        streak = dbPlayer.streak();
+                    }
+                }
+                players.add(new Player(owner_uuid, owner_name, owner_rank, List.of(), streak, last_joined));
 
                 StringBuilder description = new StringBuilder();
                 for (int k = 0; k < descriptionLines; k++) {
@@ -298,6 +317,8 @@ public class Scraper {
                             Updates.set("uuid", player.uuid()),
                             Updates.set("name", player.name()),
                             Updates.set("rank", player.rank()),
+                            Updates.set("streak", player.streak()),
+                            Updates.set("last_joined", new BsonDateTime(player.last_joined().toEpochMilli())),
                             Updates.setOnInsert("blocked", player.blocked()));
 
             playerOperations.add(new UpdateOneModel<>(

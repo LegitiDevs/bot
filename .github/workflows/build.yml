@@ -32,11 +32,8 @@ jobs:
           mv build/libs/Legitimoose-Bot*.jar Legitimoose-Bot.jar
       - name: Release
         uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
         with:
           files: Legitimoose-Bot.jar
           token: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-
-
+          generate_release_notes: true

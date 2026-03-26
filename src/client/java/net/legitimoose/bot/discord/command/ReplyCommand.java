@@ -1,6 +1,8 @@
 package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.legitimoose.bot.util.DiscordUtil;
+import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 
 import java.util.HashMap;
@@ -34,8 +36,8 @@ public class ReplyCommand implements Command {
         Minecraft.getInstance()
                 .player
                 .connection
-                .sendCommand("msg " + newMessage);
+                .sendCommand(McUtil.sanitizeString("msg " + newMessage));
 
-        event.reply("Sent `" + message.trim() + "` to " + player).setEphemeral(true).queue();
+        event.reply(DiscordUtil.sanitizeString("Sent `" + message.trim() + "` to " + player)).setEphemeral(true).queue();
     }
 }
