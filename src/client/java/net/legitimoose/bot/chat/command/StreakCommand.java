@@ -2,7 +2,9 @@ package net.legitimoose.bot.chat.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Updates;
 import net.legitimoose.bot.scraper.Player;
@@ -37,6 +39,17 @@ public class StreakCommand {
                                 players.updateOne(eq("name", context.getSource().username()), Updates.set("streak.notify", true));
                                 context.getSource().sendMessage("Disabled streak notifications!");
                             }
+                            return Command.SINGLE_SUCCESS;
+                        }))
+                .then(RequiredArgumentBuilder.<CommandSource, String>argument("username", StringArgumentType.string())
+                        .executes(context -> {
+                            String username = context.getArgument("username", String.class);
+                            Player player = players.find(eq("name", username)).first();
+                            if (player == null) {
+                                context.getSource().sendMessage("Player not found!");
+                                return Command.SINGLE_SUCCESS;
+                            }
+                            context.getSource().sendMessage(username + "'s current login streak is " + player.streak().days() + " days");
                             return Command.SINGLE_SUCCESS;
                         }))
                 .executes(context -> {
