@@ -18,11 +18,11 @@ import net.legitimoose.bot.scraper.Rank;
 import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
+import net.legitimoose.bot.util.DiscordWebhook.Embed;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.legitimoose.bot.util.DiscordWebhook.Embed;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -91,7 +91,8 @@ public class EventHandler {
                 username = joinMatcher.group(2);
                 Player dbPlayer = players.find(eq("name", username)).first();
                 String uuid;
-                int streak;
+                int days;
+                boolean notify;
                 Instant last_joined;
 
                 try {
@@ -103,7 +104,8 @@ public class EventHandler {
                 if (rank == null) rank = "";
                 if (dbPlayer == null) {
                     last_joined = now;
-                    streak = 0;
+                    days = 1;
+                    notify = false;
                     cleanMessage = String.format("**%s** joined the server for the first time!", username);
                 } else {
                     if (dbPlayer.last_joined() != null) {
@@ -112,24 +114,29 @@ public class EventHandler {
                         last_joined = now;
                     }
                     if (dbPlayer.streak() == null) {
-                        streak = 0;
+                        days = 1;
+                        notify = false;
                     } else {
-                        streak = dbPlayer.streak();
+                        days = dbPlayer.streak().days();
+                        if (dbPlayer.streak().notifications() == null) {
+                            notify = false;
+                        } else {
+                            notify = dbPlayer.streak().notifications();
+                        }
                     }
                     cleanMessage = String.format("**%s** joined the server.", username);
                 }
 
-                if (streak != 0) {
-                    long difference = ChronoUnit.DAYS.between(last_joined.truncatedTo(ChronoUnit.DAYS), now.truncatedTo(ChronoUnit.DAYS));
-                    if (difference == 1) {
-                        streak++;
-                    } else if (difference > 1) {
-                        Minecraft.getInstance().player.connection.sendChat(String.format("%s's streak of %s has been reset!", username, streak));
-                        streak = 1;
-                    }
+                long difference = ChronoUnit.DAYS.between(last_joined.truncatedTo(ChronoUnit.DAYS), now.truncatedTo(ChronoUnit.DAYS));
+                if (difference == 1) {
+                    days++;
+                } else if (difference > 1) {
+                    if (notify)
+                        Minecraft.getInstance().player.connection.sendChat(String.format("%s's days of %s has been reset!", username, days));
+                    days = 1;
                 }
 
-                new Player(uuid, username, Rank.getEnum(rank), List.of(), streak, now).write();
+                new Player(uuid, username, Rank.getEnum(rank), List.of(), new Player.Streak(days, notify), now).write();
                 Embed embed = new Embed(DiscordUtil.sanitizeString(cleanMessage), 0x57F287);
                 embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 try {
@@ -147,7 +154,7 @@ public class EventHandler {
                 worldMatcher.find();
                 String cleanWorld = worldMatcher.group(1);
                 Embed embed = new Embed(DiscordUtil.sanitizeString(cleanMessage), 0xF2F257);
-                embed.setDescription(DiscordUtil.sanitizeString("Joined " +  cleanWorld));
+                embed.setDescription(DiscordUtil.sanitizeString("Joined " + cleanWorld));
                 embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
                 try {
                     webhook.execute(embed);

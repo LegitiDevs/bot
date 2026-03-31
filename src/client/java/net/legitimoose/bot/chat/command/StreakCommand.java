@@ -19,11 +19,11 @@ public class StreakCommand {
                         .executes(context -> {
                             Player player = players.find(eq("name", context.getSource().username())).first();
                             assert player != null;
-                            if (player.streak() != 0) {
-                                context.getSource().sendMessage("Your login streak is already enabled!");
+                            if (player.streak().notifications() == true) {
+                                context.getSource().sendMessage("Your streak notifications are already enabled!");
                             } else {
-                                players.updateOne(eq("name", context.getSource().username()), Updates.set("streak", 1));
-                                context.getSource().sendMessage("Enabled login streak!");
+                                players.updateOne(eq("name", context.getSource().username()), Updates.set("streak.notify", true));
+                                context.getSource().sendMessage("Enabled streak notifications!");
                             }
                             return Command.SINGLE_SUCCESS;
                         }))
@@ -31,22 +31,18 @@ public class StreakCommand {
                         .executes(context -> {
                             Player player = players.find(eq("name", context.getSource().username())).first();
                             assert player != null;
-                            if (player.streak() == 0) {
-                                context.getSource().sendMessage("Your login streak is already disabled!");
+                            if (player.streak().notifications() == false) {
+                                context.getSource().sendMessage("Your streak notifications are already disabled!");
                             } else {
-                                players.updateOne(eq("name", context.getSource().username()), Updates.set("streak", 0));
-                                context.getSource().sendMessage("Disabled login streak!");
+                                players.updateOne(eq("name", context.getSource().username()), Updates.set("streak.notify", true));
+                                context.getSource().sendMessage("Disabled streak notifications!");
                             }
                             return Command.SINGLE_SUCCESS;
                         }))
                 .executes(context -> {
                     Player player = players.find(eq("name", context.getSource().username())).first();
                     assert player != null;
-                    if (player.streak() != 0) {
-                        context.getSource().sendMessage("Your current login streak is " + player.streak());
-                    } else {
-                        context.getSource().sendMessage("Enable your login streak with !streak on!");
-                    }
+                    context.getSource().sendMessage("Your current login streak is " + player.streak().days() + " days");
                     return Command.SINGLE_SUCCESS;
                 }));
     }
