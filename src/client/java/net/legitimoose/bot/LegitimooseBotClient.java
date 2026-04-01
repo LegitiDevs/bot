@@ -17,12 +17,11 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
@@ -36,6 +35,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        ExecutorService executor = Executors.newFixedThreadPool(4);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -58,53 +58,28 @@ public class LegitimooseBotClient implements ClientModInitializer {
             );
         });
 
-        new Thread(DiscordBot::run).start();
+        executor.execute(DiscordBot::run);
 
-        ClientTickEvents.END_CLIENT_TICK.register((minecraft) -> rejoin(false));
-
-        new Thread(() -> {
-            try {
-                TimeUnit.SECONDS.sleep(10);
-            } catch (InterruptedException e) {
-                LOGGER.warn(e.getMessage());
-            }
+        ClientTickEvents.END_CLIENT_TICK.register((minecraft) -> {
             rejoin(false);
-        }).start();
+            if (!Scraper.getInstance().getScraping() && Minecraft.getInstance().player != null) executor.execute(() -> {
+                Scraper.getInstance().startScraping();
+            });
+        });
 
-        new Thread(() -> {
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                LOGGER.warn(e.getMessage());
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(() -> {
+            if (Minecraft.getInstance().player != null) {
+                Minecraft.getInstance().player
+                        .connection
+                        .sendChat("<br><red>I am a bot that syncs lobby chat to a community Discord<br>" +
+                                "To prevent messages being sent to discord, prefix your messages with <u>::<br>" +
+                                "<reset>You can check out our work at <b>https://legiti.dev/");
             }
-            Scraper.getInstance().startScraping();
-        }).start();
+        }, 0, 20, TimeUnit.MINUTES);
 
-        new Thread(() -> {
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                LOGGER.warn(e.getMessage());
-            }
-            while (true) {
-                try {
-                    if (Minecraft.getInstance().player != null) {
-                        Minecraft.getInstance().player
-                                .connection
-                                .sendChat("<br><red>I am a bot that syncs lobby chat to a community Discord<br>" +
-                                        "To prevent messages being sent to discord, prefix your messages with <u>::<br>" +
-                                        "<reset>You can check out our work at <b>https://legiti.dev/");
-                    }
-                    TimeUnit.MINUTES.sleep(20);
-                } catch (InterruptedException e) {
-                    LOGGER.warn(e.getMessage());
-                }
-            }
-        }).start();
-
-        ExecutorService chatEventExecutor = Executors.newSingleThreadExecutor();
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            chatEventExecutor.execute(() -> {
+            executor.execute(() -> {
                 try {
                     EventHandler.getInstance().onRecieveMessage(message, overlay);
                 } catch (CommandSyntaxException ignored) {
@@ -112,7 +87,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
             });
         });
 
-        new Thread(() -> HttpServer.getInstance().start()).start();
+        executor.execute(() -> HttpServer.getInstance().start());
     }
 
     public static void rejoin(boolean force) {

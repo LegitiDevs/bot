@@ -40,6 +40,7 @@ import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class Scraper {
     private static Scraper INSTANCE;
+    private boolean isScraping;
 
     private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
@@ -60,6 +61,7 @@ public class Scraper {
     }
 
     public void startScraping() {
+        isScraping = true;
         while (true) {
             try {
                 scrape();
@@ -313,5 +315,9 @@ public class Scraper {
             INSTANCE = new Scraper();
         }
         return INSTANCE;
+    }
+
+    public boolean getScraping() {
+        return isScraping;
     }
 }
