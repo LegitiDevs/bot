@@ -76,7 +76,7 @@ public class StreakCommand {
     }
 
     private static String getLeaderboardString() {
-        StringBuilder lbString = new StringBuilder();
+        StringBuilder lbString = new StringBuilder("<br>");
         int i = 1;
         for (Player player : players.find(Filters.exists("streak.days")).sort(descending("streak.days")).limit(5)) {
             lbString.append(i).append(". ").append(player.name()).append(" - ").append(player.streak().days()).append(" day(s)");
