@@ -39,7 +39,7 @@ public class StreakCommand {
                             if (player.streak().notifications() == false) {
                                 context.getSource().sendMessage("Your streak notifications are already disabled!");
                             } else {
-                                players.updateOne(eq("name", context.getSource().username()), Updates.set("streak.notify", true));
+                                players.updateOne(eq("name", context.getSource().username()), Updates.set("streak.notify", false));
                                 context.getSource().sendMessage("Disabled streak notifications!");
                             }
                             return Command.SINGLE_SUCCESS;
