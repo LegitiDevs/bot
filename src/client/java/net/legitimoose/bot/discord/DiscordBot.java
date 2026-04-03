@@ -72,6 +72,13 @@ public class DiscordBot extends ListenerAdapter {
                                         "message",
                                         "The reply to send",
                                         true
+                                ),
+                        Commands.slash("streak", "Get a player's streak")
+                                .addOption(
+                                        OptionType.STRING,
+                                        "player",
+                                        "The username of the player whose streak you want to check",
+                                        true
                                 ))
                 .queue();
     }
@@ -121,6 +128,7 @@ public class DiscordBot extends ListenerAdapter {
                     new MsgCommand(event, event.getOption("message").getAsString(), event.getOption("player").getAsString()).onCommandReceived();
             case "reply" -> new ReplyCommand(event, event.getOption("message").getAsString()).onCommandReceived();
             case "shout" -> new ShoutCommand(event, event.getOption("message").getAsString()).onCommandReceived();
+            case "streak" -> new StreakCommand(event, event.getOption("player").getAsString()).onCommandReceived();
             case "rejoin" -> new Rejoin(event).onCommandReceived();
             case "restart" -> new Restart(event).onCommandReceived();
             case "send" -> new Send(event, event.getOption("message").getAsString()).onCommandReceived();
