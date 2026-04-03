@@ -66,7 +66,7 @@ public class EventHandler {
         this.dispatcher = dispatcher;
     }
 
-    public void onRecieveMessage(Component message, boolean overlay) throws CommandSyntaxException {
+    public void onRecieveMessage(Component message) throws CommandSyntaxException {
         lastMessages.add(message.getString());
         String msg = message.getString();
         String username = "";
@@ -132,7 +132,7 @@ public class EventHandler {
                     days++;
                 } else if (difference > 1) {
                     if (notify)
-                        Minecraft.getInstance().player.connection.sendChat(String.format("%s's days of %s has been reset!", username, days));
+                        Minecraft.getInstance().player.connection.sendChat(String.format("%s's streak of %s days has been reset!", username, days));
                     days = 1;
                 }
 

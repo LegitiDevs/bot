@@ -81,7 +81,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
             executor.execute(() -> {
                 try {
-                    EventHandler.getInstance().onRecieveMessage(message, overlay);
+                    EventHandler.getInstance().onRecieveMessage(message);
                 } catch (CommandSyntaxException ignored) {
                 }
             });
