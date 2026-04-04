@@ -21,7 +21,7 @@ public record Player(
         Instant last_joined
 ) {
     // "notify" is not an allowed record field name
-    public record Streak(int days, @BsonProperty("notify") Boolean notifications) {
+    public record Streak(Integer days, @BsonProperty("notify") Boolean notifications) {
 
     }
     public void write() {
