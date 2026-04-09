@@ -45,8 +45,6 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
     private final Timer exitTimer = new Timer();
 
-    int thisIsATestVariableJustIgnoreMePleaseThankYou = 1;
-
     private static ExecutorService threadPool;
 
     @Override
