@@ -43,7 +43,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
     private static final int TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
-    private final Timer exitTimer = new Timer();
+    private final Timer timer = new Timer();
 
     private static ExecutorService threadPool;
 
@@ -80,7 +80,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
     }
 
     private void scheduleExit() {
-        exitTimer.schedule(new TimerTask() {
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 System.exit(67);
