@@ -15,6 +15,6 @@ public class Rejoin implements Command {
     public void onCommandReceived() {
         event.deferReply(true).queue();
         event.getHook().sendMessage("Rejoining server...").queue();
-        LegitimooseBotClient.rejoin(true);
+        LegitimooseBotClient.attemptRejoin(true);
     }
 }

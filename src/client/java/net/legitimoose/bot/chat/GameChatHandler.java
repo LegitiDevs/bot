@@ -38,8 +38,8 @@ import static com.mongodb.client.model.Filters.eq;
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
-public class EventHandler {
-    private static EventHandler INSTANCE;
+public class GameChatHandler {
+    private static GameChatHandler INSTANCE;
 
     private final CommandDispatcher<CommandSource> dispatcher;
 
@@ -59,14 +59,14 @@ public class EventHandler {
     private final Pattern tempBanPattern = Pattern.compile("^(\\S+)\\s+tempbanned\\s+(\\S+)\\s+for\\s+(.+)\\s+hours\\s+for\\s+'(.+)'");
     private final Pattern unbanPattern = Pattern.compile("^(\\S+)\\s+unbanned\\s+(\\S+)\\s+for\\s+'(.+)'");
 
-    public EventHandler(CommandDispatcher<CommandSource> dispatcher) {
+    public GameChatHandler(CommandDispatcher<CommandSource> dispatcher) {
         HelpCommand.register(dispatcher);
         BlockCommands.register(dispatcher);
         StreakCommand.register(dispatcher);
         this.dispatcher = dispatcher;
     }
 
-    public void onRecieveMessage(Component message) throws CommandSyntaxException {
+    public void onReceiveMessage(Component message) throws CommandSyntaxException {
         lastMessages.add(message.getString());
         String msg = message.getString();
         String username = "";
@@ -286,8 +286,8 @@ public class EventHandler {
         }
     }
 
-    public static EventHandler getInstance() {
-        if (INSTANCE == null) INSTANCE = new EventHandler(new CommandDispatcher<>());
+    public static GameChatHandler getInstance() {
+        if (INSTANCE == null) INSTANCE = new GameChatHandler(new CommandDispatcher<>());
         return INSTANCE;
     }
 }

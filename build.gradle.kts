@@ -18,6 +18,8 @@ loom {
       sourceSet("client")
     }
   }
+
+  accessWidenerPath = file("src/main/resources/test.accesswidener")
 }
 
 repositories {

@@ -1,7 +1,6 @@
 package net.legitimoose.bot.discord.command.staff;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.discord.command.Command;
 import net.minecraft.client.Minecraft;
 
