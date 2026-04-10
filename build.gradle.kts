@@ -19,7 +19,6 @@ loom {
     }
   }
 
-  accessWidenerPath = file("src/main/resources/test.accesswidener")
 }
 
 repositories {
