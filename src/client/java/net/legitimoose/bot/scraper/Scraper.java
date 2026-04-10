@@ -17,7 +17,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ClickType;
@@ -45,6 +44,9 @@ public class Scraper {
     private static Scraper INSTANCE;
     private boolean isScraping;
 
+    /* An override to allow in game control. Set to true when scraping should not happen */
+    private volatile boolean scrapeOverride = false;
+
     private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
 
@@ -66,16 +68,24 @@ public class Scraper {
     public void startScraping() {
         isScraping = true;
         while (true) {
-            try {
-                scrape();
-            } catch (Exception e) {
+            if (!scrapeOverride) {
                 try {
-                    error("Scraper error", e);
-                } catch (Exception ignored) {
+                    scrape();
+                } catch (Exception e) {
+                    try {
+                        error("Scraper error", e);
+                    } catch (Exception ignored) {
+                    }
                 }
             }
             waitSeconds(5);
         }
+    }
+
+    /* Overrides the default scraping. When override is true, this will prevent scraping */
+    public void override(boolean override) {
+        this.scrapeOverride = override;
+        LegitimooseBotClient.messageFromOtherThread("World scraping turned " + (override ? "off" : "on"));
     }
 
     private void error(String message, Exception exception) throws IOException, URISyntaxException {

@@ -107,6 +107,18 @@ public class LegitimooseBotClient implements ClientModInitializer {
                     .then(ClientCommandManager.literal("reload")
                       .executes(LegitimooseBotClient::reloadConfig)
                     )
+                    .then(ClientCommandManager.literal("on")
+                       .executes((source)->{
+                           Scraper.getInstance().override(false);
+                           return 0;
+                       })
+                    )
+                    .then(ClientCommandManager.literal("off")
+                        .executes((source)->{
+                            Scraper.getInstance().override(true);
+                            return 0;
+                        })
+                    )
             );
         });
     }
@@ -154,5 +166,17 @@ public class LegitimooseBotClient implements ClientModInitializer {
                screen instanceof JoinMultiplayerScreen ||
                screen instanceof TitleScreen ||
                screen instanceof AccessibilityOnboardingScreen;
+    }
+
+    private static void message(String message) {
+        LocalPlayer player = Minecraft.getInstance().player;
+
+        if (player != null) {
+            player.displayClientMessage(Component.literal(message), false);
+        }
+    }
+
+    public static void messageFromOtherThread(String message) {
+        Minecraft.getInstance().submit(()->message(message));
     }
 }

@@ -139,11 +139,7 @@ public class GameChatHandler {
                 new Player(uuid, username, Rank.getEnum(rank), List.of(), new Player.Streak(days, notify), now).write();
                 Embed embed = new Embed(DiscordUtil.sanitizeString(cleanMessage), 0x57F287);
                 embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                try {
-                    webhook.execute(embed);
-                } catch (IOException | URISyntaxException e) {
-                    LOGGER.warn(e.getMessage());
-                }
+                executeWebhook(webhook, embed, false);
                 return;
             } else if (switchMatcher.find()) {
                 username = switchMatcher.group(1);
@@ -156,22 +152,14 @@ public class GameChatHandler {
                 Embed embed = new Embed(DiscordUtil.sanitizeString(cleanMessage), 0xF2F257);
                 embed.setDescription(DiscordUtil.sanitizeString("Joined " + cleanWorld));
                 embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                try {
-                    webhook.execute(embed);
-                } catch (IOException | URISyntaxException e) {
-                    LOGGER.warn(e.getMessage());
-                }
+                executeWebhook(webhook, embed, false);
                 return;
             } else if (leaveMatcher.find()) {
                 username = leaveMatcher.group(1);
                 cleanMessage = String.format("**%s** left the server.", username);
                 Embed embed = new Embed(DiscordUtil.sanitizeString(cleanMessage), 0xF25757);
                 embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
-                try {
-                    webhook.execute(embed);
-                } catch (IOException | URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
+                executeWebhook(webhook, embed, true);
                 return;
             } else if (chatMatcher.find()) {
                 username = chatMatcher.group(1);
@@ -213,16 +201,8 @@ public class GameChatHandler {
                 Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s**", banned, moderator)), 0xF25757);
                 embed.setDescription(DiscordUtil.sanitizeString(reason));
                 webhook.setUsername("Legitimoose Ban");
-                try {
-                    webhook.execute(embed);
-                } catch (IOException | URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
-                try {
-                    new Ban(ban_time, banned, McUtil.getUuid(banned), moderator, McUtil.getUuid(moderator), reason, -1, -1).write(); // For temp bans, calculate expiration time based on duration else -1 for permanent
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                executeWebhook(webhook, embed, true);
+                Ban.writePermBan(ban_time, banned, moderator, reason);
                 return;
             } else if (tempBanMatcher.find()) {
                 long ban_time = System.currentTimeMillis() / 1000L;
@@ -233,17 +213,9 @@ public class GameChatHandler {
                 Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s** for **%s** hours", banned, moderator, hours)), 0xF25757);
                 embed.setDescription(DiscordUtil.sanitizeString(reason));
                 webhook.setUsername("Legitimoose Ban");
-                try {
-                    webhook.execute(embed);
-                } catch (IOException | URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
+                executeWebhook(webhook, embed, true);
                 long duration = TimeUnit.HOURS.toSeconds(hours);
-                try {
-                    new Ban(ban_time, banned, McUtil.getUuid(banned), moderator, McUtil.getUuid(moderator), reason, duration, ban_time + duration).write(); // For temp bans, calculate expiration time based on duration else -1 for permanent
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                Ban.writeTempBan(ban_time, banned, moderator, reason, duration);
                 return;
             } else if (unbanMatcher.find()) {
                 String moderator = unbanMatcher.group(1);
@@ -252,38 +224,42 @@ public class GameChatHandler {
                 Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s**", banned, moderator)), 0x57F287);
                 embed.setDescription(DiscordUtil.sanitizeString(reason));
                 webhook.setUsername("Legitimoose Ban");
-                try {
-                    webhook.execute(embed);
-                } catch (IOException | URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
+                executeWebhook(webhook, embed, true);
                 return;
             } else if (broadcastMatcher.find()) {
                 String msg1 = broadcastMatcher.group(1);
                 webhook.setUsername("[Broadcast]");
                 Embed embed = new Embed(DiscordUtil.sanitizeString(msg1), 0x5757F2);
-                try {
-                    webhook.execute(embed);
-                } catch (IOException | URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
+                executeWebhook(webhook, embed, true);
                 return;
             }
 
-            if (username.equals(Minecraft.getInstance().player.getName().getString()) && !FabricLoader.getInstance().isDevelopmentEnvironment())
-                return;
-
-            if (!username.isEmpty() &&
-                    !cleanMessage.startsWith(CONFIG.getString("secretPrefix"))
-            ) {
+            if (shouldLogChatMessage(username, cleanMessage)) {
                 webhook.setContent(DiscordUtil.sanitizeString(cleanMessage));
-                try {
-                    webhook.execute();
-                } catch (IOException | URISyntaxException e) {
-                    LOGGER.warn(e.getMessage());
-                }
+                executeWebhook(webhook, null, false);
             }
         }
+    }
+
+    private void executeWebhook(DiscordWebhook webhook, Embed embed, boolean throwErrors) {
+        try {
+            webhook.execute(embed);
+        } catch (IOException | URISyntaxException e) {
+            if (throwErrors)
+                throw new RuntimeException(e);
+            LOGGER.warn(e.getMessage());
+        }
+    }
+
+    private boolean shouldLogChatMessage(String senderName, String message) {
+        return isLoggableSender(senderName) && !message.startsWith(CONFIG.getString("secretPrefix"));
+    }
+
+    private boolean isLoggableSender(String senderName) {
+        if (Minecraft.getInstance().player.getPlainTextName().equals(senderName) && !FabricLoader.getInstance().isDevelopmentEnvironment())
+            return false;
+
+        return !senderName.isEmpty();
     }
 
     public static GameChatHandler getInstance() {
