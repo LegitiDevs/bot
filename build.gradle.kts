@@ -18,6 +18,7 @@ loom {
       sourceSet("client")
     }
   }
+
 }
 
 repositories {

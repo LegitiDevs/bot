@@ -10,12 +10,14 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
+import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ClickType;
@@ -39,6 +41,7 @@ import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class Scraper {
+
     private static Scraper INSTANCE;
     private boolean isScraping;
 
@@ -51,7 +54,7 @@ public class Scraper {
     public final MongoDatabase db = mongoClient.getDatabase("legitimooseapi");
     private final MongoCollection<World> coll = db.getCollection("worlds", World.class);
 
-    private void waitSeconds(long time) {
+    private void waitSeconds(int time) {
         try {
             TimeUnit.SECONDS.sleep(time);
         } catch (InterruptedException e) {
@@ -317,7 +320,7 @@ public class Scraper {
         return INSTANCE;
     }
 
-    public boolean getScraping() {
-        return isScraping;
+    public boolean shouldStartScraping() {
+        return !isScraping && Minecraft.getInstance().player != null;
     }
 }
