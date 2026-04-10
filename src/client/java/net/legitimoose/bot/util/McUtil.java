@@ -13,6 +13,14 @@ import java.net.http.HttpResponse;
 public class McUtil {
     private static final HttpClient client = HttpClient.newHttpClient();
 
+    public static String getUuidOrThrow(String username) {
+        try {
+            return getUuid(username);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static String getUuid(String username) throws IOException, InterruptedException, URISyntaxException {
         HttpRequest bannedUUIDRequest = HttpRequest.newBuilder()
                 .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", username)))
