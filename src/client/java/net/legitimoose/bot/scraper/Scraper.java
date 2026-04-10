@@ -82,7 +82,7 @@ public class Scraper {
         }
     }
 
-    /* Overrides the default scraping. When override is true, this will */
+    /* Overrides the default scraping. When override is true, this will prevent scraping */
     public void override(boolean override) {
         this.scrapeOverride = override;
         LegitimooseBotClient.messageFromOtherThread("World scraping turned " + (override ? "off" : "on"));
