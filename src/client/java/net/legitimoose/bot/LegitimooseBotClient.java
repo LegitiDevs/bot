@@ -155,16 +155,4 @@ public class LegitimooseBotClient implements ClientModInitializer {
                screen instanceof TitleScreen ||
                screen instanceof AccessibilityOnboardingScreen;
     }
-
-    private static void message(String message) {
-        LocalPlayer player = Minecraft.getInstance().player;
-
-        if (player != null) {
-            player.displayClientMessage(Component.literal(message), false);
-        }
-    }
-
-    public static void messageFromOtherThread(String message) {
-        Minecraft.getInstance().submit(()->message(message));
-    }
 }
