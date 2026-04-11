@@ -1,7 +1,6 @@
 package net.legitimoose.bot;
 
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -62,12 +61,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
         schedulePeriodicalMessage();
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            threadPool.execute(() -> {
-                try {
-                    GameChatHandler.getInstance().onReceiveMessage(message);
-                } catch (CommandSyntaxException ignored) {
-                }
-            });
+            threadPool.execute(() -> GameChatHandler.getInstance().handleChat(message));
         });
 
         threadPool.execute(() -> HttpServer.getInstance().start());
