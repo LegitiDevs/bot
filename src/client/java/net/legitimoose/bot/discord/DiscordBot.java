@@ -28,8 +28,7 @@ public class DiscordBot extends ListenerAdapter {
     public static JDA jda;
 
     public static void run() {
-        jda =
-                JDABuilder.createDefault(CONFIG.getString("token"))
+        jda = JDABuilder.createDefault(CONFIG.getString("token"))
                         .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
                         .build();
 
