@@ -53,7 +53,7 @@ public class StreakCommand {
                                 context.getSource().sendMessage("Player not found!");
                                 return Command.SINGLE_SUCCESS;
                             }
-                            context.getSource().sendMessage(username + "'s current login streak is " + player.streak().days() + " days");
+                            context.getSource().sendMessage(username + "'s current login streak is " + player.streak().days() + " day(s)");
                             return Command.SINGLE_SUCCESS;
                         }))
 
