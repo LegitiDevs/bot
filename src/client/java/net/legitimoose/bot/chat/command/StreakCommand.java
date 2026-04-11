@@ -70,7 +70,7 @@ public class StreakCommand {
                 .executes(context -> {
                     Player player = players.find(eq("name", context.getSource().username())).first();
                     assert player != null;
-                    context.getSource().sendMessage("Your current login streak is " + player.streak().days() + " days");
+                    context.getSource().sendMessage("Your current login streak is " + player.streak().days() + " day(s)");
                     return Command.SINGLE_SUCCESS;
                 }));
     }

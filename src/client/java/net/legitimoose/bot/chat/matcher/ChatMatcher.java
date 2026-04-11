@@ -42,7 +42,7 @@ public class ChatMatcher implements MessageMatcher {
         this.username = matcher.group(1);
         this.message = matcher.group(2);
         this.isShout = message.startsWith("[SHOUT]");
-        this.isCommand = !isShout && message.startsWith(COMMAND_PREFIX);
+        this.isCommand = !isShout && this.message.startsWith(COMMAND_PREFIX);
 
         return true;
     }

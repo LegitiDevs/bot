@@ -159,10 +159,11 @@ public class GameChatHandler {
     /**
      * Handles a bot command sent by a user. See {@link #handleChatMessage}.
      */
-    private void handleCommandMessage(String senderUsername, String command) {
+    private void handleCommandMessage(String command, String senderUsername) {
         try {
             dispatcher.execute(command, new CommandSource(senderUsername));
-        } catch (CommandSyntaxException ignored) {
+        } catch (CommandSyntaxException e) {
+            LOGGER.error("Error handling command", e);
         }
     }
 
