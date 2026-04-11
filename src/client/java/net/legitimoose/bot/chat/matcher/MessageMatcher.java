@@ -6,14 +6,15 @@ import net.minecraft.network.chat.Component;
 
 public interface MessageMatcher {
 
-    /* This should return false if the message is not a match,
-       however if it is a match, it should generate the sections
-       which will be required later from the message before
-       returning true */
+    /**
+     * Gathers the required fields from the message
+     *
+     * @return whether the message is a match
+     */
     boolean matches(String message);
 
-    /* Handles the execution of the Message
-       For readability it should just call the relevant GameChatHandler method */
-    void visit(GameChatHandler handler, DiscordWebhook webhook, Component original);
-
+    /**
+     * Executes the corresponding handler for the message
+     */
+    void handle(GameChatHandler handler, DiscordWebhook webhook, Component original);
 }

@@ -7,11 +7,12 @@ import net.minecraft.network.chat.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Matcher for player leave messages.
+ * <p>
+ * These are in the format <code>[-] Rank | username</code>. Almost identical to {@link SwitchMatcher}
+ */
 public class LeaveMatcher implements MessageMatcher {
-
-    /* Matcher to match for players leaving legitermoose.
-       These are in the format [-] Rank | Username. Almost identical to SwitchMatcher */
-
     private static final Pattern PATTERN = Pattern.compile("^\\[-]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
 
     private String username;
@@ -36,7 +37,7 @@ public class LeaveMatcher implements MessageMatcher {
     }
 
     @Override
-    public void visit(GameChatHandler handler, DiscordWebhook webhook, Component original) {
+    public void handle(GameChatHandler handler, DiscordWebhook webhook, Component original) {
         handler.handleLeaveMessage(this, webhook);
     }
 

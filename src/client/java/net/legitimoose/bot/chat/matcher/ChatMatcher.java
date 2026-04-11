@@ -7,11 +7,12 @@ import net.minecraft.network.chat.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Matcher for chat messages, including shout.
+ * <p>
+ * These are in the format <code>([SHOUT]) rank | player: message</code>
+ */
 public class ChatMatcher implements MessageMatcher {
-
-    /* Matcher to match for chat messages, shouts or not.
-       These are in the format <optional [SHOUT]> rank | player: message */
-
     public static final String COMMAND_PREFIX = "!";
 
     private static final Pattern PATTERN = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?([^:]+): (.*)", Pattern.DOTALL);
@@ -47,7 +48,7 @@ public class ChatMatcher implements MessageMatcher {
     }
 
     @Override
-    public void visit(GameChatHandler handler, DiscordWebhook webhook, Component original) {
+    public void handle(GameChatHandler handler, DiscordWebhook webhook, Component original) {
         handler.handleChatMessage(this, webhook);
     }
 

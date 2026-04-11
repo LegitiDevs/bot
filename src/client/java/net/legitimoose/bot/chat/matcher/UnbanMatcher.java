@@ -7,11 +7,12 @@ import net.minecraft.network.chat.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Matcher match for unbans.
+ * <p>
+ * These are in the format <code>(moderator) unbanned (unbanned) for (reason)</code>
+ */
 public class UnbanMatcher implements MessageMatcher {
-
-    /* Matcher to match for unbans.
-       These are in the format <moderator> unbanned <unbanned> for <reason> */
-
     private static final Pattern PATTERN = Pattern.compile("^(\\S+)\\s+unbanned\\s+(\\S+)\\s+for\\s+'(.+)'");
 
     private String moderatorName;
@@ -41,7 +42,7 @@ public class UnbanMatcher implements MessageMatcher {
     }
 
     @Override
-    public void visit(GameChatHandler handler, DiscordWebhook webhook, Component original) {
+    public void handle(GameChatHandler handler, DiscordWebhook webhook, Component original) {
         handler.handleUnbanMessage(this, webhook);
     }
 

@@ -7,11 +7,12 @@ import net.minecraft.network.chat.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Matcher for broadcasts.
+ * <p>
+ * These are in the format <code>[Broadcast] (message)</code>
+ */
 public class BroadcastMatcher implements MessageMatcher {
-
-    /* Matcher to match for broadcasts.
-       These are in the format [Broadcast] <Message> */
-
     private static final Pattern PATTERN = Pattern.compile("^\\[Broadcast\\]\\s(.*)");
 
     private String message;
@@ -22,7 +23,7 @@ public class BroadcastMatcher implements MessageMatcher {
 
     @Override
     public boolean matches(String message) {
-        /* Only using first two characters as they differentiate it from all others anyway */
+        // Only using first two characters as they differentiate it from all others anyway
         if (!message.startsWith("[B"))
             return false;
 
@@ -37,7 +38,7 @@ public class BroadcastMatcher implements MessageMatcher {
     }
 
     @Override
-    public void visit(GameChatHandler handler, DiscordWebhook webhook, Component original) {
+    public void handle(GameChatHandler handler, DiscordWebhook webhook, Component original) {
         handler.handleBroadcastMessage(this, webhook);
     }
 

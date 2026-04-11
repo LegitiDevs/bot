@@ -7,10 +7,12 @@ import net.minecraft.network.chat.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Matcher for temporary bans.
+ * <p>
+ * These are in the format <code>(moderator) tempbanned (player) for (hours) for (reason)</code>
+ */
 public class TempBanMatcher implements MessageMatcher {
-
-    /* Matcher to match for temporary bans.
-       These are in the format <moderator> tempbanned <player> for <hours> for <reason> */
 
     private static final Pattern PATTERN = Pattern.compile("^(\\S+)\\s+tempbanned\\s+(\\S+)\\s+for\\s+(.+)\\s+hours\\s+for\\s+'(.+)'");
 
@@ -45,7 +47,7 @@ public class TempBanMatcher implements MessageMatcher {
     }
 
     @Override
-    public void visit(GameChatHandler handler, DiscordWebhook webhook, Component original) {
+    public void handle(GameChatHandler handler, DiscordWebhook webhook, Component original) {
         handler.handleTempBanMessage(this, webhook);
     }
 

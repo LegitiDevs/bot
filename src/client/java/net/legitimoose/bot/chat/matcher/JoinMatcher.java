@@ -7,11 +7,12 @@ import net.minecraft.network.chat.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Matcher for player join messages.
+ * <p>
+ * These are in the format <code>[+] Rank | username</code> or <code>[+] username</code>
+ */
 public class JoinMatcher implements MessageMatcher {
-
-    /* Matcher to match for player join messages.
-       These are in the format [+] Rank | Username or [+] Username */
-
     private static final Pattern PATTERN = Pattern.compile("^\\[\\+] (?:([^|]+) \\| )?(\\S+)");
 
     private String username;
@@ -36,7 +37,7 @@ public class JoinMatcher implements MessageMatcher {
             return false;
 
         rank = matcher.group(1);
-        if (rank == null) /* Preventing rank from being null avoids a null check in GameChatHandler */
+        if (rank == null) // Preventing rank from being null avoids a null check in GameChatHandler
             rank = "";
         username = matcher.group(2);
 
@@ -44,7 +45,7 @@ public class JoinMatcher implements MessageMatcher {
     }
 
     @Override
-    public void visit(GameChatHandler handler, DiscordWebhook webhook, Component original) {
+    public void handle(GameChatHandler handler, DiscordWebhook webhook, Component original) {
         handler.handleJoinMessage(this, webhook);
     }
 

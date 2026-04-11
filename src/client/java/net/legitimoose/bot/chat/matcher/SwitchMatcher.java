@@ -7,11 +7,12 @@ import net.minecraft.network.chat.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Matcher for players switching worlds.
+ * <p>
+ * These are in the format <code>[→] Rank | Username</code>
+ */
 public class SwitchMatcher implements MessageMatcher {
-
-    /* Matcher to match for players switching worlds.
-       These are in the format [→] Rank | Username */
-
     private static final Pattern PATTERN = Pattern.compile("^\\[→]\\s*(?:[^|]+\\|\\s*)?(\\S+)");
 
     private String username;
@@ -36,7 +37,7 @@ public class SwitchMatcher implements MessageMatcher {
     }
 
     @Override
-    public void visit(GameChatHandler handler, DiscordWebhook webhook, Component original) {
+    public void handle(GameChatHandler handler, DiscordWebhook webhook, Component original) {
         handler.handleSwitchMessage(this, webhook, original);
     }
 

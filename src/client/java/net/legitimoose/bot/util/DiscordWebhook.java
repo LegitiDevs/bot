@@ -1,9 +1,5 @@
 package net.legitimoose.bot.util;
 
-/*
- * Used to do webhook stuff easily
- * Taken from https://gist.github.com/k3kdude/fba6f6b37594eae3d6f9475330733bdb
- */
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -16,8 +12,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
-
+/**
+ * Used to do webhook stuff easily
+ * <p>
+ * Taken from <a href="https://gist.github.com/k3kdude/fba6f6b37594eae3d6f9475330733bdb">GitHub</a>
+ */
 public class DiscordWebhook {
 
     public static class Embed {

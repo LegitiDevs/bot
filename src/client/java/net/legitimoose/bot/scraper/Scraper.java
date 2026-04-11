@@ -44,7 +44,6 @@ public class Scraper {
     private static Scraper INSTANCE;
     private boolean isScraping;
 
-    /* An override to allow in game control. Set to true when scraping should not happen */
     private volatile boolean scrapeOverride = false;
 
     private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
@@ -82,7 +81,9 @@ public class Scraper {
         }
     }
 
-    /* Overrides the default scraping. When override is true, this will prevent scraping */
+    /**
+     * Turn scraping on or off
+     */
     public void override(boolean override) {
         this.scrapeOverride = override;
         LegitimooseBotClient.messageFromOtherThread("World scraping turned " + (override ? "off" : "on"));

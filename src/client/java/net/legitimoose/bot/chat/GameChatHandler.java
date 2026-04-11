@@ -61,15 +61,15 @@ public class GameChatHandler {
 
         // Ordered for efficiency B)
         matchers = List.of(
-            new JoinMatcher(),
-            new SwitchMatcher(),
-            new LeaveMatcher(),
-            new ChatMatcher(),
-            new MsgMatcher(),
-            new TempBanMatcher(),
-            new PermBanMatcher(),
-            new UnbanMatcher(),
-            new BroadcastMatcher()
+                new JoinMatcher(),
+                new SwitchMatcher(),
+                new LeaveMatcher(),
+                new ChatMatcher(),
+                new MsgMatcher(),
+                new TempBanMatcher(),
+                new PermBanMatcher(),
+                new UnbanMatcher(),
+                new BroadcastMatcher()
         );
     }
 
@@ -86,11 +86,11 @@ public class GameChatHandler {
     private void handleChat(Component original, String message, DiscordWebhook webhook) {
         for (MessageMatcher matcher : matchers) {
             if (matcher.matches(message)) {
-                matcher.visit(this, webhook, original);
+                matcher.handle(this, webhook, original);
                 return;
             }
         }
-        /* Not necessary but might be useful */
+        // Not necessary but might be useful
         LOGGER.warn("Could not interpret message '{}'", message);
     }
 
@@ -145,8 +145,8 @@ public class GameChatHandler {
         if (discordReceiverName != null) {
             String finalUsername = discordReceiverName.replace("@", "");
             user = DiscordBot.jda.getGuildById(CONFIG.getString("guildId"))
-                      .findMembers(s -> s.getUser().getName().equals(finalUsername))
-                      .get().getFirst().getUser();
+                    .findMembers(s -> s.getUser().getName().equals(finalUsername))
+                    .get().getFirst().getUser();
         } else {
             user = DiscordBot.jda.retrieveUserById(MsgCommand.lastSent.get(senderUsername)).complete();
         }
@@ -156,7 +156,9 @@ public class GameChatHandler {
         ReplyCommand.lastSentReply.put(user.getIdLong(), senderUsername);
     }
 
-    /* Handles a bot command sent by a user. See handleChatMessage. */
+    /**
+     * Handles a bot command sent by a user. See {@link #handleChatMessage}.
+     */
     private void handleCommandMessage(String senderUsername, String command) {
         try {
             dispatcher.execute(command, new CommandSource(senderUsername));
@@ -177,7 +179,7 @@ public class GameChatHandler {
         } else {
             if (chat.isCommand())
                 handleCommandMessage(message.substring(1), username);
-            /* Currently bot command messages are sent to Discord */
+            // Currently bot command messages are sent to Discord
             webhook.setUsername(username);
         }
         webhook.setAvatarUrl(String.format("https://mc-heads.net/avatar/%s", username));

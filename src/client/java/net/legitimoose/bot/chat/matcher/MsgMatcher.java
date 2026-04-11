@@ -7,11 +7,12 @@ import net.minecraft.network.chat.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Matcher for private messages.
+ * <p>
+ * These are in the format <code>[(senderUsername) -> me] @(discordReceiver) (message)</code>
+ */
 public class MsgMatcher implements MessageMatcher {
-
-    /* Matcher to match for broadcasts.
-       These are in the format [<username1> -> me] @<discord user> <message> */
-
     private static final Pattern PATTERN = Pattern.compile("\\[(.*) -> me] (?:(@\\S+) )?(.*)");
 
     private String senderUsername;
@@ -41,7 +42,7 @@ public class MsgMatcher implements MessageMatcher {
     }
 
     @Override
-    public void visit(GameChatHandler handler, DiscordWebhook webhook, Component original) {
+    public void handle(GameChatHandler handler, DiscordWebhook webhook, Component original) {
         handler.handleMsgMessage(this);
     }
 

@@ -7,11 +7,12 @@ import net.minecraft.network.chat.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Matcher for permanent bans.
+ * <p>
+ * These are in the format <code>(moderator) banned (banned) for (reason)</code>
+ */
 public class PermBanMatcher implements MessageMatcher {
-
-    /* Matcher to match for permanent bans.
-       These are in the format <moderator> banned <banned> for <reason> */
-
     private static final Pattern PATTERN = Pattern.compile("^(\\S+)\\s+banned\\s+(\\S+)\\s+for\\s+'(.+)'");
 
     private String moderatorName;
@@ -41,7 +42,7 @@ public class PermBanMatcher implements MessageMatcher {
     }
 
     @Override
-    public void visit(GameChatHandler handler, DiscordWebhook webhook, Component original) {
+    public void handle(GameChatHandler handler, DiscordWebhook webhook, Component original) {
         handler.handlePermBanMessage(this, webhook);
     }
 
