@@ -11,9 +11,7 @@ import net.minecraft.client.Minecraft;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class MsgCommand implements Command {
     private static final MongoCollection<Player> coll = Scraper.getInstance().db.getCollection("players", Player.class);
@@ -46,7 +44,7 @@ public class MsgCommand implements Command {
         Minecraft.getInstance()
                 .player
                 .connection
-                .sendCommand(McUtil.sanitizeString("msg " + newMessage));
+                .sendCommand(McUtil.sanitiseChat("msg " + newMessage));
 
         event.reply(DiscordUtil.sanitizeString("Sent `" + message.trim() + "` to " + player)).setEphemeral(true).queue();
         lastSent.put(player, event.getUser().getIdLong());

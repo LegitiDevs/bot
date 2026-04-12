@@ -2,16 +2,18 @@ package net.legitimoose.bot.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.util.StringUtil;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class McUtil {
-    private static final HttpClient client = HttpClient.newHttpClient();
+
+    private static final HttpClient CLIENT = HttpClient.newHttpClient();
+
+    private static final String PLAYER_URL = "https://playerdb.co/api/player/minecraft/";
 
     public static String getUuidOrThrow(String username) {
         try {
@@ -21,34 +23,78 @@ public class McUtil {
         }
     }
 
-    public static String getUuid(String username) throws IOException, InterruptedException, URISyntaxException {
-        HttpRequest bannedUUIDRequest = HttpRequest.newBuilder()
-                .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", username)))
-                .GET()
-                .build();
-        String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
-        JsonObject data = JsonParser.parseString(response).getAsJsonObject();
-
-        return (data.getAsJsonObject("data").getAsJsonObject("player").get("id").getAsString());
+    public static String getUuid(String username) throws Exception {
+        return getPlayerField(username, "id");
     }
 
-    public static String getName(String uuid) throws URISyntaxException, IOException, InterruptedException {
-        HttpRequest bannedUUIDRequest = HttpRequest.newBuilder()
-                .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", uuid)))
-                .GET()
-                .build();
-        String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
-        JsonObject data = JsonParser.parseString(response).getAsJsonObject();
-
-        return (data.getAsJsonObject("data").getAsJsonObject("player").get("username").getAsString());
+    public static String getName(String uuid) throws Exception {
+        return getPlayerField(uuid, "username");
     }
 
-    /// Usage: Sanitize when sending minecraft chat message (including all MiniMessage and such) or command
-    /// [net.minecraft.server.network.ServerGamePacketListenerImpl#tryHandleChat]
-    public static String sanitizeString(String orig) {
-        // regex: ASCII code 0x00 to 0x1f (control chars including \n), 0x7f (DEL) and 0xa7 (§)
-        String result = orig.replaceAll("[\\x00-\\x1f\\x7f\\xa7]", "?");
-        if (result.length() > 256) result = result.substring(0, 253) + "..";
-        return result;
+    private static String getPlayerField(String usernameOrUuid, String fieldToGet) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(PLAYER_URL + usernameOrUuid))
+                .GET()
+                .build();
+
+        String response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString()).body();
+
+        JsonObject player = JsonParser.parseString(response).getAsJsonObject()
+                .getAsJsonObject("data")
+                .getAsJsonObject("player");
+
+        return player.get(fieldToGet).getAsString();
+    }
+
+    public static boolean isValidUsername(String username) {
+        if (username.length() > 16)
+            return false;
+        for (int i = 0; i < username.length(); i++) {
+            if (!isValidUsernameCharacter(username.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isValidUsernameCharacter(char c) {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+    }
+
+    public static String sanitiseChat(String string) {
+        return sanitiseString(string, 256);
+    }
+
+    public static String sanitiseString(String string) {
+        StringBuilder sb = new StringBuilder(string.length());
+        for (int i = 0; i < string.length(); i++) {
+            char c = string.charAt(i);
+            if (!StringUtil.isAllowedChatCharacter(c)) {
+                sb.append('?');
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Replaces disallowed characters with question marks and trims to maxLength
+     */
+    private static String sanitiseString(String string, int maxLength) {
+        int length = string.length();
+        int max = Math.min(length, maxLength);
+        StringBuilder sb = new StringBuilder(length > maxLength ? (maxLength - 3) : length);
+
+        for (int i = 0; i < max; i++) {
+            char c = string.charAt(i);
+            if (!StringUtil.isAllowedChatCharacter(c)) {
+                sb.append('?');
+            } else {
+                sb.append(c);
+            }
+        }
+
+        return (length > maxLength) ? sb.substring(0, maxLength - 3) + "..." : sb.toString();
     }
 }

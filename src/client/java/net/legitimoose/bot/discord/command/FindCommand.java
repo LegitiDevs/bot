@@ -21,11 +21,11 @@ public class FindCommand implements Command {
 
     @Override
     public void onCommandReceived() {
-        if (player.length() >= 200) {
-            event.reply("player name too long, sorry!").setEphemeral(true).queue();
+        if (!McUtil.isValidUsername(player)) {
+            event.reply("player name is invalid, sorry!").setEphemeral(true).queue();
             return;
         }
-        Minecraft.getInstance().player.connection.sendCommand(McUtil.sanitizeString("find " + player));
+        Minecraft.getInstance().player.connection.sendCommand("find " + player);
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {

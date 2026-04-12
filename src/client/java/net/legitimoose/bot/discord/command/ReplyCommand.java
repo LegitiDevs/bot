@@ -36,7 +36,7 @@ public class ReplyCommand implements Command {
         Minecraft.getInstance()
                 .player
                 .connection
-                .sendCommand(McUtil.sanitizeString("msg " + newMessage));
+                .sendCommand(McUtil.sanitiseChat("msg " + newMessage));
 
         event.reply(DiscordUtil.sanitizeString("Sent `" + message.trim() + "` to " + player)).setEphemeral(true).queue();
     }
