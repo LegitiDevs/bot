@@ -35,11 +35,7 @@ public class DiscordBot extends ListenerAdapter {
         jda.addEventListener(new DiscordBot());
         jda.updateCommands()
                 .addCommands(
-                        Commands.slash("list", "List online players in the server")
-                                .addOption(
-                                        OptionType.BOOLEAN,
-                                        "lobby",
-                                        "True if you only want to see online players in the lobby"),
+                        Commands.slash("list", "List online players in the server"),
                         Commands.slash("find", "Find which world a player is in")
                                 .addOption(
                                         OptionType.STRING,
@@ -104,15 +100,6 @@ public class DiscordBot extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
-            case "list" -> {
-                boolean lobby;
-                if (event.getOption("lobby") != null) {
-                    lobby = event.getOption("lobby").getAsBoolean();
-                } else {
-                    lobby = false;
-                }
-                new ListCommand(event, lobby).onCommandReceived();
-            }
             case "listall" -> {
                 boolean raw;
                 if (event.getOption("raw") != null) {
@@ -122,6 +109,7 @@ public class DiscordBot extends ListenerAdapter {
                 }
                 new ListallCommand(event, raw).onCommandReceived();
             }
+            case "list" -> new ListCommand(event).onCommandReceived();
             case "find" -> new FindCommand(event, event.getOption("player").getAsString()).onCommandReceived();
             case "msg" ->
                     new MsgCommand(event, event.getOption("message").getAsString(), event.getOption("player").getAsString()).onCommandReceived();
