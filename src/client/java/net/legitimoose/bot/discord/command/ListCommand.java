@@ -6,6 +6,7 @@ import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.minecraft.client.Minecraft;
@@ -17,15 +18,10 @@ import java.util.concurrent.CompletableFuture;
 
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
-public class ListCommand implements Command {
-    final SlashCommandInteractionEvent event;
-
-    public ListCommand(SlashCommandInteractionEvent event) {
-        this.event = event;
-    }
-
+public class ListCommand extends ListenerAdapter {
     @Override
-    public void onCommandReceived() {
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        if (!event.getName().equals("list")) return;
         MongoCollection<Document> coll = Scraper.getInstance().db.getCollection("stats");
 
         event
