@@ -60,9 +60,9 @@ public class StreakCommand extends ListenerAdapter {
     }
 
     private String getLeaderboardString(int page) {
-        StringBuilder lbString = new StringBuilder("");
+        StringBuilder lbString = new StringBuilder();
         int i = 1;
-        for (Player player : players.find(Filters.exists("streak.days")).sort(descending("streak.days")).skip((page - 1) * 5).limit(5)) {
+        for (Player player : players.find(Filters.exists("streak.days")).sort(descending("streak.days", "last_joined")).skip((page - 1) * 5).limit(5)) {
             lbString.append((page - 1) * 5 + i).append(". ").append(player.name()).append(" - ").append(player.streak().days()).append(" day(s)").append('\n');
             i++;
         }

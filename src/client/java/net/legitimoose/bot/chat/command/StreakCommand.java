@@ -80,7 +80,7 @@ public class StreakCommand {
     private static String getLeaderboardString(int page) {
         StringBuilder lbString = new StringBuilder("<br>");
         int i = 1;
-        for (Player player : players.find(Filters.exists("streak.days")).sort(descending("streak.days")).skip((page - 1) * 5).limit(5)) {
+        for (Player player : players.find(Filters.exists("streak.days")).sort(descending("streak.days", "last_joined")).skip((page - 1) * 5).limit(5)) {
             lbString.append((page - 1) * 5 + i).append(". ").append(player.name()).append(" - ").append(player.streak().days()).append(" day(s)");
             if (i < 5) {
                 lbString.append("<br>");
