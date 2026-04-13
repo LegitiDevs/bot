@@ -1,10 +1,13 @@
 package net.legitimoose.bot.util;
 
 public class DiscordUtil {
-    public static String sanitizeString(String orig) {
-        return orig
-                // replace @ and # with lookalikes
-                .replace("@", "＠")
-                .replace("#", "＃");
+
+    /**
+     * Replaces @ and # symbols with lookalike Unicode symbols
+     */
+    public static String sanitizeString(String string) {
+        return string.replace('#', '＃')
+                .replace('@', '＠');
     }
+
 }
