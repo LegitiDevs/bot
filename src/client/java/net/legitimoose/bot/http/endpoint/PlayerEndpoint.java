@@ -38,8 +38,12 @@ public class PlayerEndpoint {
                 String uuid = McUtil.getUuid(user);
                 Player dbPlayer = players.find(eq("uuid", uuid)).first();
                 Rank rank;
-                if (dbPlayer == null) rank = Rank.Unknown;
-                else rank = dbPlayer.rank();
+                if (dbPlayer == null) {
+                    rank = Rank.Unknown;
+                } else {
+                    player.addProperty("streak", dbPlayer.streak().days());
+                    rank = dbPlayer.rank();
+                }
 
                 player.addProperty("uuid", uuid);
                 player.addProperty("name", user);
@@ -73,8 +77,12 @@ public class PlayerEndpoint {
                 }
                 Player dbPlayer = players.find(eq("uuid", uuid)).first();
                 Rank rank;
-                if (dbPlayer == null) rank = Rank.Unknown;
-                else rank = dbPlayer.rank();
+                if (dbPlayer == null) {
+                    rank = Rank.Unknown;
+                } else {
+                    response.addProperty("streak", dbPlayer.streak().days());
+                    rank = dbPlayer.rank();
+                }
 
                 response.addProperty("name", user);
                 response.addProperty("rank", rank.toString());
