@@ -1,20 +1,14 @@
 package net.legitimoose.bot.discord.command.staff;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.legitimoose.bot.discord.command.Command;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.minecraft.client.Minecraft;
 
-public class Send implements Command {
-    final SlashCommandInteractionEvent event;
-    final String message;
-
-    public Send(SlashCommandInteractionEvent event, String message) {
-        this.event = event;
-        this.message = message;
-    }
-
+public class Send extends ListenerAdapter {
     @Override
-    public void onCommandReceived() {
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        if (!event.getName().equals("send")) return;
+        String message = event.getOption("message").getAsString();
         event.deferReply(true).queue();
         if (message.isEmpty()) {
             event.getHook().sendMessage("Please provide a message to send.").queue();

@@ -58,12 +58,14 @@ public class StreakCommand {
                         }))
 
                 .then(LiteralArgumentBuilder.<CommandSource>literal("leaderboard").executes(context -> {
-                    context.getSource().sendMessage(getLeaderboardString());
+                    context.getSource().sendMessage(getLeaderboardString(1));
+                    context.getSource().sendMessage(getLeaderboardString(2));
                     return Command.SINGLE_SUCCESS;
                 }))
 
                 .then(LiteralArgumentBuilder.<CommandSource>literal("lb").executes(context -> {
-                    context.getSource().sendMessage(getLeaderboardString());
+                    context.getSource().sendMessage(getLeaderboardString(1));
+                    context.getSource().sendMessage(getLeaderboardString(2));
                     return Command.SINGLE_SUCCESS;
                 }))
 
@@ -75,11 +77,11 @@ public class StreakCommand {
                 }));
     }
 
-    private static String getLeaderboardString() {
+    private static String getLeaderboardString(int page) {
         StringBuilder lbString = new StringBuilder("<br>");
         int i = 1;
-        for (Player player : players.find(Filters.exists("streak.days")).sort(descending("streak.days")).limit(5)) {
-            lbString.append(i).append(". ").append(player.name()).append(" - ").append(player.streak().days()).append(" day(s)");
+        for (Player player : players.find(Filters.exists("streak.days")).sort(descending("streak.days", "last_joined")).skip((page - 1) * 5).limit(5)) {
+            lbString.append((page - 1) * 5 + i).append(". ").append(player.name()).append(" - ").append(player.streak().days()).append(" day(s)");
             if (i < 5) {
                 lbString.append("<br>");
             }

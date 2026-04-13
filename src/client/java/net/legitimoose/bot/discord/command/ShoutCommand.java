@@ -1,31 +1,23 @@
 package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.discord.CommandUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 
-public class ShoutCommand implements Command {
+public class ShoutCommand extends ListenerAdapter {
 
     private static final int MAX_SHOUT_LENGTH = 100;
 
     private static final Cooldown COOLDOWN = Cooldown.ofSeconds(30);
 
-    final SlashCommandInteractionEvent event;
-
-    final String content;
-
-    public ShoutCommand(SlashCommandInteractionEvent event, String content) {
-        this.event = event;
-        // Trims the content to simulate the trim that occurs when a player sends
-        // A chat message by default in MC.
-        this.content = content.trim();
-    }
-
     @Override
-    public void onCommandReceived() {
-        long userId = event.getUser().getIdLong();
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        if (!event.getName().equals("shout")) return;
+        String content = event.getOption("message").getAsString();
 
+        long userId = event.getUser().getIdLong();
         String username = CommandUtil.getInstigatorsName(event);
         boolean bypassCooldown = CommandUtil.isInstigatorManagerOfTargetGuild(event);
 
