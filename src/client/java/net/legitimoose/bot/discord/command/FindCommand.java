@@ -16,11 +16,11 @@ public class FindCommand extends ListenerAdapter {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (!event.getName().equals("find")) return;
         String player = event.getOption("player").getAsString();
-        if (!McUtil.isValidUsername(player)) {
+        if (!McUtil.isValidMCUsername(player)) {
             event.reply("player name too long, sorry!").setEphemeral(true).queue();
             return;
         }
-        Minecraft.getInstance().player.connection.sendCommand(McUtil.sanitiseString("find " + player));
+        Minecraft.getInstance().player.connection.sendCommand(McUtil.sanitizeString("find " + player));
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {

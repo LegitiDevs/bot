@@ -22,7 +22,7 @@ public class ShoutCommand extends ListenerAdapter {
         boolean bypassCooldown = CommandUtil.isInstigatorManagerOfTargetGuild(event);
 
         if (!bypassCooldown) {
-            long cooldown = COOLDOWN.getRemainingAndReset(userId);
+            long cooldown = COOLDOWN.getRemainingAndSet(userId);
             if (cooldown > 0) {
                 CommandUtil.reply("Can't shout now. Try again in " + COOLDOWN.formatSeconds(cooldown) + " seconds", false, event);
                 return;
@@ -36,7 +36,7 @@ public class ShoutCommand extends ListenerAdapter {
             return;
         }
 
-        Minecraft.getInstance().getConnection().sendCommand("shout " + McUtil.sanitiseString(message));
+        Minecraft.getInstance().getConnection().sendCommand("shout " + McUtil.sanitizeString(message));
 
         CommandUtil.replySanitised("Shouted '" + content + "'", true, event);
     }

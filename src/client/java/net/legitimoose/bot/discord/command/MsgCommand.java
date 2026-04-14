@@ -39,7 +39,7 @@ public class MsgCommand extends ListenerAdapter {
         Minecraft.getInstance()
                 .player
                 .connection
-                .sendCommand(McUtil.sanitiseChat("msg " + newMessage));
+                .sendCommand(McUtil.sanitizeChat("msg " + newMessage));
 
         event.reply(DiscordUtil.sanitizeString("Sent `" + message.trim() + "` to " + player)).setEphemeral(true).queue();
         lastSent.put(player, event.getUser().getIdLong());

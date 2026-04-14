@@ -32,8 +32,7 @@ public class McUtil {
     }
 
     private static String getPlayerField(String usernameOrUuid, String fieldToGet) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(PLAYER_URL + usernameOrUuid))
+        HttpRequest request = HttpRequest.newBuilder().uri(new URI(PLAYER_URL + usernameOrUuid))
                 .GET()
                 .build();
 
@@ -46,7 +45,7 @@ public class McUtil {
         return player.get(fieldToGet).getAsString();
     }
 
-    public static boolean isValidUsername(String username) {
+    public static boolean isValidMCUsername(String username) {
         if (username.length() > 16)
             return false;
         for (int i = 0; i < username.length(); i++) {
@@ -61,11 +60,17 @@ public class McUtil {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
     }
 
-    public static String sanitiseChat(String string) {
-        return sanitiseString(string, 256);
+    public static String sanitizeChat(String string) {
+        return sanitizeString(string, 256);
     }
 
-    public static String sanitiseString(String string) {
+    /**
+     * Replaces disallowed characters with question marks but does not trim
+     */
+    public static String sanitizeString(String string) {
+        if (string.isEmpty())
+            return string;
+
         StringBuilder sb = new StringBuilder(string.length());
         for (int i = 0; i < string.length(); i++) {
             char c = string.charAt(i);
@@ -79,22 +84,12 @@ public class McUtil {
     }
 
     /**
-     * Replaces disallowed characters with question marks and trims to maxLength
+     * Replaces disallowed characters with question marks and trims
      */
-    private static String sanitiseString(String string, int maxLength) {
-        int length = string.length();
-        int max = Math.min(length, maxLength);
-        StringBuilder sb = new StringBuilder(length > maxLength ? (maxLength - 3) : length);
-
-        for (int i = 0; i < max; i++) {
-            char c = string.charAt(i);
-            if (!StringUtil.isAllowedChatCharacter(c)) {
-                sb.append('?');
-            } else {
-                sb.append(c);
-            }
-        }
-
-        return (length > maxLength) ? sb.substring(0, maxLength - 3) + "..." : sb.toString();
+    private static String sanitizeString(String string, int maxLength) {
+        if (string.length() <= maxLength)
+            return sanitizeString(string);
+        return sanitizeString(string.substring(0, maxLength - 3)) + "...";
     }
+
 }

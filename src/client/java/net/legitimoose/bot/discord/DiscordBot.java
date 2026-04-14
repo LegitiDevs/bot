@@ -134,7 +134,7 @@ public class DiscordBot extends ListenerAdapter {
         if (CONFIG.getString("channelId").isEmpty())
             LOGGER.error("Discord channel ID is not set in config!");
         if (event.getChannel().getId().equals(CONFIG.getString("channelId"))) {
-            Minecraft.getInstance().player.connection.sendChat(McUtil.sanitiseChat(message));
+            Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeChat(message));
         }
     }
 }

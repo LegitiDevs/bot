@@ -9,7 +9,7 @@ public class Cooldown {
 
     private final long COOLDOWN_MS;
 
-    private static final int MAX_CAPACITY = 32;
+    private static final int MAX_CAPACITY = 8;
 
     private Cooldown(long millis) {
         // ConcurrentHashMap so that you can delete elements whilst iterating
@@ -31,12 +31,13 @@ public class Cooldown {
     }
 
     /**
-     * Returns the number of milliseconds until or since the users cooldown expired or 0, before
-     * resetting their cooldown to COOLDOWN_MS
+     * Returns the number of milliseconds until or since the users cooldown expired or 0.
+     * <p>
+     * If the cooldown has expired, it will reset it to COOLDOWN_MS
      */
-    public long getRemainingAndReset(long userId) {
+    public long getRemainingAndSet(long userId) {
         long remaining = getRemaining(userId);
-        if (remaining <= 0 )
+        if (remaining <= 0)
             add(userId);
         return remaining;
     }
