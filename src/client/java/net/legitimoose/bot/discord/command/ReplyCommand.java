@@ -2,7 +2,7 @@ package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.legitimoose.bot.util.DiscordUtil;
+import net.legitimoose.bot.discord.CommandUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 
@@ -34,6 +34,6 @@ public class ReplyCommand extends ListenerAdapter {
                 .connection
                 .sendCommand(McUtil.sanitizeChat("msg " + newMessage));
 
-        event.reply(DiscordUtil.sanitizeString("Sent `" + message.trim() + "` to " + player)).setEphemeral(true).queue();
+        CommandUtil.replySanitized("Sent `" + message.trim() + "` to " + player, false, event);
     }
 }
