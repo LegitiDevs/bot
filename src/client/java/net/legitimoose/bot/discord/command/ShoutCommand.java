@@ -38,6 +38,6 @@ public class ShoutCommand extends ListenerAdapter {
 
         Minecraft.getInstance().getConnection().sendCommand("shout " + McUtil.sanitizeString(message));
 
-        CommandUtil.replySanitised("Shouted '" + content + "'", true, event);
+        CommandUtil.replySanitized("Shouted '" + content + "'", true, event);
     }
 }

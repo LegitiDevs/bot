@@ -44,7 +44,7 @@ public class CommandUtil {
     /**
      * Same as {@link #reply} but sanitises the String first
      */
-    public static void replySanitised(String message, boolean showToAll, SlashCommandInteractionEvent event) {
+    public static void replySanitized(String message, boolean showToAll, SlashCommandInteractionEvent event) {
         reply(DiscordUtil.sanitizeString(message), showToAll, event);
     }
 
