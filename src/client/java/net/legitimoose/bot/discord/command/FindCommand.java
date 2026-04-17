@@ -1,7 +1,8 @@
 package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.legitimoose.bot.chat.EventHandler;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.chat.GameChatHandler;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -10,17 +11,11 @@ import java.util.concurrent.TimeUnit;
 
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
-public class FindCommand implements Command {
-    final SlashCommandInteractionEvent event;
-    final String player;
-
-    public FindCommand(SlashCommandInteractionEvent event, String player) {
-        this.event = event;
-        this.player = player;
-    }
-
+public class FindCommand extends ListenerAdapter {
     @Override
-    public void onCommandReceived() {
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        if (!event.getName().equals("find")) return;
+        String player = event.getOption("player").getAsString();
         if (player.length() >= 200) {
             event.reply("player name too long, sorry!").setEphemeral(true).queue();
             return;
@@ -31,6 +26,6 @@ public class FindCommand implements Command {
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        event.reply(DiscordUtil.sanitizeString(EventHandler.getInstance().lastMessages.getLast().replace(" Click HERE to join.", "").trim())).queue();
+        event.reply(DiscordUtil.sanitizeString(GameChatHandler.getInstance().lastMessages.getLast().replace(" Click HERE to join.", "").trim())).queue();
     }
 }

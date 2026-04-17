@@ -9,8 +9,6 @@ import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.McUtil;
 import org.bson.Document;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +37,7 @@ public class PlayerEndpoint {
         for (String username : usernames.keySet()) {
             try {
                 if (players.countDocuments(new Document("name", username)) == 0) {
-                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), 0, Instant.EPOCH).write();
+                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), new Player.Streak(1, false), Instant.EPOCH).write();
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -50,8 +48,12 @@ public class PlayerEndpoint {
             JsonObject player = new JsonObject();
             try {
                 Rank rank;
-                if (dbPlayer == null) rank = Rank.Unknown;
-                else rank = dbPlayer.rank();
+                if (dbPlayer == null) {
+                    rank = Rank.Unknown;
+                } else {
+                    player.addProperty("streak", dbPlayer.streak().days());
+                    rank = dbPlayer.rank();
+                }
 
                 boolean online = false;
                 String world = "";
@@ -89,7 +91,7 @@ public class PlayerEndpoint {
         for (String username : usernames.keySet()) {
             try {
                 if (players.countDocuments(new Document("name", username)) == 0) {
-                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), 0, Instant.EPOCH).write();
+                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), new Player.Streak(1, false), Instant.EPOCH).write();
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -108,6 +110,7 @@ public class PlayerEndpoint {
             response.addProperty("uuid", dbPlayer.uuid());
             response.addProperty("name", dbPlayer.name());
             response.addProperty("rank", dbPlayer.rank().toString());
+            response.addProperty("streak", dbPlayer.streak().days());
             response.addProperty("online", online);
             response.addProperty("world", world);
         } catch (Exception e) {

@@ -1,6 +1,7 @@
 package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -8,18 +9,13 @@ import net.minecraft.client.Minecraft;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ReplyCommand implements Command {
-    final SlashCommandInteractionEvent event;
-    final String message;
+public class ReplyCommand extends ListenerAdapter {
     public static final Map<Long, String> lastSentReply = new HashMap<>();
 
-    public ReplyCommand(SlashCommandInteractionEvent event, String message) {
-        this.event = event;
-        this.message = message;
-    }
-
     @Override
-    public void onCommandReceived() {
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        if (!event.getName().equals("reply")) return;
+        String message = event.getOption("message").getAsString();
         if (lastSentReply.get(event.getUser().getIdLong()) == null) {
             event.reply("You have no incoming messages to reply.").setEphemeral(true).queue();
             return;

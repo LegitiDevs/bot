@@ -3,7 +3,7 @@ package net.legitimoose.bot.http.endpoint;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.legitimoose.bot.chat.EventHandler;
+import net.legitimoose.bot.chat.GameChatHandler;
 import net.minecraft.client.Minecraft;
 
 import java.util.List;
@@ -61,41 +61,41 @@ public class PlayersEndpoint {
 
     public List<String> getListall() {
         // Get /listall and output
-        EventHandler.getInstance().lastMessages.clear();
+        GameChatHandler.getInstance().lastMessages.clear();
         Minecraft.getInstance().player.connection.sendCommand("listall");
-        EventHandler.getInstance().handleChat = false;
+        GameChatHandler.getInstance().handleChat = false;
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
-            EventHandler.getInstance().handleChat = true;
+            GameChatHandler.getInstance().handleChat = true;
         }
-        EventHandler.getInstance().handleChat = true;
-        return EventHandler.getInstance().lastMessages;
+        GameChatHandler.getInstance().handleChat = true;
+        return GameChatHandler.getInstance().lastMessages;
     }
 
     public List<String> getGlist() {
         // Get /glist all and output
-        EventHandler.getInstance().lastMessages.clear();
+        GameChatHandler.getInstance().lastMessages.clear();
         Minecraft.getInstance().player.connection.sendCommand("glist all");
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        while (EventHandler.getInstance().lastMessages.getLast().startsWith("[")) ;
-        return EventHandler.getInstance().lastMessages;
+        while (GameChatHandler.getInstance().lastMessages.getLast().startsWith("[")) ;
+        return GameChatHandler.getInstance().lastMessages;
     }
 
     public List<String> getGlist(String uuid) {
         // Get /glist all and output
-        EventHandler.getInstance().lastMessages.clear();
+        GameChatHandler.getInstance().lastMessages.clear();
         Minecraft.getInstance().player.connection.sendCommand(String.format("glist %s", uuid));
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        return EventHandler.getInstance().lastMessages;
+        return GameChatHandler.getInstance().lastMessages;
     }
 }

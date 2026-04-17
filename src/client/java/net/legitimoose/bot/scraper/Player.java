@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import org.bson.BsonDateTime;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.conversions.Bson;
 
 import java.time.Instant;
@@ -16,9 +17,13 @@ public record Player(
         String name,
         Rank rank,
         List<String> blocked,
-        Integer streak,
+        Streak streak,
         Instant last_joined
 ) {
+    // "notify" is not an allowed record field name
+    public record Streak(Integer days, @BsonProperty("notify") Boolean notifications) {
+
+    }
     public void write() {
         MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
 

@@ -2,7 +2,7 @@ package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.legitimoose.bot.LegitimooseBotClient;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -13,18 +13,13 @@ import java.util.concurrent.TimeUnit;
 
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 
-public class ShoutCommand implements Command {
-    final SlashCommandInteractionEvent event;
-    final String message;
+public class ShoutCommand extends ListenerAdapter {
     private static final Map<Long, Long> cooldown = new HashMap<>();
 
-    public ShoutCommand(SlashCommandInteractionEvent event, String message) {
-        this.event = event;
-        this.message = message;
-    }
-
     @Override
-    public void onCommandReceived() {
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        if (!event.getName().equals("shout")) return;
+        String message = event.getOption("message").getAsString();
         long userId = event.getUser().getIdLong();
         Long lastUsed = cooldown.get(userId);
 

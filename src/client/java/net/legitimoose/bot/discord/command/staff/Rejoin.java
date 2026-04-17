@@ -1,20 +1,15 @@
 package net.legitimoose.bot.discord.command.staff;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.LegitimooseBotClient;
-import net.legitimoose.bot.discord.command.Command;
 
-public class Rejoin implements Command {
-    final SlashCommandInteractionEvent event;
-
-    public Rejoin(SlashCommandInteractionEvent event) {
-        this.event = event;
-    }
-
+public class Rejoin extends ListenerAdapter {
     @Override
-    public void onCommandReceived() {
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        if (!event.getName().equals("rejoin")) return;
         event.deferReply(true).queue();
         event.getHook().sendMessage("Rejoining server...").queue();
-        LegitimooseBotClient.rejoin(true);
+        LegitimooseBotClient.attemptRejoin(true);
     }
 }

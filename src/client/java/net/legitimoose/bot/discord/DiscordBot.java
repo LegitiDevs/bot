@@ -5,12 +5,13 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -21,6 +22,8 @@ import net.legitimoose.bot.discord.command.staff.Send;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 
+import java.util.List;
+
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
@@ -28,19 +31,30 @@ public class DiscordBot extends ListenerAdapter {
     public static JDA jda;
 
     public static void run() {
-        jda =
-                JDABuilder.createDefault(CONFIG.getString("token"))
-                        .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
-                        .build();
+        List<ListenerAdapter> commands = List.of(
+                new FindCommand(),
+                new ListallCommand(),
+                new ListCommand(),
+                new MsgCommand(),
+                new ReplyCommand(),
+                new ShoutCommand(),
+                new StreakCommand(),
+
+                new Restart(),
+                new Rejoin(),
+                new Send()
+        );
+        jda = JDABuilder.createDefault(CONFIG.getString("token"))
+                .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
+                .build();
 
         jda.addEventListener(new DiscordBot());
+        for (EventListener command : commands) {
+            jda.addEventListener(command);
+        }
         jda.updateCommands()
                 .addCommands(
-                        Commands.slash("list", "List online players in the server")
-                                .addOption(
-                                        OptionType.BOOLEAN,
-                                        "lobby",
-                                        "True if you only want to see online players in the lobby"),
+                        Commands.slash("list", "List online players in the server"),
                         Commands.slash("find", "Find which world a player is in")
                                 .addOption(
                                         OptionType.STRING,
@@ -72,6 +86,12 @@ public class DiscordBot extends ListenerAdapter {
                                         "message",
                                         "The reply to send",
                                         true
+                                ),
+                        Commands.slash("streak", "Streak-related commands")
+                                .addSubcommands(
+                                        new SubcommandData("player", "Get a player's streak")
+                                                .addOption(OptionType.STRING, "player", "The player whose streak you want to check", true),
+                                        new SubcommandData("lb", "Leaderboard")
                                 ))
                 .queue();
     }
@@ -93,38 +113,6 @@ public class DiscordBot extends ListenerAdapter {
                                         DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
                                 .addOption(OptionType.STRING, "message", "The message to send", true))
                 .queue();
-    }
-
-    @Override
-    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        switch (event.getName()) {
-            case "list" -> {
-                boolean lobby;
-                if (event.getOption("lobby") != null) {
-                    lobby = event.getOption("lobby").getAsBoolean();
-                } else {
-                    lobby = false;
-                }
-                new ListCommand(event, lobby).onCommandReceived();
-            }
-            case "listall" -> {
-                boolean raw;
-                if (event.getOption("raw") != null) {
-                    raw = event.getOption("raw").getAsBoolean();
-                } else {
-                    raw = false;
-                }
-                new ListallCommand(event, raw).onCommandReceived();
-            }
-            case "find" -> new FindCommand(event, event.getOption("player").getAsString()).onCommandReceived();
-            case "msg" ->
-                    new MsgCommand(event, event.getOption("message").getAsString(), event.getOption("player").getAsString()).onCommandReceived();
-            case "reply" -> new ReplyCommand(event, event.getOption("message").getAsString()).onCommandReceived();
-            case "shout" -> new ShoutCommand(event, event.getOption("message").getAsString()).onCommandReceived();
-            case "rejoin" -> new Rejoin(event).onCommandReceived();
-            case "restart" -> new Restart(event).onCommandReceived();
-            case "send" -> new Send(event, event.getOption("message").getAsString()).onCommandReceived();
-        }
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
+import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.client.Minecraft;
@@ -40,7 +41,11 @@ import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class Scraper {
+
     private static Scraper INSTANCE;
+    private boolean isScraping;
+
+    private volatile boolean scrapeOverride = false;
 
     private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
@@ -53,7 +58,7 @@ public class Scraper {
     private final MongoCollection<Player> playersColl = db.getCollection("players", Player.class);
 
 
-    private void waitSeconds(long time) {
+    private void waitSeconds(int time) {
         try {
             TimeUnit.SECONDS.sleep(time);
         } catch (InterruptedException e) {
@@ -63,17 +68,28 @@ public class Scraper {
     }
 
     public void startScraping() {
+        isScraping = true;
         while (true) {
-            try {
-                scrape();
-            } catch (Exception e) {
+            if (!scrapeOverride) {
                 try {
-                    error("Scraper error", e);
-                } catch (Exception ignored) {
+                    scrape();
+                } catch (Exception e) {
+                    try {
+                        error("Scraper error", e);
+                    } catch (Exception ignored) {
+                    }
                 }
             }
             waitSeconds(5);
         }
+    }
+
+    /**
+     * Turn scraping on or off
+     */
+    public void override(boolean override) {
+        this.scrapeOverride = override;
+        LegitimooseBotClient.messageFromOtherThread("World scraping turned " + (override ? "off" : "on"));
     }
 
     private void error(String message, Exception exception) throws IOException, URISyntaxException {
@@ -167,10 +183,10 @@ public class Scraper {
                     if (dbPlayer.streak() == null) {
                         streak = 0;
                     } else {
-                        streak = dbPlayer.streak();
+                        streak = dbPlayer.streak().days();
                     }
                 }
-                players.add(new Player(owner_uuid, owner_name, owner_rank, List.of(), streak, last_joined));
+                players.add(new Player(owner_uuid, owner_name, owner_rank, List.of(), new Player.Streak(streak, false), last_joined));
 
                 StringBuilder description = new StringBuilder();
                 for (int k = 0; k < descriptionLines; k++) {
@@ -364,5 +380,9 @@ public class Scraper {
             INSTANCE = new Scraper();
         }
         return INSTANCE;
+    }
+
+    public boolean shouldStartScraping() {
+        return !isScraping && Minecraft.getInstance().player != null;
     }
 }
