@@ -13,6 +13,7 @@ import com.mongodb.client.model.*;
 import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
+import net.legitimoose.bot.util.Unicode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -231,6 +232,8 @@ public class Scraper {
                     }
                 }
 
+                String itemName = itemStack.get(DataComponents.CUSTOM_NAME).getString();
+
                 World world = new World(
                         getNbtString(publicBukkitValues, "creation_date"),
                         getNbtInt(publicBukkitValues, "creation_date_unix_seconds"),
@@ -255,7 +258,8 @@ public class Scraper {
 
                         getNbtBoolean(publicBukkitValues, "whitelist_on_version_change"),
 
-                        itemStack.get(DataComponents.CUSTOM_NAME).getString(),
+                        itemName,
+                        Unicode.normalize(itemName),
                         description.toString(),
 
                         ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
@@ -312,6 +316,7 @@ public class Scraper {
                             Updates.set("votes", world.votes()),
                             Updates.set("whitelist_on_version_change", world.whitelist_on_version_change()),
                             Updates.set("name", world.name()),
+                            Updates.set("normalized_name", world.normalized_name()),
                             Updates.set("description", world.description()),
                             Updates.set("raw_name", Document.parse(world.raw_name())),
                             Updates.set("raw_description", BsonArray.parse(world.raw_description())),

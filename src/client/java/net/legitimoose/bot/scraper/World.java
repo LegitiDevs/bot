@@ -1,7 +1,6 @@
 package net.legitimoose.bot.scraper;
 
 import com.google.gson.JsonObject;
-import org.jetbrains.annotations.ApiStatus;
 
 public record World(
         String creation_date,
@@ -21,6 +20,7 @@ public record World(
         int votes,
         boolean whitelist_on_version_change,
         String name,
+        String normalized_name,
         String description,
         String raw_name,
         String raw_description,
