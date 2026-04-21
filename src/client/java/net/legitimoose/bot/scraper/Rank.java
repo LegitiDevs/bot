@@ -29,6 +29,6 @@ public enum Rank {
                 if (name.equalsIgnoreCase(rank)) return v;
             }
         }
-        throw new IllegalArgumentException();
+        return Unknown;
     }
 }
