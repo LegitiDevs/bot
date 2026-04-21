@@ -13,6 +13,7 @@ import com.mongodb.client.model.*;
 import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
+import net.legitimoose.bot.util.Unicode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -28,6 +29,7 @@ import org.bson.conversions.Bson;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -50,10 +52,12 @@ public class Scraper {
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
 
     private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.*), score=(.*)\\)");
-    private final Pattern ownerNamePattern = Pattern.compile("^by (?:[^|]+\\|\\s*)?(.+)");
+    private final Pattern ownerNamePattern = Pattern.compile("^by (?:([^|]+) \\|\\s*)?(.+)");
 
     public final MongoDatabase db = mongoClient.getDatabase("legitimooseapi");
     private final MongoCollection<World> coll = db.getCollection("worlds", World.class);
+    private final MongoCollection<Player> playersColl = db.getCollection("players", Player.class);
+
 
     private void waitSeconds(int time) {
         try {
@@ -95,7 +99,7 @@ public class Scraper {
         errorWebhook.execute();
     }
 
-    public void scrape() {
+    public void scrape() throws IOException, URISyntaxException, InterruptedException {
         if (!CONFIG.getBoolean("scrape", true)) return;
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = db.getCollection("stats");
@@ -129,6 +133,7 @@ public class Scraper {
         LOGGER.info("Last page is: {}", max_pages);
         for (int i = 1; i <= max_pages; i++) {
             List<World> worlds = new ArrayList<>();
+            List<Player> players = new ArrayList<>();
 
             Container inv = client.player.containerMenu.getSlot(0).container;
             for (int j = 0; j <= 26; j++) {
@@ -148,14 +153,41 @@ public class Scraper {
                 }
 
                 String owner_name = "";
+                Rank owner_rank = Rank.Unknown;
                 int ownerLine = descriptionLines;
                 while (!itemStack.get(DataComponents.LORE).lines().get(ownerLine).getString().startsWith("by")) {
                     ownerLine++;
                 }
                 Matcher ownerNameMatcher = ownerNamePattern.matcher(itemStack.get(DataComponents.LORE).lines().get(ownerLine).getString());
                 if (ownerNameMatcher.find()) {
-                    owner_name = ownerNameMatcher.group(1);
+                    owner_name = ownerNameMatcher.group(2);
+                    if (ownerNameMatcher.group(1) == null) {
+                        owner_rank = Rank.Non;
+                    } else {
+                        owner_rank = Rank.getEnum(ownerNameMatcher.group(1));
+                    }
                 }
+
+                String owner_uuid = getNbtString(publicBukkitValues, "owner");
+                Player dbPlayer = playersColl.find(eq("uuid", owner_uuid)).first();
+                int streak;
+                Instant last_joined;
+                if (dbPlayer == null) {
+                    last_joined = Instant.EPOCH;
+                    streak = 0;
+                } else {
+                    if (dbPlayer.last_joined() != null) {
+                        last_joined = dbPlayer.last_joined();
+                    } else {
+                        last_joined = Instant.EPOCH;
+                    }
+                    if (dbPlayer.streak() == null) {
+                        streak = 0;
+                    } else {
+                        streak = dbPlayer.streak().days();
+                    }
+                }
+                players.add(new Player(owner_uuid, owner_name, owner_rank, List.of(), new Player.Streak(streak, false), last_joined));
 
                 StringBuilder description = new StringBuilder();
                 for (int k = 0; k < descriptionLines; k++) {
@@ -200,6 +232,8 @@ public class Scraper {
                     }
                 }
 
+                String itemName = itemStack.get(DataComponents.CUSTOM_NAME).getString();
+
                 World world = new World(
                         getNbtString(publicBukkitValues, "creation_date"),
                         getNbtInt(publicBukkitValues, "creation_date_unix_seconds"),
@@ -207,8 +241,9 @@ public class Scraper {
                         getNbtBoolean(publicBukkitValues, "enforce_whitelist"),
                         getNbtBoolean(publicBukkitValues, "locked"),
 
-                        getNbtString(publicBukkitValues, "owner"),
+                        owner_uuid,
                         owner_name,
+                        owner_rank,
 
                         getNbtInt(publicBukkitValues, "player_count"),
                         getNbtInt(publicBukkitValues, "max_players"),
@@ -223,7 +258,8 @@ public class Scraper {
 
                         getNbtBoolean(publicBukkitValues, "whitelist_on_version_change"),
 
-                        itemStack.get(DataComponents.CUSTOM_NAME).getString(),
+                        itemName,
+                        Unicode.normalize(itemName),
                         description.toString(),
 
                         ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
@@ -234,9 +270,6 @@ public class Scraper {
 
                         featured_instant,
 
-                        jam_world,
-                        jam_id,
-
                         jam,
 
                         itemStack.toString().substring(2),
@@ -246,7 +279,7 @@ public class Scraper {
                 worlds.add(world);
                 LOGGER.info("Scraped World {} {}: {}", j, world.world_uuid(), world.name());
             }
-            bulkUpsert(worlds);
+            bulkUpsert(worlds, players);
             // finally, click on next page button
             LOGGER.info("Scraped page #{}", i);
             Minecraft.getInstance()
@@ -260,8 +293,9 @@ public class Scraper {
         LOGGER.info("Finished Scraping");
     }
 
-    private void bulkUpsert(List<World> worlds) {
+    private void bulkUpsert(List<World> worlds, List<Player> players) {
         List<WriteModel<World>> operations = new ArrayList<>();
+        List<WriteModel<Player>> playerOperations = new ArrayList<>();
         LOGGER.info("writing world");
         for (World world : worlds) {
             Bson updates =
@@ -272,6 +306,7 @@ public class Scraper {
                             Updates.set("locked", world.locked()),
                             Updates.set("owner_uuid", world.owner_uuid()),
                             Updates.set("owner_name", world.owner_name()),
+                            Updates.set("owner_rank", world.owner_rank()),
                             Updates.set("player_count", world.player_count()),
                             Updates.set("max_players", world.max_players()),
                             Updates.set("max_datapack_size", world.max_datapack_size()),
@@ -281,12 +316,11 @@ public class Scraper {
                             Updates.set("votes", world.votes()),
                             Updates.set("whitelist_on_version_change", world.whitelist_on_version_change()),
                             Updates.set("name", world.name()),
+                            Updates.set("normalized_name", world.normalized_name()),
                             Updates.set("description", world.description()),
                             Updates.set("raw_name", Document.parse(world.raw_name())),
                             Updates.set("raw_description", BsonArray.parse(world.raw_description())),
                             Updates.set("featured_instant", world.featured_instant()),
-                            Updates.set("jam_world", world.jam_world()),
-                            Updates.set("jam_id", world.jam_id()),
                             Updates.set("jam", Document.parse(world.jam().toString())),
                             Updates.set("icon", world.icon()),
                             Updates.set("last_scraped", world.last_scraped()),
@@ -298,10 +332,32 @@ public class Scraper {
             ));
         }
 
+        for (Player player : players) {
+            Bson playerUpdates =
+                    Updates.combine(
+                            Updates.set("uuid", player.uuid()),
+                            Updates.set("name", player.name()),
+                            Updates.set("rank", player.rank()),
+                            Updates.set("streak", player.streak()),
+                            Updates.set("last_joined", new BsonDateTime(player.last_joined().toEpochMilli())),
+                            Updates.setOnInsert("blocked", player.blocked()));
+
+            playerOperations.add(new UpdateOneModel<>(
+                    eq("uuid", player.uuid()),
+                    playerUpdates,
+                    new UpdateOptions().upsert(true)
+            ));
+        }
+
         if (!operations.isEmpty()) {
             coll.bulkWrite(operations);
         }
+
+        if (!playerOperations.isEmpty()) {
+            playersColl.bulkWrite(playerOperations);
+        }
         LOGGER.info("Bulk wrote {} worlds", operations.size());
+        LOGGER.info("Bulk wrote {} players", playerOperations.size());
     }
 
     private String getNbtString(CompoundTag tag, String field) {
