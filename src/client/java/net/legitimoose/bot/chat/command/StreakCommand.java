@@ -15,7 +15,7 @@ import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Sorts.descending;
 
 public class StreakCommand {
-    private static final MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
+    public static final MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(LiteralArgumentBuilder.<CommandSource>literal("streak")
