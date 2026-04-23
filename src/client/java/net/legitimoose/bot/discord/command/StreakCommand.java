@@ -26,6 +26,7 @@ public class StreakCommand extends ListenerAdapter {
                 event.getHook().sendMessage(player + "'s current login streak is " + dbPlayer.streak().days() + " days").queue();
             }
             case "lb", "leaderboard" -> {
+                // super jank. could cause a memory leak probably
                 StreakLeaderboardHandler handler = new StreakLeaderboardHandler();
                 event.getJDA().addEventListener(handler);
                 handler.reply(event);
