@@ -54,7 +54,11 @@ public class DiscordBot extends ListenerAdapter {
         }
         jda.updateCommands()
                 .addCommands(
-                        Commands.slash("list", "List online players in the server"),
+                        Commands.slash("list", "List online players in the server")
+                                .addSubcommands(
+                                        new SubcommandData("all", "Get all online players"),
+                                        new SubcommandData("lobby", "Get all players in the lobby")
+                                ),
                         Commands.slash("find", "Find which world a player is in")
                                 .addOption(
                                         OptionType.STRING,
@@ -68,11 +72,7 @@ public class DiscordBot extends ListenerAdapter {
                                         "The username of the player you want to message",
                                         true)
                                 .addOption(OptionType.STRING, "message", "The message you want to send", true),
-                        Commands.slash("listall", "List all online worlds with the players in them")
-                                .addOption(
-                                        OptionType.BOOLEAN,
-                                        "raw",
-                                        "True if you want to output world UUIDs instead of the world name"),
+                        Commands.slash("listall", "List all online worlds with the players in them"),
                         Commands.slash("shout", "Send a shout message")
                                 .addOption(
                                         OptionType.STRING,
