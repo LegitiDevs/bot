@@ -5,10 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
 import net.fabricmc.loader.api.FabricLoader;
-import net.legitimoose.bot.chat.command.BlockCommands;
-import net.legitimoose.bot.chat.command.CommandSource;
-import net.legitimoose.bot.chat.command.HelpCommand;
-import net.legitimoose.bot.chat.command.StreakCommand;
+import net.legitimoose.bot.chat.command.*;
 import net.legitimoose.bot.chat.matcher.*;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.MsgCommand;
@@ -58,6 +55,7 @@ public class GameChatHandler {
         HelpCommand.register(dispatcher);
         BlockCommands.register(dispatcher);
         StreakCommand.register(dispatcher);
+        PingCommand.register(dispatcher);
 
         // Ordered for efficiency B)
         matchers = List.of(
