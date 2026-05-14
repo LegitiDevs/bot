@@ -1,6 +1,6 @@
 ## MongoDB
 
-First install MongoDB from [mongodb.com](https://mongodb.com)
+- First install MongoDB from [mongodb.com](https://mongodb.com)
 
 You may also want to install MongoDB Compass in order to visualise the database from [mongodb.com/try/download/compass](https://mongodb.com/try/download/compass)
 
@@ -12,29 +12,27 @@ config named `mongoUri`
 
 ## Bot Setup
 
-In order to have the bot work, you need to create a [discord bot](https://discord.com/developers/applications), you can do this
+ - In order to have the bot work, you need to create a [discord bot](https://discord.com/developers/applications), you can do this
 by clicking `New Application`
 
-You will need to copy the bot token and put it in the `token` field of the config file. If you missed it,
+ - Copy the bot token and put it in the `token` field of the config. If you missed it,
 you can generate a new one by going to Overview>Bot and clicking `Reset Token`
 
 ## Server Setup
 
-You can make a new Discord server by clicking the `Add Server` icon and then clicking `Create my Own`
+- Make a new Discord server by clicking the `Add Server` icon and then clicking `Create my Own`
 
-To add the webhook, go into the new servers `Server Settings` page, click `Integrations` and then `Webhooks`,
-click `New Webhook`, then click the icon that appears, and click `Copy Webhook URL`
+- To add the webhook, go into the new servers `Server Settings` page, click `Integrations` and then `Webhooks`,
+click `New Webhook`, then click the icon that appears, and click `Copy Webhook URL`. Paste this into the field named `webhook` in the config file.
 
-Paste this into the field named `webhook` in the config file.
-
-If you have not in the past, click the settings icon next to your name in the bottom left, click `Developer` and 
+- Click the settings icon next to your name in the bottom left, click `Developer` and 
 make sure `Developer Mode` is checked. This makes sure that you can see the `Copy Server Id` and 
 `Copy Channel Id` menu items.
 
-Click your new servers name in the top left, and click `Copy Server Id`, then in the config file, paste this
+ - Click your new servers name in the top left, and click `Copy Server Id`, then in the config file, paste this
 into the `guildId` field.
 
-Then, click the channel you want the Discord to Minecraft chat to be in, and click `Copy Channel Id`. 
+ - Then, click the channel you want the Discord to Minecraft chat to be in, and click `Copy Channel Id`. 
 Paste this into the `channelId` field in the config.
 
 ## In Game
