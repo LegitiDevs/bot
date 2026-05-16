@@ -1,10 +1,9 @@
 token: ''
 webhook: ''
 errorWebhook: ''
-scrapeByDefault: true
+scrape: true
 bridgeWebhookId: '1473335695299837992'
 mongoUri: 'mongodb://127.0.0.1:27017/'
 secretPrefix: '::'
 channelId: ''
 guildId: '1311574348989071440'
-waitMinutesBetweenScrapes: 5
