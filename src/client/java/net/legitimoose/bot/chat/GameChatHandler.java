@@ -115,7 +115,7 @@ public class GameChatHandler {
         String banned = tempBan.getBanned();
         int hours = tempBan.getHours();
         String reason = tempBan.getReason();
-        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s** for **%s** hours", banned, moderator, hours)), 0xF25757);
+        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s** for **%s** hours", banned, moderator, hours)), 0xF25757);
         embed.setDescription(DiscordUtil.sanitizeString(reason));
         webhook.setUsername("Legitimoose Ban");
         executeWebhook(webhook, embed, true);
@@ -128,7 +128,7 @@ public class GameChatHandler {
         String moderator = permBan.getModerator();
         String banned = permBan.getBanned();
         String reason = permBan.getReason();
-        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s**", banned, moderator)), 0xF25757);
+        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s**", banned, moderator)), 0xF25757);
         embed.setDescription(DiscordUtil.sanitizeString(reason));
         webhook.setUsername("Legitimoose Ban");
         executeWebhook(webhook, embed, true);
