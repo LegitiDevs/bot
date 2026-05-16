@@ -41,7 +41,3 @@ config named `mongoUri`
 If done correctly, there should be no MongoDB or Discord related errors in the game log.
 
 To prevent the scraper immediately starting when you join Legitermoose, you can set the `scrape` field in the config. You can also use the `/scraper <on|off>` command in game.
-
-## Other Config Fields
-
-`waitMinutesBetweenScrapes` currently has no implementation and so will not do anything.
