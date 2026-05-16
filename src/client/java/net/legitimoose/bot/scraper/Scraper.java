@@ -99,6 +99,7 @@ public class Scraper {
         if (!CONFIG.getBoolean("scrape", true)) return;
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = db.getCollection("stats");
+        stats.createIndex(Indexes.descending("timestamp"));
         List<IndexModel> indexes = new ArrayList<>();
         indexes.add(new IndexModel(Indexes.ascending("world_uuid")));
         indexes.add(new IndexModel(Indexes.ascending("last_scraped_ms"), new IndexOptions().expireAfter(24L, TimeUnit.HOURS)));
@@ -115,7 +116,24 @@ public class Scraper {
                         .getSuggestionsProvider()
                         .customSuggestion(context);
 
-        pendingParse.thenAccept((suggestions) -> stats.insertOne(new Document().append("timestamp", new BsonDateTime(System.currentTimeMillis())).append("player_count", suggestions.getList().size())));
+        pendingParse.thenAccept((suggestions) -> {
+            int playerCount = suggestions.getList().size();
+
+            Document latest = stats.find()
+                    .sort(Sorts.descending("timestamp"))
+                    .limit(1)
+                    .first();
+
+            if (latest != null && latest.getInteger("player_count") == playerCount) {
+                return;
+            }
+
+            stats.insertOne(
+                    new Document()
+                            .append("timestamp", new BsonDateTime(System.currentTimeMillis()))
+                            .append("player_count", playerCount)
+            );
+        });
 
         client.player.closeContainer();
 

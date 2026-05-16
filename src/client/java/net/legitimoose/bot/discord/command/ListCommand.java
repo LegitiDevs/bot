@@ -35,8 +35,6 @@ public class ListCommand extends ListenerAdapter {
                 event.reply(DiscordUtil.sanitizeString(players.toString())).queue();
             }
             case "all" -> {
-                MongoCollection<Document> coll = Scraper.getInstance().db.getCollection("stats");
-
                 event
                         .deferReply()
                         .queue(); // It *does* send a packet to the mc server, so keeping this is safer...
@@ -65,8 +63,6 @@ public class ListCommand extends ListenerAdapter {
                             .sendMessage(
                                     DiscordUtil.sanitizeString(String.format("There are %s player(s) online:\n```\n%s```", mcSuggestions.size(), suggestions)))
                             .queue();
-
-                    coll.insertOne(new Document().append("_id", new ObjectId()).append("player_count", mcSuggestions.size()));
                 });
             }
         }
