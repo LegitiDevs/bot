@@ -25,18 +25,14 @@ public class Database {
     private MongoCollection<Ban> bans;
 
     private Database() {
-        initialize();
-    }
-
-    private static Database getInstance() {
-        return instance == null ? (instance = new Database()) : instance;
-    }
-
-    private void initialize() {
         worlds = database.getCollection("worlds", World.class);
         players = database.getCollection("players", Player.class);
         stats = database.getCollection("stats");
         bans = database.getCollection("bans", Ban.class);
+    }
+
+    private static Database getInstance() {
+        return instance == null ? (instance = new Database()) : instance;
     }
 
     public static MongoCollection<Player> getPlayers() {
