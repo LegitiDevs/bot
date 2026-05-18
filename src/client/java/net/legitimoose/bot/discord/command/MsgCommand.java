@@ -1,10 +1,9 @@
 package net.legitimoose.bot.discord.command;
 
-import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
-import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -15,7 +14,6 @@ import java.util.Map;
 import static com.mongodb.client.model.Filters.regex;
 
 public class MsgCommand extends ListenerAdapter {
-    private static final MongoCollection<Player> coll = Scraper.getInstance().db.getCollection("players", Player.class);
 
     public static final Map<String, Long> lastSent = new HashMap<>();
 
@@ -24,7 +22,7 @@ public class MsgCommand extends ListenerAdapter {
         if (!event.getName().equals("msg")) return;
         String message = event.getOption("message").getAsString();
         String player = event.getOption("player").getAsString();
-        Player playerObj = coll.find(regex("name", player, "i")).first();
+        Player playerObj = Database.getPlayers().find(regex("name", player, "i")).first();
         if (playerObj == null || playerObj.blocked().contains(event.getUser().getName())) {
             event.reply("Failed to send, player has blocked you or does not exist.").setEphemeral(true).queue();
             return;

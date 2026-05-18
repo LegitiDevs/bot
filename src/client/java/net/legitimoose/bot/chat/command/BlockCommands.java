@@ -7,6 +7,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Updates;
+import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
 import net.legitimoose.bot.scraper.Scraper;
 
@@ -15,7 +16,6 @@ import java.util.List;
 import static com.mongodb.client.model.Filters.eq;
 
 public class BlockCommands {
-    private static final MongoCollection<Player> coll = Scraper.getInstance().db.getCollection("players", Player.class);
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         // Block
@@ -24,14 +24,14 @@ public class BlockCommands {
                         .executes(context -> {
                             CommandSource source = context.getSource();
                             String blocked = context.getArgument("username", String.class);
-                            coll.updateOne(eq("name", source.username()), Updates.set("blocked", List.of(blocked)));
+                            Database.getPlayers().updateOne(eq("name", source.username()), Updates.set("blocked", List.of(blocked)));
                             source.sendMessage("Blocked @" + blocked + " from sending you messages");
                             return Command.SINGLE_SUCCESS;
                         }))
                 .then(LiteralArgumentBuilder.<CommandSource>literal("list")
                         .executes(context -> {
                             CommandSource source = context.getSource();
-                            List<String> blockedPlayers = coll.find(eq("name", source.username())).first().blocked();
+                            List<String> blockedPlayers = Database.getPlayers().find(eq("name", source.username())).first().blocked();
                             source.sendMessage("Blocked players:<br>" + String.join("<br>", blockedPlayers));
                             return Command.SINGLE_SUCCESS;
                         })));
@@ -41,7 +41,7 @@ public class BlockCommands {
                         .executes(context -> {
                             CommandSource source = context.getSource();
                             String blocked = context.getArgument("username", String.class);
-                            coll.updateOne(eq("name", source.username()), Updates.pull("blocked", blocked));
+                            Database.getPlayers().updateOne(eq("name", source.username()), Updates.pull("blocked", blocked));
                             source.sendMessage("Unblocked @" + blocked + " from sending you messages");
                             return Command.SINGLE_SUCCESS;
                         })));

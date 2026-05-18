@@ -1,14 +1,12 @@
 package net.legitimoose.bot.discord.command;
 
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
-import net.legitimoose.bot.scraper.Scraper;
 
 public class StreakCommand extends ListenerAdapter {
-    private final MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -18,7 +16,7 @@ public class StreakCommand extends ListenerAdapter {
                 String player = event.getOption("player").getAsString();
                 event.deferReply().queue();
 
-                Player dbPlayer = players.find(Filters.eq("name", player)).first();
+                Player dbPlayer = Database.getPlayers().find(Filters.eq("name", player)).first();
                 if (dbPlayer == null) {
                     event.getHook().sendMessage("Could not find a player named " + player).queue();
                     return;
