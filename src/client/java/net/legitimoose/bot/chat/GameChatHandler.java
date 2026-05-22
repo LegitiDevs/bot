@@ -10,10 +10,7 @@ import net.legitimoose.bot.chat.matcher.*;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.MsgCommand;
 import net.legitimoose.bot.discord.command.ReplyCommand;
-import net.legitimoose.bot.scraper.Ban;
-import net.legitimoose.bot.scraper.Player;
-import net.legitimoose.bot.scraper.Rank;
-import net.legitimoose.bot.scraper.Scraper;
+import net.legitimoose.bot.scraper.*;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.legitimoose.bot.util.DiscordWebhook.Embed;
@@ -210,9 +207,8 @@ public class GameChatHandler {
 
     public void handleJoinMessage(JoinMatcher join, DiscordWebhook webhook) {
         Instant time = Instant.now();
-        MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
         String username = join.getUsername();
-        Player dbPlayer = players.find(eq("name", username)).first();
+        Player dbPlayer = Database.getPlayers().find(eq("name", username)).first();
 
         String uuid = McUtil.getUuidOrThrow(username);
         int days;

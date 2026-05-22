@@ -1,6 +1,5 @@
 package net.legitimoose.bot.scraper;
 
-import com.mongodb.client.MongoCollection;
 import net.legitimoose.bot.util.McUtil;
 
 public record Ban(
@@ -45,8 +44,6 @@ public record Ban(
     }
 
     private void write() {
-        MongoCollection<Ban> bans = Scraper.getInstance().db.getCollection("bans", Ban.class);
-
-        bans.insertOne(this);
+        Database.getBans().insertOne(this);
     }
 }

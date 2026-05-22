@@ -5,10 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.serialization.JsonOps;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
 import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.util.DiscordUtil;
@@ -46,14 +43,10 @@ public class Scraper {
 
     private volatile boolean scrapeOverride = false;
 
-    private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
 
     private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.*), score=(.*)\\)");
     private final Pattern ownerNamePattern = Pattern.compile("^by (?:[^|]+\\|\\s*)?(.+)");
-
-    public final MongoDatabase db = mongoClient.getDatabase("legitimooseapi");
-    private final MongoCollection<World> coll = db.getCollection("worlds", World.class);
 
     private void waitSeconds(int time) {
         try {
@@ -98,12 +91,12 @@ public class Scraper {
     public void scrape() {
         if (!CONFIG.getBoolean("scrape", true)) return;
         Minecraft client = Minecraft.getInstance();
-        MongoCollection<Document> stats = db.getCollection("stats");
+        MongoCollection<Document> stats = Database.getStats();
         stats.createIndex(Indexes.descending("timestamp"));
         List<IndexModel> indexes = new ArrayList<>();
         indexes.add(new IndexModel(Indexes.ascending("world_uuid")));
         indexes.add(new IndexModel(Indexes.ascending("last_scraped_ms"), new IndexOptions().expireAfter(24L, TimeUnit.HOURS)));
-        coll.createIndexes(indexes);
+        Database.getWorlds().createIndexes(indexes);
 
         // Please ignore the nulls. Only the 'input' is actually used
         CommandContext context = new CommandContextBuilder(null, null, null, 1).build("/find ");
@@ -317,7 +310,7 @@ public class Scraper {
         }
 
         if (!operations.isEmpty()) {
-            coll.bulkWrite(operations);
+            Database.getWorlds().bulkWrite(operations);
         }
         LOGGER.info("Bulk wrote {} worlds", operations.size());
     }

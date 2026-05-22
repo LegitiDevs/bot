@@ -7,10 +7,10 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
 
 import static com.mongodb.client.model.Sorts.descending;
-import static net.legitimoose.bot.chat.command.StreakCommand.players;
 
 public class StreakLeaderboardHandler extends ListenerAdapter {
     static int maxId = 0;
@@ -46,7 +46,7 @@ public class StreakLeaderboardHandler extends ListenerAdapter {
     private String getLeaderboardString(int page) {
         StringBuilder lbString = new StringBuilder();
         int i = 1;
-        for (Player player : players.find(Filters.exists("streak.days")).sort(descending("streak.days", "last_joined")).skip((page - 1) * 5).limit(5)) {
+        for (Player player : Database.getPlayers().find(Filters.exists("streak.days")).sort(descending("streak.days", "last_joined")).skip((page - 1) * 5).limit(5)) {
             lbString.append((page - 1) * 5 + i).append(". ").append(player.name()).append(" - ").append(player.streak().days()).append(" day(s)").append('\n');
             i++;
         }
