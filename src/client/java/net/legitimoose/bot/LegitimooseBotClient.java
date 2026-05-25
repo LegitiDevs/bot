@@ -142,7 +142,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
         if ((now - lastJoinTimestamp) >= REJOIN_COOLDOWN_MS) {
             lastJoinTimestamp = now;
             LOGGER.info("Attempting to reconnect to server");
-            ServerData info = new ServerData("Server", "legitimoose.com", ServerData.Type.OTHER);
+            ServerData info = new ServerData("Legitimoose", "legitimoose.com", ServerData.Type.OTHER);
             ConnectScreen.startConnecting(
                     new JoinMultiplayerScreen(null),
                     Minecraft.getInstance(),

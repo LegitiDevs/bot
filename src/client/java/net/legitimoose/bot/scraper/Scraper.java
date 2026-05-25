@@ -132,6 +132,8 @@ public class Scraper {
 
         client.player.closeContainer();
 
+        String lobbyRawDescription = "[";
+
 
         World lobby = new World(
                 "Nov 28, 2023, 4:57 PM",
@@ -162,10 +164,13 @@ public class Scraper {
 
                 "Legitimoose Lobby",
                 Unicode.normalize("Legitimoose Lobby"),
-                "The legitimoose.com lobby.",
+                Minecraft.getInstance().getCurrentServer().motd.getString(),
 
                 "{\"text\":\"Legitimoose Lobby\",\"color\":\"white\",\"italic\":false}",
-                "[{\"text\":\"The legitimoose.com lobby.\",\"color\":\"white\",\"italic\":false}]",
+                lobbyRawDescription + ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, Minecraft.getInstance().getCurrentServer().motd)
+                        .result()
+                        .get()
+                        .toString() + "]",
 
                 -1,
 
