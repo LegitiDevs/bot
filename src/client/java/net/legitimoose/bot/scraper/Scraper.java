@@ -132,6 +132,52 @@ public class Scraper {
 
         client.player.closeContainer();
 
+
+        World lobby = new World(
+                "Nov 28, 2023, 4:57 PM",
+                1701219420,
+
+                false,
+                true,
+
+                "5f4641cb-a718-4556-8c87-fbf153a8cc9a",
+                "Legitermoose",
+                Rank.Moose,
+
+                Minecraft.getInstance().getConnection().getOnlinePlayers().size(),
+
+                100,
+                100,
+
+                "",
+                "lobby",
+
+                // Change on moose/bot update
+                "1.21.10",
+
+                300000,
+                300000,
+
+                false,
+
+                "Legitimoose Lobby",
+                Unicode.normalize("Legitimoose Lobby"),
+                "The legitimoose.com lobby.",
+
+                "{\"text\":\"Legitimoose Lobby\",\"color\":\"white\",\"italic\":false}",
+                "[{\"text\":\"The legitimoose.com lobby.\",\"color\":\"white\",\"italic\":false}]",
+
+                -1,
+
+                new JsonObject(),
+
+                "minecraft:grass_block",
+
+                System.currentTimeMillis() / 1000L,
+                System.currentTimeMillis()
+        );
+        bulkUpsert(List.of(lobby), List.of());
+
         client.player.connection.sendCommand("worlds");
 
         waitSeconds(1);
@@ -285,6 +331,7 @@ public class Scraper {
                         System.currentTimeMillis() / 1000L,
                         System.currentTimeMillis()
                 );
+
                 worlds.add(world);
                 LOGGER.info("Scraped World {} {}: {}", j, world.world_uuid(), world.name());
             }
