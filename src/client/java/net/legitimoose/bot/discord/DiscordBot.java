@@ -44,7 +44,7 @@ public class DiscordBot extends ListenerAdapter {
                 new Rejoin(),
                 new Send()
         );
-        jda = JDABuilder.createDefault(CONFIG.getString("token"))
+        jda = JDABuilder.createDefault(CONFIG.token)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
                 .build();
 
@@ -98,7 +98,7 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onGuildReady(GuildReadyEvent event) {
-        if (!event.getGuild().getId().equals(CONFIG.getString("guildId"))) return;
+        if (!event.getGuild().getId().equals(CONFIG.guildId)) return;
         event.getGuild()
                 .updateCommands()
                 .addCommands(
@@ -119,7 +119,7 @@ public class DiscordBot extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         String discordNick;
         if (event.isWebhookMessage()) {
-            if (!event.getAuthor().getId().equals(CONFIG.getString("bridgeWebhookId"))) return;
+            if (!event.getAuthor().getId().equals(CONFIG.bridgeWebhookId)) return;
             discordNick = event.getAuthor().getEffectiveName();
         } else {
             discordNick = event.getMember().getEffectiveName();
@@ -131,9 +131,9 @@ public class DiscordBot extends ListenerAdapter {
         if (!event.getMessage().getAttachments().isEmpty()) {
             message += " <blue>[Attachment Included]</blue>";
         }
-        if (CONFIG.getString("channelId").isEmpty())
+        if (CONFIG.channelId.isEmpty())
             LOGGER.error("Discord channel ID is not set in config!");
-        if (event.getChannel().getId().equals(CONFIG.getString("channelId"))) {
+        if (event.getChannel().getId().equals(CONFIG.channelId)) {
             Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
         }
     }

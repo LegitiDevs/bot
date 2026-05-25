@@ -73,7 +73,7 @@ public class GameChatHandler {
         lastMessages.add(message);
 
         if (handleChat) {
-            DiscordWebhook webhook = new DiscordWebhook(CONFIG.getString("webhook"));
+            DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhook);
             handleChat(component, message, webhook);
         }
     }
@@ -139,7 +139,7 @@ public class GameChatHandler {
         User user;
         if (discordReceiverName != null) {
             String finalUsername = discordReceiverName.replace("@", "");
-            user = DiscordBot.jda.getGuildById(CONFIG.getString("guildId"))
+            user = DiscordBot.jda.getGuildById(CONFIG.guildId)
                     .findMembers(s -> s.getUser().getName().equals(finalUsername))
                     .get().getFirst().getUser();
         } else {
@@ -272,7 +272,7 @@ public class GameChatHandler {
                 Minecraft.getInstance().player.getPlainTextName().equals(senderName)))
             return false;
 
-        return !message.startsWith(CONFIG.getString("secretPrefix"));
+        return !message.startsWith(CONFIG.secretPrefix);
     }
 
     public static GameChatHandler getInstance() {

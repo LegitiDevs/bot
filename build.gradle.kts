@@ -1,5 +1,5 @@
 plugins {
-  id("fabric-loom") version "1.15-SNAPSHOT"
+  id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
   id("com.gradleup.shadow") version "9.3.1"
 }
 
@@ -24,7 +24,6 @@ loom {
 repositories {
   mavenCentral()
   maven("https://maven.isxander.dev/releases")
-  maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
   exclusiveContent {
     forRepository {
       maven {
@@ -41,21 +40,18 @@ repositories {
 dependencies {
   // To change the versions see the gradle.properties file
   minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-  mappings(loom.officialMojangMappings())
-  modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
+  implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
 
-  modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+  implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
   shadow(implementation("org.mongodb:mongodb-driver-sync:5.6.3")!!)
   shadow(implementation("net.dv8tion:JDA:6.3.0") { exclude("opus-java") })
-  shadow(modImplementation("maven.modrinth:fabric-yaml-configuration:1.0.1")!!)
-
   shadow(implementation("dev.vankka:mcdiscordreserializer:4.3.0")!!)
-  shadow(modImplementation("net.kyori:adventure-platform-mod-shared-fabric-repack:6.8.0")!!)
+  shadow(implementation("net.kyori:adventure-platform-mod-shared:6.9.0")!!)
 
   shadow(implementation("com.sparkjava:spark-core:2.9.4")!!)
 
-  modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
+  runtimeOnly("net.litetex.mcm:dev-auth-neo:1.1.0")
 }
 
 tasks.processResources {
@@ -83,12 +79,6 @@ tasks {
     archiveClassifier = "shadowed-only"
     //    minimize()
   }
-  remapJar {
-    dependsOn(shadowJar)
-    mustRunAfter(shadowJar)
-    inputFile = file(shadowJar.get().archiveFile)
-    archiveClassifier = ""
-  }
 }
 
-java { toolchain.languageVersion = JavaLanguageVersion.of(21) }
+java { toolchain.languageVersion = JavaLanguageVersion.of(25) }
