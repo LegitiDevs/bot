@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.legitimoose.bot.chat.GameChatHandler;
+import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 
 import java.util.List;
@@ -90,7 +91,7 @@ public class PlayersEndpoint {
     public List<String> getGlist(String uuid) {
         // Get /glist all and output
         GameChatHandler.getInstance().lastMessages.clear();
-        Minecraft.getInstance().player.connection.sendCommand(String.format("glist %s", uuid));
+        Minecraft.getInstance().player.connection.sendCommand(McUtil.sanitizeString(String.format("glist %s", uuid)));
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {

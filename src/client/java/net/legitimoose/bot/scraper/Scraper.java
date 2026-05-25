@@ -5,10 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.serialization.JsonOps;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
 import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.util.DiscordUtil;
@@ -48,16 +45,10 @@ public class Scraper {
 
     private volatile boolean scrapeOverride = false;
 
-    private final MongoClient mongoClient = MongoClients.create(CONFIG.getString("mongoUri"));
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
 
     private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.*), score=(.*)\\)");
     private final Pattern ownerNamePattern = Pattern.compile("^by (?:([^|]+) \\|\\s*)?(.+)");
-
-    public final MongoDatabase db = mongoClient.getDatabase("legitimooseapi");
-    private final MongoCollection<World> coll = db.getCollection("worlds", World.class);
-    private final MongoCollection<Player> playersColl = db.getCollection("players", Player.class);
-
 
     private void waitSeconds(int time) {
         try {
@@ -102,11 +93,12 @@ public class Scraper {
     public void scrape() throws IOException, URISyntaxException, InterruptedException {
         if (!CONFIG.getBoolean("scrape", true)) return;
         Minecraft client = Minecraft.getInstance();
-        MongoCollection<Document> stats = db.getCollection("stats");
+        MongoCollection<Document> stats = Database.getStats();
+        stats.createIndex(Indexes.descending("timestamp"));
         List<IndexModel> indexes = new ArrayList<>();
         indexes.add(new IndexModel(Indexes.ascending("world_uuid")));
         indexes.add(new IndexModel(Indexes.ascending("last_scraped_ms"), new IndexOptions().expireAfter(24L, TimeUnit.HOURS)));
-        coll.createIndexes(indexes);
+        Database.getWorlds().createIndexes(indexes);
 
         // Please ignore the nulls. Only the 'input' is actually used
         CommandContext context = new CommandContextBuilder(null, null, null, 1).build("/find ");
@@ -119,7 +111,24 @@ public class Scraper {
                         .getSuggestionsProvider()
                         .customSuggestion(context);
 
-        pendingParse.thenAccept((suggestions) -> stats.insertOne(new Document().append("timestamp", new BsonDateTime(System.currentTimeMillis())).append("player_count", suggestions.getList().size())));
+        pendingParse.thenAccept((suggestions) -> {
+            int playerCount = suggestions.getList().size();
+
+            Document latest = stats.find()
+                    .sort(Sorts.descending("timestamp"))
+                    .limit(1)
+                    .first();
+
+            if (latest != null && latest.getInteger("player_count") == playerCount) {
+                return;
+            }
+
+            stats.insertOne(
+                    new Document()
+                            .append("timestamp", new BsonDateTime(System.currentTimeMillis()))
+                            .append("player_count", playerCount)
+            );
+        });
 
         client.player.closeContainer();
 
@@ -169,7 +178,7 @@ public class Scraper {
                 }
 
                 String owner_uuid = getNbtString(publicBukkitValues, "owner");
-                Player dbPlayer = playersColl.find(eq("uuid", owner_uuid)).first();
+                Player dbPlayer = Database.getPlayers().find(eq("uuid", owner_uuid)).first();
                 int streak;
                 Instant last_joined;
                 if (dbPlayer == null) {
@@ -350,11 +359,11 @@ public class Scraper {
         }
 
         if (!operations.isEmpty()) {
-            coll.bulkWrite(operations);
+            Database.getWorlds().bulkWrite(operations);
         }
 
         if (!playerOperations.isEmpty()) {
-            playersColl.bulkWrite(playerOperations);
+            Database.getPlayers().bulkWrite(playerOperations);
         }
         LOGGER.info("Bulk wrote {} worlds", operations.size());
         LOGGER.info("Bulk wrote {} players", playerOperations.size());

@@ -5,18 +5,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
 import net.fabricmc.loader.api.FabricLoader;
-import net.legitimoose.bot.chat.command.BlockCommands;
-import net.legitimoose.bot.chat.command.CommandSource;
-import net.legitimoose.bot.chat.command.HelpCommand;
-import net.legitimoose.bot.chat.command.StreakCommand;
+import net.legitimoose.bot.chat.command.*;
 import net.legitimoose.bot.chat.matcher.*;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.MsgCommand;
 import net.legitimoose.bot.discord.command.ReplyCommand;
-import net.legitimoose.bot.scraper.Ban;
-import net.legitimoose.bot.scraper.Player;
-import net.legitimoose.bot.scraper.Rank;
-import net.legitimoose.bot.scraper.Scraper;
+import net.legitimoose.bot.scraper.*;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.legitimoose.bot.util.DiscordWebhook.Embed;
@@ -58,6 +52,7 @@ public class GameChatHandler {
         HelpCommand.register(dispatcher);
         BlockCommands.register(dispatcher);
         StreakCommand.register(dispatcher);
+        PingCommand.register(dispatcher);
 
         // Ordered for efficiency B)
         matchers = List.of(
@@ -117,7 +112,7 @@ public class GameChatHandler {
         String banned = tempBan.getBanned();
         int hours = tempBan.getHours();
         String reason = tempBan.getReason();
-        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s** for **%s** hours", banned, moderator, hours)), 0xF25757);
+        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s** for **%s** hours", banned, moderator, hours)), 0xF25757);
         embed.setDescription(DiscordUtil.sanitizeString(reason));
         webhook.setUsername("Legitimoose Ban");
         executeWebhook(webhook, embed, true);
@@ -130,7 +125,7 @@ public class GameChatHandler {
         String moderator = permBan.getModerator();
         String banned = permBan.getBanned();
         String reason = permBan.getReason();
-        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s**", banned, moderator)), 0xF25757);
+        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s**", banned, moderator)), 0xF25757);
         embed.setDescription(DiscordUtil.sanitizeString(reason));
         webhook.setUsername("Legitimoose Ban");
         executeWebhook(webhook, embed, true);
@@ -212,9 +207,8 @@ public class GameChatHandler {
 
     public void handleJoinMessage(JoinMatcher join, DiscordWebhook webhook) {
         Instant time = Instant.now();
-        MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
         String username = join.getUsername();
-        Player dbPlayer = players.find(eq("name", username)).first();
+        Player dbPlayer = Database.getPlayers().find(eq("name", username)).first();
 
         String uuid = McUtil.getUuidOrThrow(username);
         int days;

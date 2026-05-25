@@ -2,10 +2,9 @@ package net.legitimoose.bot.http.endpoint;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mongodb.client.MongoCollection;
+import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
 import net.legitimoose.bot.scraper.Rank;
-import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.McUtil;
 import org.bson.Document;
 
@@ -20,7 +19,6 @@ import static com.mongodb.client.model.Filters.eq;
 
 public class PlayerEndpoint {
     private final Pattern glistPattern = Pattern.compile("\\[(.*)] \\(\\d*\\): (.*)");
-    private final MongoCollection<Player> players = Scraper.getInstance().db.getCollection("players", Player.class);
 
     public JsonArray handleRequest() {
         JsonArray response = new JsonArray();
@@ -36,7 +34,7 @@ public class PlayerEndpoint {
 
         for (String username : usernames.keySet()) {
             try {
-                if (players.countDocuments(new Document("name", username)) == 0) {
+                if (Database.getPlayers().countDocuments(new Document("name", username)) == 0) {
                     new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), new Player.Streak(1, false), Instant.EPOCH).write();
                 }
             } catch (Exception e) {
@@ -44,7 +42,7 @@ public class PlayerEndpoint {
             }
         }
 
-        for (Player dbPlayer : players.find()) {
+        for (Player dbPlayer : Database.getPlayers().find()) {
             JsonObject player = new JsonObject();
             try {
                 Rank rank;
@@ -90,7 +88,7 @@ public class PlayerEndpoint {
 
         for (String username : usernames.keySet()) {
             try {
-                if (players.countDocuments(new Document("name", username)) == 0) {
+                if (Database.getPlayers().countDocuments(new Document("name", username)) == 0) {
                     new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), new Player.Streak(1, false), Instant.EPOCH).write();
                 }
             } catch (Exception e) {
@@ -98,7 +96,7 @@ public class PlayerEndpoint {
             }
         }
 
-        Player dbPlayer = players.find(eq("uuid", uuid)).first();
+        Player dbPlayer = Database.getPlayers().find(eq("uuid", uuid)).first();
         try {
             boolean online = false;
             String world = "";
