@@ -76,7 +76,7 @@ tasks {
     from(sourceSets["main"].output)
     from(sourceSets["client"].output)
     configurations = listOf(project.configurations.shadow.get())
-    archiveClassifier = "shadowed-only"
+    archiveClassifier = ""
     //    minimize()
   }
 }
