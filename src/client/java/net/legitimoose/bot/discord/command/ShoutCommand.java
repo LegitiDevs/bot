@@ -29,7 +29,7 @@ public class ShoutCommand extends ListenerAdapter {
             bypassCooldown = false;
             username = event.getUser().getEffectiveName();
         } else {
-            bypassCooldown = event.getMember().getPermissions().contains(Permission.MANAGE_SERVER) && event.getGuild().getId().equals(CONFIG.getString("guildId"));
+            bypassCooldown = event.getMember().getPermissions().contains(Permission.MANAGE_SERVER) && event.getGuild().getId().equals(CONFIG.guildId);
             username = event.getMember().getEffectiveName();
         }
 
