@@ -28,7 +28,6 @@ jobs:
         run: ./gradlew build
       - name: Rename jar
         run: |
-          rm build/libs/Legitimoose-Bot*-shadowed-only.jar
           mv build/libs/Legitimoose-Bot*.jar Legitimoose-Bot.jar
       - name: Release
         uses: softprops/action-gh-release@v2

@@ -17,7 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.Container;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import org.bson.BsonArray;
 import org.bson.BsonDateTime;
@@ -45,7 +45,7 @@ public class Scraper {
 
     private volatile boolean scrapeOverride = false;
 
-    private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.getString("errorWebhook"));
+    private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.errorWebhook);
 
     private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.*), score=(.*)\\)");
     private final Pattern ownerNamePattern = Pattern.compile("^by (?:([^|]+) \\|\\s*)?(.+)");
@@ -91,7 +91,7 @@ public class Scraper {
     }
 
     public void scrape() throws IOException, URISyntaxException, InterruptedException {
-        if (!CONFIG.getBoolean("scrape", true)) return;
+        if (!CONFIG.scrape) return;
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = Database.getStats();
         stats.createIndex(Indexes.descending("timestamp"));
@@ -345,8 +345,8 @@ public class Scraper {
             LOGGER.info("Scraped page #{}", i);
             Minecraft.getInstance()
                     .gameMode
-                    .handleInventoryMouseClick(
-                            client.player.containerMenu.containerId, 32, 0, ClickType.PICKUP, client.player
+                    .handleContainerInput(
+                            client.player.containerMenu.containerId, 32, 0, ContainerInput.PICKUP, client.player
                     );
             waitSeconds(1); // wait a sec to give legmos time to load
         }

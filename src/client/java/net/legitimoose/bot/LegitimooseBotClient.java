@@ -2,8 +2,8 @@ package net.legitimoose.bot;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -97,17 +97,17 @@ public class LegitimooseBotClient implements ClientModInitializer {
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, context) -> {
             dispatcher.register(
-                ClientCommandManager.literal("scraper")
-                    .then(ClientCommandManager.literal("reload")
+                    ClientCommands.literal("scraper")
+                    .then(ClientCommands.literal("reload")
                       .executes(LegitimooseBotClient::reloadConfig)
                     )
-                    .then(ClientCommandManager.literal("on")
+                    .then(ClientCommands.literal("on")
                        .executes((source)->{
                            Scraper.getInstance().override(false);
                            return 0;
                        })
                     )
-                    .then(ClientCommandManager.literal("off")
+                    .then(ClientCommands.literal("off")
                         .executes((source)->{
                             Scraper.getInstance().override(true);
                             return 0;
@@ -119,7 +119,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
     private static int reloadConfig(CommandContext<?> context) {
         try {
-            CONFIG.reloadConfiguration();
+            CONFIG.reload();
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             return 1;
@@ -166,7 +166,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
         LocalPlayer player = Minecraft.getInstance().player;
 
         if (player != null) {
-            player.displayClientMessage(Component.literal(message), false);
+            player.sendSystemMessage(Component.literal(message));
         }
     }
 
