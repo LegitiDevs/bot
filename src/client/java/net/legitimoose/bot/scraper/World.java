@@ -33,6 +33,8 @@ public record World(
         @Deprecated
         long last_scraped,
 
-        long last_scraped_ms
+        long last_scraped_ms,
+
+        boolean deleted
 ) {
 }

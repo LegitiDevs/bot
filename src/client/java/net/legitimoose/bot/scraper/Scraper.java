@@ -97,7 +97,6 @@ public class Scraper {
         stats.createIndex(Indexes.descending("timestamp"));
         List<IndexModel> indexes = new ArrayList<>();
         indexes.add(new IndexModel(Indexes.ascending("world_uuid")));
-        indexes.add(new IndexModel(Indexes.ascending("last_scraped_ms"), new IndexOptions().expireAfter(24L, TimeUnit.HOURS)));
         Database.getWorlds().createIndexes(indexes);
 
         // Please ignore the nulls. Only the 'input' is actually used
@@ -169,8 +168,7 @@ public class Scraper {
                 "{\"text\":\"Legitimoose Lobby\",\"color\":\"white\",\"italic\":false}",
                 lobbyRawDescription + ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, Minecraft.getInstance().getCurrentServer().motd)
                         .result()
-                        .get()
-                        .toString() + "]",
+                        .get() + "]",
 
                 -1,
 
@@ -179,7 +177,8 @@ public class Scraper {
                 "minecraft:grass_block",
 
                 System.currentTimeMillis() / 1000L,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                false
         );
         bulkUpsert(List.of(lobby), List.of());
 
@@ -334,7 +333,8 @@ public class Scraper {
 
                         itemStack.toString().substring(2),
                         System.currentTimeMillis() / 1000L,
-                        System.currentTimeMillis()
+                        System.currentTimeMillis(),
+                        false
                 );
 
                 worlds.add(world);
@@ -359,6 +359,12 @@ public class Scraper {
         List<WriteModel<Player>> playerOperations = new ArrayList<>();
         LOGGER.info("writing world");
         for (World world : worlds) {
+            // TODO: REMOVE TTL INDEX ON RELEASE
+            boolean deleted = false;
+            World worldPrev = Database.getWorlds().find(eq("world_uuid", world.world_uuid())).first();
+            if (worldPrev != null && System.currentTimeMillis() - worldPrev.last_scraped_ms() > TimeUnit.HOURS.toMillis(24)) {
+                deleted = true;
+            }
             Bson updates =
                     Updates.combine(
                             Updates.set("creation_date", world.creation_date()),
@@ -382,10 +388,11 @@ public class Scraper {
                             Updates.set("raw_name", Document.parse(world.raw_name())),
                             Updates.set("raw_description", BsonArray.parse(world.raw_description())),
                             Updates.set("featured_instant", world.featured_instant()),
-                            Updates.set("jam", Document.parse(world.jam().toString())),
+                            Updates.set("jam", world.jam()),
                             Updates.set("icon", world.icon()),
                             Updates.set("last_scraped", world.last_scraped()),
-                            Updates.set("last_scraped_ms", new BsonDateTime(world.last_scraped_ms())));
+                            Updates.set("last_scraped_ms", new BsonDateTime(world.last_scraped_ms())),
+                            Updates.set("deleted", deleted));
             operations.add(new UpdateOneModel<>(
                     eq("world_uuid", world.world_uuid()),
                     updates,

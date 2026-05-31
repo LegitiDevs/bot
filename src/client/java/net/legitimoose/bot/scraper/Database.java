@@ -1,11 +1,16 @@
 package net.legitimoose.bot.scraper;
 
-import static net.legitimoose.bot.LegitimooseBot.CONFIG;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import net.legitimoose.bot.util.JsonObjectCodec;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+
+import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 
 public class Database {
 
@@ -19,13 +24,17 @@ public class Database {
     private final MongoDatabase database =
             mongoClient.getDatabase(DATABASE_NAME);
 
-    private MongoCollection<World> worlds;
-    private MongoCollection<Player> players;
-    private MongoCollection<Document> stats;
-    private MongoCollection<Ban> bans;
+    private final MongoCollection<World> worlds;
+    private final MongoCollection<Player> players;
+    private final MongoCollection<Document> stats;
+    private final MongoCollection<Ban> bans;
 
     private Database() {
-        worlds = database.getCollection("worlds", World.class);
+        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
+                CodecRegistries.fromCodecs(new JsonObjectCodec()),
+                MongoClientSettings.getDefaultCodecRegistry());
+
+        worlds = database.getCollection("worlds", World.class).withCodecRegistry(codecRegistry);
         players = database.getCollection("players", Player.class);
         stats = database.getCollection("stats");
         bans = database.getCollection("bans", Ban.class);
