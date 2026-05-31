@@ -14,7 +14,7 @@ public class LegitimooseBot implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        InputStream defaultConfigFile = LegitimooseBot.class.getResourceAsStream("/assets/legitimoose-bot/config/legitimoosebot.yml");
+        InputStream defaultConfigFile = LegitimooseBot.class.getResourceAsStream("/assets/legitimoose-bot/config/legitimoosebot.json");
         try {
             CONFIG = Config.create(new File("config/legitimoosebot.json"), defaultConfigFile);
         } catch (IOException e) {
