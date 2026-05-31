@@ -95,6 +95,8 @@ public class Scraper {
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = Database.getStats();
         stats.createIndex(Indexes.descending("timestamp"));
+
+        Database.getWorlds().dropIndex(new IndexModel(Indexes.ascending("last_scraped_ms"), new IndexOptions().expireAfter(24L, TimeUnit.HOURS)).getKeys());
         List<IndexModel> indexes = new ArrayList<>();
         indexes.add(new IndexModel(Indexes.ascending("world_uuid")));
         Database.getWorlds().createIndexes(indexes);
@@ -359,7 +361,6 @@ public class Scraper {
         List<WriteModel<Player>> playerOperations = new ArrayList<>();
         LOGGER.info("writing world");
         for (World world : worlds) {
-            // TODO: REMOVE TTL INDEX ON RELEASE
             boolean deleted = false;
             World worldPrev = Database.getWorlds().find(eq("world_uuid", world.world_uuid())).first();
             if (worldPrev != null && System.currentTimeMillis() - worldPrev.last_scraped_ms() > TimeUnit.HOURS.toMillis(24)) {
