@@ -20,12 +20,14 @@ public class Database {
             mongoClient.getDatabase(DATABASE_NAME);
 
     private MongoCollection<World> worlds;
+    private MongoCollection<Document> worldStats;
     private MongoCollection<Player> players;
     private MongoCollection<Document> stats;
     private MongoCollection<Ban> bans;
 
     private Database() {
         worlds = database.getCollection("worlds", World.class);
+        worldStats = database.getCollection("world_stats");
         players = database.getCollection("players", Player.class);
         stats = database.getCollection("stats");
         bans = database.getCollection("bans", Ban.class);
@@ -45,6 +47,10 @@ public class Database {
 
     public static MongoCollection<Document> getStats() {
         return getInstance().stats;
+    }
+
+    public static MongoCollection<Document> getWorldStats() {
+        return getInstance().worldStats;
     }
 
     public static MongoCollection<Ban> getBans() {

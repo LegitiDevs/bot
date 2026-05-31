@@ -275,6 +275,18 @@ public class Scraper {
         List<WriteModel<World>> operations = new ArrayList<>();
         LOGGER.info("writing world");
         for (World world : worlds) {
+            Document prevWorld = Database.getWorldStats().find(eq("world_uuid", world.world_uuid())).first();
+            JsonObject statsObj = new JsonObject();
+            if (prevWorld != null) {
+                Document prevWorldStats = prevWorld.getList("stats", Document.class).getLast();
+                if (world.visits() != prevWorldStats.getInteger("visits")
+                        || world.votes() != prevWorldStats.getInteger("votes")) {
+                    writeWorldStats(world, statsObj);
+                }
+            } else {
+                writeWorldStats(world, statsObj);
+            }
+
             Bson updates =
                     Updates.combine(
                             Updates.set("creation_date", world.creation_date()),
@@ -313,6 +325,16 @@ public class Scraper {
             Database.getWorlds().bulkWrite(operations);
         }
         LOGGER.info("Bulk wrote {} worlds", operations.size());
+    }
+
+    private void writeWorldStats(World world, JsonObject statsObj) {
+        statsObj.addProperty("timestamp", world.last_scraped_ms());
+        statsObj.addProperty("visits", world.visits());
+        statsObj.addProperty("votes", world.votes());
+
+        Bson statUpdates = Updates.push("stats", Document.parse(statsObj.toString()));
+
+        Database.getWorldStats().updateOne(eq("world_uuid", world.world_uuid()), statUpdates, new UpdateOptions().upsert(true));
     }
 
     private String getNbtString(CompoundTag tag, String field) {
