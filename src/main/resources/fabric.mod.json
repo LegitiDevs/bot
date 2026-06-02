@@ -3,8 +3,10 @@
   "id": "legitimoose-bot",
   "version": "${version}",
   "name": "Legitimoose-Bot",
-  "description": "",
-  "authors": [],
+  "description": "Show your discord friends your ingame activity by sending notifications through a webhook.",
+  "authors": [
+    "Omri"
+  ],
   "contact": {},
   "license": "MIT",
   "environment": "client",
