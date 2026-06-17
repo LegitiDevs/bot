@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -197,7 +198,9 @@ public class Scraper {
                         for (String category : categories) {
                             JsonObject score = new JsonObject();
 
-                            Matcher scoreMatcher = jamScorePattern.matcher(getNbtString(publicBukkitValues, "jam_score_" + category));
+                            Optional<String> jamScore = getNbtString(publicBukkitValues, "jam_score_" + category);
+                            if (jamScore.isEmpty()) continue;
+                            Matcher scoreMatcher = jamScorePattern.matcher(jamScore.get());
                             if (scoreMatcher.find()) {
                                 score.addProperty("rank", Integer.parseInt(scoreMatcher.group(1)));
                                 score.addProperty("score", Double.parseDouble(scoreMatcher.group(2)));
@@ -212,22 +215,22 @@ public class Scraper {
                 }
 
                 World world = new World(
-                        getNbtString(publicBukkitValues, "creation_date"),
+                        getNbtString(publicBukkitValues, "creation_date").get(),
                         getNbtInt(publicBukkitValues, "creation_date_unix_seconds"),
 
                         getNbtBoolean(publicBukkitValues, "enforce_whitelist"),
                         getNbtBoolean(publicBukkitValues, "locked"),
 
-                        getNbtString(publicBukkitValues, "owner"),
+                        getNbtString(publicBukkitValues, "owner").get(),
                         owner_name,
 
                         getNbtInt(publicBukkitValues, "player_count"),
                         getNbtInt(publicBukkitValues, "max_players"),
                         getNbtInt(publicBukkitValues, "max_datapack_size"),
 
-                        getNbtString(publicBukkitValues, "resource_pack_url"),
-                        getNbtString(publicBukkitValues, "uuid"),
-                        getNbtString(publicBukkitValues, "version"),
+                        getNbtString(publicBukkitValues, "resource_pack_url").get(),
+                        getNbtString(publicBukkitValues, "uuid").get(),
+                        getNbtString(publicBukkitValues, "version").get(),
 
                         getNbtInt(publicBukkitValues, "visits"),
                         getNbtInt(publicBukkitValues, "votes"),
@@ -337,17 +340,18 @@ public class Scraper {
         Database.getWorldStats().updateOne(eq("world_uuid", world.world_uuid()), statUpdates, new UpdateOptions().upsert(true));
     }
 
-    private String getNbtString(CompoundTag tag, String field) {
-        return getNbtField(tag, field).asString().get();
+    private Optional<String> getNbtString(CompoundTag tag, String field) {
+        if (getNbtField(tag, field) == null) return Optional.empty();
+        else return getNbtField(tag, field).asString();
     }
 
     private boolean getNbtBoolean(CompoundTag tag, String field) {
-        return Boolean.parseBoolean(getNbtField(tag, field).asString().get());
+        return Boolean.parseBoolean(getNbtString(tag, field).get());
     }
 
     private int getNbtInt(CompoundTag tag, String field) {
-        if (!getNbtString(tag, field).isEmpty() && !getNbtString(tag, field).equals("null")) {
-            return Integer.parseInt(getNbtString(tag, field));
+        if (!getNbtString(tag, field).get().isEmpty() && !getNbtString(tag, field).get().equals("null")) {
+            return Integer.parseInt(getNbtString(tag, field).get());
         } else {
             return -1;
         }
