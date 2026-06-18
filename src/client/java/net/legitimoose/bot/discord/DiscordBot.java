@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -137,4 +138,29 @@ public class DiscordBot extends ListenerAdapter {
             Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
         }
     }
+
+    @Override
+    public void onMessageUpdate(MessageUpdateEvent event) {
+        String discordNick;
+        if (event.getMessage().isWebhookMessage()) {
+            if (!event.getAuthor().getId().equals(CONFIG.bridgeWebhookId)) return;
+            discordNick = event.getAuthor().getEffectiveName();
+        } else {
+            discordNick = event.getMember().getEffectiveName();
+        }
+        Component formattedMesssage = MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
+        String message =
+                String.format("<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick) +
+                        MiniMessage.miniMessage().serialize(formattedMesssage);
+        if (!event.getMessage().getAttachments().isEmpty()) {
+            message += " <blue>[Attachment Included]</blue>";
+        }
+        message += " <blue>[Edited]</blue>";
+        if (CONFIG.channelId.isEmpty())
+            LOGGER.error("Discord channel ID is not set in config!");
+        if (event.getChannel().getId().equals(CONFIG.channelId)) {
+            Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
+        }
+    }
+
 }
