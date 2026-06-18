@@ -12,6 +12,7 @@ import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.legitimoose.bot.util.Unicode;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -19,6 +20,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.scores.*;
 import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.Document;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -132,6 +135,18 @@ public class Scraper {
             );
         });
 
+        Collection<PlayerInfo> playerList =
+                Minecraft.getInstance().getConnection().getOnlinePlayers();
+        Scoreboard scoreboard = Minecraft.getInstance().level.getScoreboard();
+        Objective listObjective = scoreboard.getDisplayObjective(DisplaySlot.LIST);
+        for (PlayerInfo player : playerList) {
+            ReadOnlyScoreInfo score = scoreboard.getPlayerScoreInfo(ScoreHolder.fromGameProfile(player.getProfile()), listObjective);
+            if (score == null) continue;
+            int legiticoins = score.value();
+            Database.getPlayers().updateOne(eq("name", player.getProfile().name()), Updates.set("legiticoins", legiticoins));
+        }
+
+
         client.player.closeContainer();
 
         String lobbyRawDescription = "[";
@@ -175,12 +190,12 @@ public class Scraper {
 
                 -1,
 
-                new JsonObject(),
+                "",
 
                 "minecraft:grass_block",
 
                 System.currentTimeMillis() / 1000L,
-                System.currentTimeMillis(),
+                Instant.now(),
                 false
         );
         bulkUpsert(List.of(lobby), List.of());
@@ -334,11 +349,11 @@ public class Scraper {
 
                         featured_instant,
 
-                        jam,
+                        jam.toString(),
 
                         itemStack.toString().substring(2),
                         System.currentTimeMillis() / 1000L,
-                        System.currentTimeMillis(),
+                        Instant.now(),
                         false
                 );
 
@@ -366,7 +381,7 @@ public class Scraper {
         for (World world : worlds) {
             boolean deleted = false;
             World worldPrev = Database.getWorlds().find(eq("world_uuid", world.world_uuid())).first();
-            if (worldPrev != null && System.currentTimeMillis() - worldPrev.last_scraped_ms() > TimeUnit.HOURS.toMillis(24)) {
+            if (worldPrev != null && System.currentTimeMillis() - worldPrev.last_scraped_ms().toEpochMilli() > TimeUnit.HOURS.toMillis(24)) {
                 deleted = true;
             }
 
@@ -405,10 +420,10 @@ public class Scraper {
                             Updates.set("raw_name", Document.parse(world.raw_name())),
                             Updates.set("raw_description", BsonArray.parse(world.raw_description())),
                             Updates.set("featured_instant", world.featured_instant()),
-                            Updates.set("jam", world.jam()),
+                            Updates.set("jam", Document.parse(world.jam())),
                             Updates.set("icon", world.icon()),
                             Updates.set("last_scraped", world.last_scraped()),
-                            Updates.set("last_scraped_ms", new BsonDateTime(world.last_scraped_ms())),
+                            Updates.set("last_scraped_ms", world.last_scraped_ms()),
                             Updates.set("deleted", deleted));
             operations.add(new UpdateOneModel<>(
                     eq("world_uuid", world.world_uuid()),
@@ -446,7 +461,7 @@ public class Scraper {
     }
 
     private void writeWorldStats(World world, JsonObject statsObj) {
-        statsObj.addProperty("timestamp", world.last_scraped_ms());
+        statsObj.addProperty("timestamp", world.last_scraped_ms().toEpochMilli());
         statsObj.addProperty("visits", world.visits());
         statsObj.addProperty("votes", world.votes());
 
