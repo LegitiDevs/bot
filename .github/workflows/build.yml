@@ -23,14 +23,14 @@ jobs:
           java-version: '21'
           distribution: 'microsoft'
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
       - name: Build
         run: ./gradlew build
       - name: Rename jar
         run: |
           mv build/libs/Legitimoose-Bot*.jar Legitimoose-Bot.jar
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: github.ref_type == 'tag'
         with:
           files: Legitimoose-Bot.jar

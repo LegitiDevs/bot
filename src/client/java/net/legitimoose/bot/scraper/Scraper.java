@@ -29,6 +29,7 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -229,7 +230,7 @@ public class Scraper {
                     }
                 }
 
-                String owner_uuid = getNbtString(publicBukkitValues, "owner");
+                String owner_uuid = getNbtString(publicBukkitValues, "owner").get();
                 Player dbPlayer = Database.getPlayers().find(eq("uuid", owner_uuid)).first();
                 int streak;
                 Instant last_joined;
@@ -279,7 +280,9 @@ public class Scraper {
                         for (String category : categories) {
                             JsonObject score = new JsonObject();
 
-                            Matcher scoreMatcher = jamScorePattern.matcher(getNbtString(publicBukkitValues, "jam_score_" + category));
+                            Optional<String> jamScore = getNbtString(publicBukkitValues, "jam_score_" + category);
+                            if (jamScore.isEmpty()) continue;
+                            Matcher scoreMatcher = jamScorePattern.matcher(jamScore.get());
                             if (scoreMatcher.find()) {
                                 score.addProperty("rank", Integer.parseInt(scoreMatcher.group(1)));
                                 score.addProperty("score", Double.parseDouble(scoreMatcher.group(2)));
@@ -296,7 +299,7 @@ public class Scraper {
                 String itemName = itemStack.get(DataComponents.CUSTOM_NAME).getString();
 
                 World world = new World(
-                        getNbtString(publicBukkitValues, "creation_date"),
+                        getNbtString(publicBukkitValues, "creation_date").get(),
                         getNbtInt(publicBukkitValues, "creation_date_unix_seconds"),
 
                         getNbtBoolean(publicBukkitValues, "enforce_whitelist"),
@@ -310,9 +313,9 @@ public class Scraper {
                         getNbtInt(publicBukkitValues, "max_players"),
                         getNbtInt(publicBukkitValues, "max_datapack_size"),
 
-                        getNbtString(publicBukkitValues, "resource_pack_url"),
-                        getNbtString(publicBukkitValues, "uuid"),
-                        getNbtString(publicBukkitValues, "version"),
+                        getNbtString(publicBukkitValues, "resource_pack_url").get(),
+                        getNbtString(publicBukkitValues, "uuid").get(),
+                        getNbtString(publicBukkitValues, "version").get(),
 
                         getNbtInt(publicBukkitValues, "visits"),
                         getNbtInt(publicBukkitValues, "votes"),
@@ -366,6 +369,19 @@ public class Scraper {
             if (worldPrev != null && System.currentTimeMillis() - worldPrev.last_scraped_ms() > TimeUnit.HOURS.toMillis(24)) {
                 deleted = true;
             }
+
+            Document prevWorldStats = Database.getWorldStats().find(eq("world_uuid", world.world_uuid())).first();
+            JsonObject statsObj = new JsonObject();
+            if (prevWorldStats != null) {
+                Document stats = prevWorldStats.getList("stats", Document.class).getLast();
+                if (world.visits() != stats.getInteger("visits")
+                        || world.votes() != stats.getInteger("votes")) {
+                    writeWorldStats(world, statsObj);
+                }
+            } else {
+                writeWorldStats(world, statsObj);
+            }
+
             Bson updates =
                     Updates.combine(
                             Updates.set("creation_date", world.creation_date()),
@@ -429,17 +445,28 @@ public class Scraper {
         LOGGER.info("Bulk wrote {} players", playerOperations.size());
     }
 
-    private String getNbtString(CompoundTag tag, String field) {
-        return getNbtField(tag, field).asString().get();
+    private void writeWorldStats(World world, JsonObject statsObj) {
+        statsObj.addProperty("timestamp", world.last_scraped_ms());
+        statsObj.addProperty("visits", world.visits());
+        statsObj.addProperty("votes", world.votes());
+
+        Bson statUpdates = Updates.push("stats", Document.parse(statsObj.toString()));
+
+        Database.getWorldStats().updateOne(eq("world_uuid", world.world_uuid()), statUpdates, new UpdateOptions().upsert(true));
+    }
+
+    private Optional<String> getNbtString(CompoundTag tag, String field) {
+        if (getNbtField(tag, field) == null) return Optional.empty();
+        else return getNbtField(tag, field).asString();
     }
 
     private boolean getNbtBoolean(CompoundTag tag, String field) {
-        return Boolean.parseBoolean(getNbtField(tag, field).asString().get());
+        return Boolean.parseBoolean(getNbtString(tag, field).get());
     }
 
     private int getNbtInt(CompoundTag tag, String field) {
-        if (!getNbtString(tag, field).isEmpty() && !getNbtString(tag, field).equals("null")) {
-            return Integer.parseInt(getNbtString(tag, field));
+        if (!getNbtString(tag, field).get().isEmpty() && !getNbtString(tag, field).get().equals("null")) {
+            return Integer.parseInt(getNbtString(tag, field).get());
         } else {
             return -1;
         }
