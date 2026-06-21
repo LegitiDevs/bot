@@ -47,7 +47,8 @@ public class McUtil {
     /// [net.minecraft.server.network.ServerGamePacketListenerImpl#tryHandleChat]
     public static String sanitizeString(String orig) {
         // regex: ASCII code 0x00 to 0x1f (control chars including \n), 0x7f (DEL) and 0xa7 (§)
-        String result = orig.replaceAll("[\\x00-\\x1f\\x7f\\xa7]", "?");
+        String result = orig.replace("\n", "<br>");
+        result = result.replaceAll("[\\x00-\\x1f\\x7f\\xa7]", "?");
         if (result.length() > 256) result = result.substring(0, 253) + "..";
         return result;
     }
