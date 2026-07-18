@@ -7,6 +7,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.minecraft.client.Minecraft;
@@ -24,6 +25,11 @@ public class ListCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (!event.getName().equals("list")) return;
+
+        if (BotMuteHandler.getInstance().shouldCancelCommand(event)) {
+            return;
+        }
+
         switch (event.getSubcommandName()) {
             case "lobby" -> {
                 Collection<PlayerInfo> playerList =

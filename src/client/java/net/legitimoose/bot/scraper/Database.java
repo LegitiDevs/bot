@@ -1,10 +1,9 @@
 package net.legitimoose.bot.scraper;
 
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+
+import com.mongodb.client.*;
+import net.legitimoose.bot.discord.command.mute.BotMute;
 import org.bson.Document;
 
 public class Database {
@@ -23,12 +22,14 @@ public class Database {
     private MongoCollection<Player> players;
     private MongoCollection<Document> stats;
     private MongoCollection<Ban> bans;
+    private MongoCollection<BotMute> mutes;
 
     private Database() {
         worlds = database.getCollection("worlds", World.class);
         players = database.getCollection("players", Player.class);
         stats = database.getCollection("stats");
         bans = database.getCollection("bans", Ban.class);
+        mutes = database.getCollection("mutes", BotMute.class);
     }
 
     private static Database getInstance() {
@@ -49,6 +50,10 @@ public class Database {
 
     public static MongoCollection<Ban> getBans() {
         return getInstance().bans;
+    }
+
+    public static MongoCollection<BotMute> getBotMutes() {
+        return getInstance().mutes;
     }
 
 }
