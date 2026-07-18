@@ -10,6 +10,7 @@ import net.legitimoose.bot.chat.matcher.*;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.MsgCommand;
 import net.legitimoose.bot.discord.command.ReplyCommand;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.scraper.*;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
@@ -134,6 +135,9 @@ public class GameChatHandler {
 
     public void handleMsgMessage(MsgMatcher msg) {
         String senderUsername = msg.getSenderUsername();
+        if (BotMuteHandler.getInstance().shouldCancelPlayer(senderUsername, true)) {
+            return;
+        }
         String discordReceiverName = msg.getDiscordReceiver();
         String message = msg.getMessage();
         User user;
@@ -155,6 +159,8 @@ public class GameChatHandler {
      * Handles a bot command sent by a user. See {@link #handleChatMessage}.
      */
     private void handleCommandMessage(String command, String senderUsername) {
+        if (BotMuteHandler.getInstance().shouldCancelPlayer(senderUsername, false))
+            return;
         try {
             dispatcher.execute(command, new CommandSource(senderUsername));
         } catch (CommandSyntaxException e) {

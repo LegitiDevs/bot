@@ -3,6 +3,7 @@ package net.legitimoose.bot.discord.command;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -19,6 +20,11 @@ public class ShoutCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (!event.getName().equals("shout")) return;
+
+        if (BotMuteHandler.getInstance().shouldCancelCommand(event)) {
+            return;
+        }
+
         String message = event.getOption("message").getAsString();
         long userId = event.getUser().getIdLong();
         Long lastUsed = cooldown.get(userId);

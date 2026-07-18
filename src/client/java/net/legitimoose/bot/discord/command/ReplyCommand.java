@@ -2,6 +2,7 @@ package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -15,6 +16,11 @@ public class ReplyCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (!event.getName().equals("reply")) return;
+
+        if (BotMuteHandler.getInstance().shouldCancelCommand(event)) {
+            return;
+        }
+
         String message = event.getOption("message").getAsString();
         if (lastSentReply.get(event.getUser().getIdLong()) == null) {
             event.reply("You have no incoming messages to reply.").setEphemeral(true).queue();

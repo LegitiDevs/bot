@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.chat.GameChatHandler;
 import net.legitimoose.bot.discord.DiscordBot;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.http.HttpServer;
 import net.legitimoose.bot.scraper.Scraper;
 import net.minecraft.client.Minecraft;
@@ -58,7 +59,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register((minecraft) -> attemptRejoin(false));
 
-        schedulePeriodicalMessage();
+        schedulePeriodicalEvents();
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
             threadPool.execute(() -> GameChatHandler.getInstance().handleChat(message));
@@ -82,7 +83,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
         }, TWENTY_FOUR_HOURS, TWENTY_FOUR_HOURS);
     }
 
-    private void schedulePeriodicalMessage() {
+    private void schedulePeriodicalEvents() {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
         scheduler.scheduleAtFixedRate(() -> {
@@ -92,6 +93,13 @@ public class LegitimooseBotClient implements ClientModInitializer {
                 player.connection.sendChat(MESSAGE);
             }
         }, 0, 20, TimeUnit.MINUTES);
+
+        // Mutes may take an extra 20s to be retracted but that is no problem
+        // Could calculate relative time and subtract 0-20s from each mute when
+        // given to make time exact, would need to store extra stuff too. Not worth the effort
+        scheduler.scheduleAtFixedRate(() -> {
+            BotMuteHandler.getInstance().refresh();
+        }, 0, 20, TimeUnit.SECONDS);
     }
 
     private void registerCommands() {
