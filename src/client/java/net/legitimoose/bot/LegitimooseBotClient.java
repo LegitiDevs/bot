@@ -163,7 +163,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
     }
 
     private static boolean hasDisconnected() {
-        Screen screen = Minecraft.getInstance().screen;
+        Screen screen = Minecraft.getInstance().gui.screen();
         return screen instanceof DisconnectedScreen ||
                screen instanceof JoinMultiplayerScreen ||
                screen instanceof TitleScreen ||

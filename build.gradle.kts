@@ -1,5 +1,5 @@
 plugins {
-  id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
+  id("net.fabricmc.fabric-loom") version "1.17-SNAPSHOT"
   id("com.gradleup.shadow") version "9.3.1"
 }
 
@@ -51,7 +51,7 @@ dependencies {
 
   shadow(implementation("com.sparkjava:spark-core:2.9.4")!!)
 
-  runtimeOnly("net.litetex.mcm:dev-auth-neo:1.1.0")
+  localRuntime("net.litetex.mcm:dev-auth-neo:1.1.1")
 }
 
 tasks.processResources {

@@ -136,7 +136,7 @@ public class Scraper {
         waitSeconds(1);
         int max_pages;
 
-        max_pages = Integer.parseInt(client.screen.getTitle().getSiblings().getFirst().getString().substring(3));
+        max_pages = Integer.parseInt(client.gui.screen().getTitle().getSiblings().getFirst().getString().substring(3));
 
         LOGGER.info("Last page is: {}", max_pages);
         for (int i = 1; i <= max_pages; i++) {
@@ -253,7 +253,7 @@ public class Scraper {
 
                         jam,
 
-                        itemStack.toString().substring(2),
+                        itemStack.get(DataComponents.ITEM_MODEL).toString(),
                         System.currentTimeMillis() / 1000L,
                         System.currentTimeMillis()
                 );
