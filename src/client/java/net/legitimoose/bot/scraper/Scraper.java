@@ -40,14 +40,18 @@ import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 public class Scraper {
 
     private static Scraper INSTANCE;
-    private boolean isScraping;
-
-    private volatile boolean scrapeOverride = false;
-
     private final DiscordWebhook errorWebhook = new DiscordWebhook(CONFIG.errorWebhook);
-
     private final Pattern jamScorePattern = Pattern.compile("^CategoryScore\\(rank=(.*), score=(.*)\\)");
     private final Pattern ownerNamePattern = Pattern.compile("^by (?:[^|]+\\|\\s*)?(.+)");
+    private boolean isScraping;
+    private volatile boolean scrapeOverride = false;
+
+    public static Scraper getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Scraper();
+        }
+        return INSTANCE;
+    }
 
     private void waitSeconds(int time) {
         try {
@@ -89,7 +93,7 @@ public class Scraper {
         errorWebhook.execute();
     }
 
-    public void scrape() {
+    public void scrape() throws Exception {
         if (!CONFIG.scrape) return;
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = Database.getStats();
@@ -149,9 +153,10 @@ public class Scraper {
                 ItemStack itemStack = inv.getItem(j);
                 // last page & air: break, last world was already hit.
                 if (i == max_pages && itemStack.toString().substring(2).equals("minecraft:air")) break;
-                CompoundTag customData;
 
-                customData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
+                CompoundTag legitimooseData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("legitimoose_data").orElseThrow(() -> {
+                    return new Exception("legitimoose_data tag missing");
+                });
 
                 int descriptionLines = 0;
                 while (!itemStack.get(DataComponents.LORE).lines().get(descriptionLines).getString().isEmpty()) {
@@ -183,21 +188,21 @@ public class Scraper {
                 }
                 raw_description.append("]");
 
-                int jam_id = getNbtInt(customData, "jam_id");
-                int featured_instant = getNbtInt(customData, "featured_instant");
-                boolean jam_world = getNbtBoolean(customData, "jam_world");
+                int jam_id = getNbtInt(legitimooseData, "jam_id");
+                int featured_instant = getNbtInt(legitimooseData, "featured_instant");
+                boolean jam_world = getNbtBoolean(legitimooseData, "jam_world");
                 JsonObject jam = new JsonObject();
                 if (jam_id != -1) {
                     jam.addProperty("id", jam_id);
                     jam.addProperty("upgraded", !jam_world);
 
-                    if (jam_id > 1 && getNbtField(customData, "jam_rating_count") != null) {
+                    if (jam_id > 1 && getNbtField(legitimooseData, "jam_rating_count") != null) {
                         JsonObject scores = new JsonObject();
                         String[] categories = {"overall", "originality", "aesthetics", "fun", "theme"};
                         for (String category : categories) {
                             JsonObject score = new JsonObject();
 
-                            Optional<String> jamScore = getNbtString(customData, "jam_score_" + category);
+                            Optional<String> jamScore = getNbtString(legitimooseData, "jam_score_" + category);
                             if (jamScore.isEmpty()) continue;
                             Matcher scoreMatcher = jamScorePattern.matcher(jamScore.get());
                             if (scoreMatcher.find()) {
@@ -208,33 +213,33 @@ public class Scraper {
                             scores.add(category, score);
                         }
 
-                        jam.addProperty("rating_count", getNbtInt(customData, "jam_rating_count"));
+                        jam.addProperty("rating_count", getNbtInt(legitimooseData, "jam_rating_count"));
                         jam.add("scores", scores);
                     }
                 }
 
                 World world = new World(
-                        getNbtString(customData, "creation_date").get(),
-                        getNbtInt(customData, "creation_date_unix_seconds"),
+                        getNbtString(legitimooseData, "creation_date").get(),
+                        getNbtInt(legitimooseData, "creation_date_unix_seconds"),
 
-                        getNbtBoolean(customData, "enforce_whitelist"),
-                        getNbtBoolean(customData, "locked"),
+                        getNbtBoolean(legitimooseData, "enforce_whitelist"),
+                        getNbtBoolean(legitimooseData, "locked"),
 
-                        getNbtString(customData, "owner").get(),
+                        getNbtString(legitimooseData, "owner").get(),
                         owner_name,
 
-                        getNbtInt(customData, "player_count"),
-                        getNbtInt(customData, "max_players"),
-                        getNbtInt(customData, "max_datapack_size"),
+                        getNbtInt(legitimooseData, "player_count"),
+                        getNbtInt(legitimooseData, "max_players"),
+                        getNbtInt(legitimooseData, "max_datapack_size"),
 
-                        getNbtString(customData, "resource_pack_url").get(),
-                        getNbtString(customData, "uuid").get(),
-                        getNbtString(customData, "version").get(),
+                        getNbtString(legitimooseData, "resource_pack_url").get(),
+                        getNbtString(legitimooseData, "uuid").get(),
+                        getNbtString(legitimooseData, "version").get(),
 
-                        getNbtInt(customData, "visits"),
-                        getNbtInt(customData, "votes"),
+                        getNbtInt(legitimooseData, "visits"),
+                        getNbtInt(legitimooseData, "votes"),
 
-                        getNbtBoolean(customData, "whitelist_on_version_change"),
+                        getNbtBoolean(legitimooseData, "whitelist_on_version_change"),
 
                         itemStack.get(DataComponents.CUSTOM_NAME).getString(),
                         description.toString(),
@@ -358,13 +363,6 @@ public class Scraper {
 
     private Tag getNbtField(CompoundTag tag, String field) {
         return tag.get("datapackserverpaper:" + field);
-    }
-
-    public static Scraper getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new Scraper();
-        }
-        return INSTANCE;
     }
 
     public boolean shouldStartScraping() {
