@@ -8,6 +8,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import net.legitimoose.bot.chat.command.argument.BlockPosArgumentType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 
@@ -64,6 +65,13 @@ public class BotCommands {
                                 LiteralArgumentBuilder.<CommandSource>literal("cancel").executes((context -> {
                                     BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().cancelEverything();
                                     context.getSource().sendMessage("Cancelled bot actions.");
+                                    return Command.SINGLE_SUCCESS;
+                                }))
+                        )
+                        .then(
+                                LiteralArgumentBuilder.<CommandSource>literal("spawn").executes((context -> {
+                                    Minecraft.getInstance().player.connection.sendCommand("spawn");
+                                    context.getSource().sendMessage("Teleported to spawn!");
                                     return Command.SINGLE_SUCCESS;
                                 }))
                         )
