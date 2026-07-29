@@ -171,9 +171,8 @@ public class Scraper {
                     break;
                 }
 
-                CompoundTag legitimooseData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("legitimoose_data").orElseThrow(() -> {
-                    return new Exception("legitimoose_data tag missing");
-                });
+                CompoundTag customData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
+                CompoundTag publicBukkitValues = (CompoundTag) customData.get("PublicBukkitValues");
 
                 int descriptionLines = 0;
                 while (!itemStack.get(DataComponents.LORE).lines().get(descriptionLines).getString().isEmpty()) {
@@ -205,21 +204,21 @@ public class Scraper {
                 }
                 raw_description.append("]");
 
-                int jam_id = getNbtInt(legitimooseData, "jam_id");
-                int featured_instant = getNbtInt(legitimooseData, "featured_instant");
-                boolean jam_world = getNbtBoolean(legitimooseData, "jam_world");
+                int jam_id = getNbtInt(publicBukkitValues, "jam_id");
+                int featured_instant = getNbtInt(publicBukkitValues, "featured_instant");
+                boolean jam_world = getNbtBoolean(publicBukkitValues, "jam_world");
                 JsonObject jam = new JsonObject();
                 if (jam_id != -1) {
                     jam.addProperty("id", jam_id);
                     jam.addProperty("upgraded", !jam_world);
 
-                    if (jam_id > 1 && getNbtField(legitimooseData, "jam_rating_count") != null) {
+                    if (jam_id > 1 && getNbtField(publicBukkitValues, "jam_rating_count") != null) {
                         JsonObject scores = new JsonObject();
                         String[] categories = {"overall", "originality", "aesthetics", "fun", "theme"};
                         for (String category : categories) {
                             JsonObject score = new JsonObject();
 
-                            Optional<String> jamScore = getNbtString(legitimooseData, "jam_score_" + category);
+                            Optional<String> jamScore = getNbtString(publicBukkitValues, "jam_score_" + category);
                             if (jamScore.isEmpty()) continue;
                             Matcher scoreMatcher = jamScorePattern.matcher(jamScore.get());
                             if (scoreMatcher.find()) {
@@ -230,33 +229,33 @@ public class Scraper {
                             scores.add(category, score);
                         }
 
-                        jam.addProperty("rating_count", getNbtInt(legitimooseData, "jam_rating_count"));
+                        jam.addProperty("rating_count", getNbtInt(publicBukkitValues, "jam_rating_count"));
                         jam.add("scores", scores);
                     }
                 }
 
                 World world = new World(
-                        getNbtString(legitimooseData, "creation_date").get(),
-                        getNbtInt(legitimooseData, "creation_date_unix_seconds"),
+                        getNbtString(publicBukkitValues, "creation_date").get(),
+                        getNbtInt(publicBukkitValues, "creation_date_unix_seconds"),
 
-                        getNbtBoolean(legitimooseData, "enforce_whitelist"),
-                        getNbtBoolean(legitimooseData, "locked"),
+                        getNbtBoolean(publicBukkitValues, "enforce_whitelist"),
+                        getNbtBoolean(publicBukkitValues, "locked"),
 
-                        getNbtString(legitimooseData, "owner").get(),
+                        getNbtString(publicBukkitValues, "owner").get(),
                         owner_name,
 
-                        getNbtInt(legitimooseData, "player_count"),
-                        getNbtInt(legitimooseData, "max_players"),
-                        getNbtInt(legitimooseData, "max_datapack_size"),
+                        getNbtInt(publicBukkitValues, "player_count"),
+                        getNbtInt(publicBukkitValues, "max_players"),
+                        getNbtInt(publicBukkitValues, "max_datapack_size"),
 
-                        getNbtString(legitimooseData, "resource_pack_url").get(),
-                        getNbtString(legitimooseData, "uuid").get(),
-                        getNbtString(legitimooseData, "version").get(),
+                        getNbtString(publicBukkitValues, "resource_pack_url").get(),
+                        getNbtString(publicBukkitValues, "uuid").get(),
+                        getNbtString(publicBukkitValues, "version").get(),
 
-                        getNbtInt(legitimooseData, "visits"),
-                        getNbtInt(legitimooseData, "votes"),
+                        getNbtInt(publicBukkitValues, "visits"),
+                        getNbtInt(publicBukkitValues, "votes"),
 
-                        getNbtBoolean(legitimooseData, "whitelist_on_version_change"),
+                        getNbtBoolean(publicBukkitValues, "whitelist_on_version_change"),
 
                         itemStack.get(DataComponents.CUSTOM_NAME).getString(),
                         description.toString(),
