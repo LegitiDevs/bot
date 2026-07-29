@@ -6,13 +6,15 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 public class HelpCommand {
     private static final String helpMessage = "Commands:<br>!block <user> - Block <user> from sending you messages<br>!unblock <user> - Unblock <user><br>!streak - View your join streak<br>!streak <on|off> - Enable or disable streak notifications";
-    private static final String helpMessage2 = "!streak <username> - Get streak for a player";
+    private static final String helpMessage2 = "!streak <username> - Get streak for a player<br>!streak lb|leaderboard - get streak leaderboard";
+    private static final String helpMessage3 = "!bot goto <\"x y z\"> - pathfind to coordinates (quotes required)<br>!bot follow <player> - pathfind/follow player<br>!bot spawn - run /spawn<br>!bot cancel - cancel pathfinding actions";
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(LiteralArgumentBuilder.<CommandSource>literal("help")
                 .executes(context -> {
                     context.getSource().sendMessage(helpMessage);
                     context.getSource().sendMessage(helpMessage2);
+                    context.getSource().sendMessage(helpMessage3);
                     return Command.SINGLE_SUCCESS;
                 }));
     }
