@@ -11,6 +11,7 @@ import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -18,6 +19,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.scores.*;
 import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.Document;
@@ -26,6 +28,7 @@ import org.bson.conversions.Bson;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -132,6 +135,17 @@ public class Scraper {
                             .append("player_count", playerCount)
             );
         });
+
+        Collection<PlayerInfo> playerList =
+                Minecraft.getInstance().getConnection().getOnlinePlayers();
+        Scoreboard scoreboard = Minecraft.getInstance().level.getScoreboard();
+        Objective listObjective = scoreboard.getDisplayObjective(DisplaySlot.LIST);
+        for (PlayerInfo player : playerList) {
+            ReadOnlyScoreInfo score = scoreboard.getPlayerScoreInfo(ScoreHolder.fromGameProfile(player.getProfile()), listObjective);
+            if (score == null) continue;
+            int legiticoins = score.value();
+            Database.getPlayers().updateOne(eq("name", player.getProfile().name()), Updates.set("legiticoins", legiticoins));
+        }
 
         client.player.closeContainer();
 
