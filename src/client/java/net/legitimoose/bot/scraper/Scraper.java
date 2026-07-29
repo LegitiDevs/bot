@@ -152,21 +152,24 @@ public class Scraper {
         client.player.connection.sendCommand("worlds");
 
         waitSeconds(1);
-        int max_pages;
 
-        max_pages = Integer.parseInt(client.gui.screen().getTitle().getSiblings().getFirst().getString().substring(3));
-
-        LOGGER.info("Last page is: {}", max_pages);
-        for (int i = 1; i <= max_pages; i++) {
+        boolean lastPage = false;
+        while (!lastPage) {
             List<World> worlds = new ArrayList<>();
 
             Container inv = client.player.containerMenu.getSlot(0).container;
             for (int j = 0; j <= 26; j++) {
-                if (client.player.containerMenu.containerId == 0)
+                if (client.player.containerMenu.containerId == 0) {
+                    LOGGER.info("test");
                     return; // should check if player closed the inventory not sure though
+                }
                 ItemStack itemStack = inv.getItem(j);
                 // last page & air: break, last world was already hit.
-                if (i == max_pages && itemStack.toString().substring(2).equals("minecraft:air")) break;
+                if (itemStack.toString().substring(2).equals("minecraft:air")) {
+                    LOGGER.info("why");
+                    lastPage = true;
+                    break;
+                }
 
                 CompoundTag legitimooseData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("legitimoose_data").orElseThrow(() -> {
                     return new Exception("legitimoose_data tag missing");
@@ -280,7 +283,7 @@ public class Scraper {
             }
             bulkUpsert(worlds);
             // finally, click on next page button
-            LOGGER.info("Scraped page #{}", i);
+            LOGGER.info("Scraped page");
             Minecraft.getInstance()
                     .gameMode
                     .handleContainerInput(

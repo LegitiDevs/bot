@@ -4,7 +4,8 @@
   "package": "net.legitimoose.bot.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "MixinClientPacketListener"
+    "MixinClientPacketListener",
+    "MixinMenuScreens"
   ],
   "injectors": {
     "defaultRequire": 1
