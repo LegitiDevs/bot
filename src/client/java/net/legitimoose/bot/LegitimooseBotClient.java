@@ -1,13 +1,16 @@
 package net.legitimoose.bot;
 
+import baritone.api.BaritoneAPI;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.chat.GameChatHandler;
+import net.legitimoose.bot.chat.command.argument.BlockPosArgumentType;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.http.HttpServer;
@@ -18,7 +21,9 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -53,6 +58,8 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
         registerCommands();
 
+        setupBaritone();
+
         threadPool = Executors.newFixedThreadPool(4);
 
         threadPool.execute(DiscordBot::run);
@@ -66,6 +73,11 @@ public class LegitimooseBotClient implements ClientModInitializer {
         });
 
         threadPool.execute(() -> HttpServer.getInstance().start());
+    }
+
+    private void setupBaritone() {
+        BaritoneAPI.getSettings().allowBreak.value = false;
+        BaritoneAPI.getSettings().freeLook.value = false;
     }
 
     public static void handleLogin() {
@@ -103,6 +115,12 @@ public class LegitimooseBotClient implements ClientModInitializer {
     }
 
     private void registerCommands() {
+        ArgumentTypeRegistry.registerArgumentType(
+                Identifier.fromNamespaceAndPath("legitimoose-bot", "block_pos"),
+                BlockPosArgumentType.class,
+                SingletonArgumentInfo.contextFree(BlockPosArgumentType::new)
+        );
+
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, context) -> {
             dispatcher.register(
                     ClientCommands.literal("scraper")

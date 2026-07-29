@@ -54,6 +54,7 @@ public class GameChatHandler {
         BlockCommands.register(dispatcher);
         StreakCommand.register(dispatcher);
         PingCommand.register(dispatcher);
+        BotCommands.register(dispatcher);
 
         // Ordered for efficiency B)
         matchers = List.of(
