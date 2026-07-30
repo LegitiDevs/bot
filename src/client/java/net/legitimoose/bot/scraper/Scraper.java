@@ -149,7 +149,7 @@ public class Scraper {
 
         client.player.closeContainer();
 
-        client.player.connection.sendCommand("worlds");
+        client.player.connection.sendCommand("browse");
 
         waitSeconds(1);
 
@@ -160,13 +160,11 @@ public class Scraper {
             Container inv = client.player.containerMenu.getSlot(0).container;
             for (int j = 0; j <= 26; j++) {
                 if (client.player.containerMenu.containerId == 0) {
-                    LOGGER.info("test");
                     return; // should check if player closed the inventory not sure though
                 }
                 ItemStack itemStack = inv.getItem(j);
                 // last page & air: break, last world was already hit.
                 if (itemStack.toString().substring(2).equals("minecraft:air")) {
-                    LOGGER.info("why");
                     lastPage = true;
                     break;
                 }
@@ -371,7 +369,7 @@ public class Scraper {
     }
 
     private int getNbtInt(CompoundTag tag, String field) {
-        if (!getNbtString(tag, field).get().isEmpty() && !getNbtString(tag, field).get().equals("null")) {
+        if (!getNbtString(tag, field).orElseThrow().isEmpty() && !getNbtString(tag, field).orElseThrow().equals("null")) {
             return Integer.parseInt(getNbtString(tag, field).get());
         } else {
             return -1;
@@ -379,7 +377,7 @@ public class Scraper {
     }
 
     private Tag getNbtField(CompoundTag tag, String field) {
-        return tag.get("datapackserverpaper:" + field);
+        return tag.get(field);
     }
 
     public boolean shouldStartScraping() {

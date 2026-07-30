@@ -54,6 +54,12 @@ dependencies {
   shadow(implementation("com.sparkjava:spark-core:2.9.4")!!)
 
   localRuntime("net.litetex.mcm:dev-auth-neo:1.1.1")
+
+  // YoinkGUI & deps
+  localRuntime("maven.modrinth:5j4oEPp2:S2hjxT0a")
+  localRuntime("maven.modrinth:mOgUt4GM:njXb639R")
+  localRuntime("maven.modrinth:1eAoo2KR:cnfPzuFU")
+  localRuntime("maven.modrinth:Ha28R6CL:bdhiINYC")
 }
 
 tasks.processResources {
