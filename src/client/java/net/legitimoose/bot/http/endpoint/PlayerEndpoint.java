@@ -2,12 +2,13 @@ package net.legitimoose.bot.http.endpoint;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mongodb.client.MongoCollection;
 import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
 import net.legitimoose.bot.scraper.Rank;
-import net.legitimoose.bot.scraper.Scraper;
 import net.legitimoose.bot.util.McUtil;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,19 +19,11 @@ import java.util.regex.Pattern;
 import static com.mongodb.client.model.Filters.eq;
 
 public class PlayerEndpoint {
-    private final Pattern glistPattern = Pattern.compile("\\[(.*)] \\(\\d*\\): (.*)");
+    private final Pattern listallPattern = Pattern.compile("\\[(.*)] \\(\\d*\\): (.*)");
 
     public JsonArray handleRequest() {
         JsonArray response = new JsonArray();
-        List<String> glist = new PlayersEndpoint().getGlist();
-        Map<String, String> usernames = new HashMap<>();
-        for (String worldMessage : glist) {
-            Matcher matcher = glistPattern.matcher(worldMessage);
-            if (!matcher.matches()) continue;
-            for (String user : matcher.group(2).split(", ", -1)) {
-                usernames.put(user, matcher.group(1));
-            }
-        }
+        Map<String, String> usernames = getPlayers();
 
         for (String user : usernames.keySet()) {
             JsonObject player = new JsonObject();
@@ -60,15 +53,7 @@ public class PlayerEndpoint {
 
     public JsonObject handleRequest(String uuid) {
         JsonObject response = new JsonObject();
-        List<String> glist = new PlayersEndpoint().getGlist();
-        Map<String, String> usernames = new HashMap<>();
-        for (String worldMessage : glist) {
-            Matcher matcher = glistPattern.matcher(worldMessage);
-            if (!matcher.matches()) continue;
-            for (String user : matcher.group(2).split(", ", -1)) {
-                usernames.put(user, matcher.group(1));
-            }
-        }
+        Map<String, String> usernames = getPlayers();
 
         for (String user : usernames.keySet()) {
             try {
@@ -93,5 +78,27 @@ public class PlayerEndpoint {
         }
 
         return response;
+    }
+
+    /**
+     * @return A map of the player's username, and world uuid
+     */
+    private @NonNull Map<String, String> getPlayers() {
+        List<Component> glist = new PlayersEndpoint().getListall();
+        Map<String, String> usernames = new HashMap<>();
+        for (Component worldMessage : glist) {
+            String worldString = worldMessage.getString();
+            Matcher matcher = listallPattern.matcher(worldString);
+            if (!matcher.matches()) continue;
+            String world;
+            String worldCommand = ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
+            if (worldCommand.equals("/lobby")) {
+                world = "lobby";
+            } else world = worldCommand.substring(7);
+            for (String user : matcher.group(2).split(", ", -1)) {
+                usernames.put(user, world);
+            }
+        }
+        return usernames;
     }
 }

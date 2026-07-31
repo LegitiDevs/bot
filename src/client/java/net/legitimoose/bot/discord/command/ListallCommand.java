@@ -5,6 +5,9 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.http.endpoint.PlayersEndpoint;
 import net.legitimoose.bot.util.DiscordUtil;
+import net.minecraft.network.chat.Component;
+
+import java.util.List;
 
 public class ListallCommand extends ListenerAdapter {
     @Override
@@ -15,17 +18,8 @@ public class ListallCommand extends ListenerAdapter {
             return;
         }
 
-        boolean raw;
-        if (event.getOption("raw") != null) {
-            raw = event.getOption("raw").getAsBoolean();
-        } else {
-            raw = false;
-        }
-
-        if (raw) {
-            event.reply(DiscordUtil.sanitizeString(String.format("```%s```", String.join("\n", new PlayersEndpoint().getGlist())))).queue();
-        } else {
-            event.reply(DiscordUtil.sanitizeString(String.format("```%s```", String.join("\n", new PlayersEndpoint().getListall())))).queue();
-        }
+        List<Component> listall = new PlayersEndpoint().getListall();
+        List<String> listallString = listall.stream().map(Component::getString).toList();
+        event.reply(DiscordUtil.sanitizeString(String.format("```%s```", String.join("\n", listallString)))).queue();
     }
 }

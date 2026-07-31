@@ -40,7 +40,7 @@ public class GameChatHandler {
 
     private final CommandDispatcher<CommandSource> dispatcher;
 
-    public volatile List<String> lastMessages = new ArrayList<>();
+    public volatile List<Component> lastMessages = new ArrayList<>();
     public boolean handleChat = true;
 
     private final Pattern worldPattern = Pattern.compile("(?<=joined\\s)(.*)(?=\\s+Click to Join)");
@@ -71,12 +71,11 @@ public class GameChatHandler {
     }
 
     public void handleChat(Component component) {
-        String message = component.getString();
-        lastMessages.add(message);
+        lastMessages.add(component);
 
         if (handleChat) {
             DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhook);
-            handleChat(component, message, webhook);
+            handleChat(component, component.getString(), webhook);
         }
     }
 

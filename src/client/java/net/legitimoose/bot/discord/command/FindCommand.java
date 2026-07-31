@@ -32,6 +32,6 @@ public class FindCommand extends ListenerAdapter {
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        event.reply(DiscordUtil.sanitizeString(GameChatHandler.getInstance().lastMessages.getLast().replace(" Click HERE to join.", "").trim())).queue();
+        event.reply(DiscordUtil.sanitizeString(GameChatHandler.getInstance().lastMessages.getLast().getString().replace(" Click HERE to join.", "").trim())).queue();
     }
 }
