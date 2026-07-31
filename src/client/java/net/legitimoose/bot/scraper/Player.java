@@ -17,7 +17,8 @@ public record Player(
         Rank rank,
         List<String> blocked,
         Streak streak,
-        Instant last_joined
+        Instant last_joined,
+        Integer legiticoins
 ) {
     // "notify" is not an allowed record field name
     public record Streak(Integer days, @BsonProperty("notify") Boolean notifications) {
@@ -31,7 +32,8 @@ public record Player(
                         Updates.set("rank", this.rank),
                         Updates.set("blocked", this.blocked),
                         Updates.set("streak", this.streak),
-                        Updates.set("last_joined", new BsonDateTime(this.last_joined.toEpochMilli())));
+                        Updates.set("last_joined", new BsonDateTime(this.last_joined.toEpochMilli())),
+                        Updates.set("legiticoins", this.legiticoins));
         Database.getPlayers().updateOne(eq("uuid", this.uuid), updates, new UpdateOptions().upsert(true));
     }
 }

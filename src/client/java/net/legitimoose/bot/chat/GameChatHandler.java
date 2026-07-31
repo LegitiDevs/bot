@@ -222,6 +222,7 @@ public class GameChatHandler {
 
         String uuid = McUtil.getUuidOrThrow(username);
         int days;
+        int legiticoins;
         boolean notify;
         Instant lastJoined;
         String rank = join.getRank();
@@ -230,6 +231,7 @@ public class GameChatHandler {
         if (dbPlayer == null) {
             lastJoined = time;
             days = 1;
+            legiticoins = 0;
             notify = false;
             messageToSend = String.format("**%s** joined the server for the first time!", username);
         } else {
@@ -249,6 +251,11 @@ public class GameChatHandler {
                     notify = dbPlayer.streak().notifications();
                 }
             }
+            if (dbPlayer.legiticoins() != null) {
+                legiticoins = dbPlayer.legiticoins();
+            } else {
+                legiticoins = 0;
+            }
             messageToSend = String.format("**%s** joined the server.", username);
         }
 
@@ -261,7 +268,7 @@ public class GameChatHandler {
             days = 1;
         }
 
-        new Player(uuid, username, Rank.getEnum(rank), List.of(), new Player.Streak(days, notify), time).write();
+        new Player(uuid, username, Rank.getEnum(rank), List.of(), new Player.Streak(days, notify), time, legiticoins).write();
         Embed embed = new Embed(DiscordUtil.sanitizeString(messageToSend), 0x57F287);
         embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
         executeWebhook(webhook, embed, false);

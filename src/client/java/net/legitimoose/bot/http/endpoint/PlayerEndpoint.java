@@ -35,6 +35,7 @@ public class PlayerEndpoint {
                     rank = Rank.Unknown;
                 } else {
                     player.addProperty("streak", dbPlayer.streak().days());
+                    player.addProperty("legiticoins", dbPlayer.legiticoins());
                     rank = dbPlayer.rank();
                 }
 
@@ -66,6 +67,7 @@ public class PlayerEndpoint {
                     rank = Rank.Unknown;
                 } else {
                     response.addProperty("streak", dbPlayer.streak().days());
+                    response.addProperty("legiticoins", dbPlayer.legiticoins());
                     rank = dbPlayer.rank();
                 }
 
