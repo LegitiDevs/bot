@@ -154,6 +154,7 @@ public class Scraper {
         waitSeconds(1);
 
         boolean lastPage = false;
+        ItemStack firstItem = null;
         while (!lastPage) {
             List<World> worlds = new ArrayList<>();
 
@@ -163,6 +164,11 @@ public class Scraper {
                     return; // should check if player closed the inventory not sure though
                 }
                 ItemStack itemStack = inv.getItem(j);
+                if (firstItem == itemStack) {
+                    lastPage = true;
+                    break;
+                }
+                if (j == 0) firstItem = itemStack;
                 // last page & air: break, last world was already hit.
                 if (itemStack.toString().substring(2).equals("minecraft:air")) {
                     lastPage = true;
