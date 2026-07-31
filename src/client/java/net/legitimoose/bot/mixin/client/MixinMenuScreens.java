@@ -15,6 +15,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public interface MixinMenuScreens {
     @Inject(method = "fromPacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V"), cancellable = true)
     default <T extends AbstractContainerMenu> void cancelGuiRendering(Component title, MenuType<T> type, Minecraft minecraft, int containerId, CallbackInfo ci) {
-        //if (!FabricLoader.getInstance().isDevelopmentEnvironment()) ci.cancel();
+        if (!FabricLoader.getInstance().isDevelopmentEnvironment()) ci.cancel();
     }
 }
