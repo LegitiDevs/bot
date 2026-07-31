@@ -86,7 +86,6 @@ public class PlayersEndpoint {
             GameChatHandler.getInstance().handleChat = true;
         }
         GameChatHandler.getInstance().handleChat = true;
-        while (GameChatHandler.getInstance().lastMessages.getLast().getString().startsWith("[")) ;
         return GameChatHandler.getInstance().lastMessages;
     }
 }
