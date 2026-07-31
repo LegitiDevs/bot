@@ -35,13 +35,13 @@ import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class GameChatHandler {
+    public DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhook);
 
     private static GameChatHandler instance;
 
     private final CommandDispatcher<CommandSource> dispatcher;
 
     public volatile List<Component> lastMessages = new ArrayList<>();
-    public boolean handleChat = true;
 
     private final Pattern worldPattern = Pattern.compile("(?<=joined\\s)(.*)(?=\\s+Click to Join)");
 
@@ -73,10 +73,7 @@ public class GameChatHandler {
     public void handleChat(Component component) {
         lastMessages.add(component);
 
-        if (handleChat) {
-            DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhook);
-            handleChat(component, component.getString(), webhook);
-        }
+        handleChat(component, component.getString(), webhook);
     }
 
     private void handleChat(Component original, String message, DiscordWebhook webhook) {

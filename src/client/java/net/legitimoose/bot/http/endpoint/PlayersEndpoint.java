@@ -78,14 +78,11 @@ public class PlayersEndpoint {
         // Get /listall and output
         GameChatHandler.getInstance().lastMessages.clear();
         Minecraft.getInstance().player.connection.sendCommand("listall");
-        GameChatHandler.getInstance().handleChat = false;
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
-            GameChatHandler.getInstance().handleChat = true;
         }
-        GameChatHandler.getInstance().handleChat = true;
         return GameChatHandler.getInstance().lastMessages;
     }
 }

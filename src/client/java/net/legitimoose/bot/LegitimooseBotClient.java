@@ -8,11 +8,13 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
+import net.legitimoose.bot.chat.GameChatHandler;
 import net.legitimoose.bot.chat.command.argument.BlockPosArgumentType;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.http.HttpServer;
 import net.legitimoose.bot.scraper.Scraper;
+import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
@@ -58,6 +60,7 @@ public class LegitimooseBotClient implements ClientModInitializer {
     private static int reloadConfig(CommandContext<?> context) {
         try {
             CONFIG.reload();
+            GameChatHandler.getInstance().webhook = new DiscordWebhook(CONFIG.webhook);
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             return 1;
