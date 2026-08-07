@@ -81,6 +81,8 @@ public class GameChatHandler {
     }
 
     private void handleChat(Component original, String message, DiscordWebhook webhook) {
+        webhook.setUsername("Legitimoose Chat Sync");
+        webhook.setAvatarUrl("https://cdn.discordapp.com/attachments/1354457578242969822/1511222264656560249/legitidevslogopride.png?ex=6a76ade9&is=6a755c69&hm=0287760c5ead6880a5d24aa0e4f6633184cd8583dc2c1332fc163a1be7d9c720");
         for (MessageMatcher matcher : matchers) {
             if (matcher.matches(message)) {
                 matcher.handle(this, webhook, original);
