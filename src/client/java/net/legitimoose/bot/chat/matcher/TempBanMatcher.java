@@ -14,10 +14,8 @@ import java.util.regex.Pattern;
  */
 public class TempBanMatcher implements MessageMatcher {
 
-    // private static final Pattern PATTERN = Pattern.compile("^(\\S+)\\s+tempbanned\\s+(\\S+)\\s+for\\s+(.+)\\s+hours\\s+for\\s+'(.+)'");
     private static final Pattern PATTERN = Pattern.compile("(\\w{3,16})\\s((?:temp)(?:\\s?IP-)?banned)\\s(\\w{3,16})\\sfor\\s(\\d*\\s(?:days?|hours?|minutes?|seconds?))(?:\\sfor\\s'(.*)')?");
     
-
     private String moderatorName;
     private String typeString;
     private String bannedName;
