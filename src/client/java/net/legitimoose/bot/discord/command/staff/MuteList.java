@@ -28,19 +28,17 @@ public class MuteList extends ListenerAdapter {
         int added = 0;
         int maxLengthPerEntry = Message.MAX_CONTENT_LENGTH / MUTES_PER_PAGE;
 
-        FindIterable<BotMute> mutes = Database.getBotMutes().find().skip(start);
+        FindIterable<BotMute> mutes = Database.getBotMutes().find().skip(start).limit(MUTES_PER_PAGE);
 
         for (BotMute mute : mutes) {
-            if (added < MUTES_PER_PAGE) {
-                String string = (added + 1 + start) + ". " + mute.toString() + "\n";
-                if (string.length() > maxLengthPerEntry) {
-                    // maxLengthPerEntry - 4 to also remove the newline
-                    sb.append(string, 0, maxLengthPerEntry - 4).append("...\n");
-                } else {
-                    sb.append(string);
-                }
-                added++;
+            String string = (added + 1 + start) + ". " + mute.toString() + "\n";
+            if (string.length() > maxLengthPerEntry) {
+                // maxLengthPerEntry - 4 to also remove the newline
+                sb.append(string, 0, maxLengthPerEntry - 4).append("...\n");
+            } else {
+                sb.append(string);
             }
+            added++;
         }
 
         if (added == 0) {
