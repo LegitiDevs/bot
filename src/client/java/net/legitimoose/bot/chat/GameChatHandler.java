@@ -2,7 +2,6 @@ package net.legitimoose.bot.chat;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
 import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.chat.command.*;
@@ -26,7 +25,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -110,7 +108,7 @@ public class GameChatHandler {
         long time = System.currentTimeMillis() / 1000L;
         String moderator = tempBan.getModerator();
         String banned = tempBan.getBanned();
-        int hours = tempBan.getHours();
+        long duration = tempBan.getDuration();
         String banType = tempBan.getBanType();
         String reason = tempBan.getReason();
         String banTimeString = tempBan.getBanTimeString();
@@ -118,7 +116,6 @@ public class GameChatHandler {
         embed.setDescription(DiscordUtil.sanitizeString(reason));
         webhook.setUsername("Legitimoose Ban");
         executeWebhook(webhook, embed, true);
-        long duration = TimeUnit.HOURS.toSeconds(hours);
         Ban.writeTempBan(time, banned, moderator, reason, duration);
     }
 
