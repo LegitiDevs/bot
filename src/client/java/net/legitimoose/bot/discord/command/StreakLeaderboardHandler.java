@@ -33,13 +33,20 @@ public class StreakLeaderboardHandler extends ListenerAdapter {
             if (page == 1) {
                 event.deferEdit().queue();
                 return;
-            } else {
-                page -= 1;
             }
+
+            page -= 1;
             event.editMessage(getLeaderboardString(page)).queue();
         } else if (componentId.equals("forward-" + id)) {
+            String nextPage = getLeaderboardString(page + 1);
+
+            if (nextPage.isEmpty()) {
+                event.deferEdit().queue();
+                return;
+            }
+
             page += 1;
-            event.editMessage(getLeaderboardString(page)).queue();
+            event.editMessage(nextPage).queue();
         }
     }
 
