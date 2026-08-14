@@ -21,7 +21,7 @@ public class TempBanMatcher implements MessageMatcher {
     private String bannedName;
     private String banTimeString;
     private String reason;
-    private int hours;
+    private long duration;
 
     public TempBanMatcher() {
         moderatorName = null;
@@ -29,7 +29,7 @@ public class TempBanMatcher implements MessageMatcher {
         bannedName = null;
         banTimeString = null;
         reason = null;
-        hours = 0;
+        duration = 0;
     }
 
     @Override
@@ -44,13 +44,13 @@ public class TempBanMatcher implements MessageMatcher {
         bannedName = matcher.group(3);
         banTimeString = matcher.group(4);
         if (banTimeString.contains("day")) {
-            hours = Integer.parseInt(banTimeString.replace(" day", "").replace("s", "")) * 24;
+            duration = Integer.parseInt(banTimeString.replace(" day", "").replace("s", "")) * 86400L;
         } else if (banTimeString.contains("hour")) {
-            hours = Integer.parseInt(banTimeString.replace(" hour", "").replace("s", ""));
+            duration = Integer.parseInt(banTimeString.replace(" hour", "").replace("s", "")) * 3600L;
         } else if (banTimeString.contains("minute")) {
-            hours = Integer.parseInt(banTimeString.replace(" minute", "").replace("s", "")) / 60;
+            duration = Integer.parseInt(banTimeString.replace(" minute", "").replace("s", "")) * 60L;
         } else {
-            hours = Integer.parseInt(banTimeString.replace(" second", "").replace("s", "")) / 3600;
+            duration = Integer.parseInt(banTimeString.replace(" second", "").replace("s", ""));
         }
         reason = matcher.group(5); // is fine
 
@@ -82,8 +82,8 @@ public class TempBanMatcher implements MessageMatcher {
     	return banTimeString;
     }
 
-    public int getHours() {
-        return hours;
+    public long getDuration() {
+        return duration;
     }
 
 }
