@@ -1,6 +1,6 @@
 package net.legitimoose.bot.scraper;
 
-import com.google.gson.JsonObject;
+import org.bson.json.JsonObject;
 
 public record World(
         String creation_date,

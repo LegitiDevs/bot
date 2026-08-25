@@ -192,7 +192,7 @@ public class Scraper {
 
                 -1,
 
-                new JsonObject(),
+                new org.bson.json.JsonObject("{}"),
 
                 "minecraft:grass_block",
 
@@ -365,7 +365,7 @@ public class Scraper {
 
                         featured_instant,
 
-                        jam,
+                        new org.bson.json.JsonObject(jam.toString()),
 
                         itemStack.get(DataComponents.ITEM_MODEL).toString(),
                         System.currentTimeMillis() / 1000L,
