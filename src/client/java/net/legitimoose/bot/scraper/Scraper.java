@@ -456,6 +456,7 @@ public class Scraper {
                             Updates.set("rank", player.rank()),
                             Updates.set("streak", player.streak()),
                             Updates.set("last_joined", new BsonDateTime(player.last_joined().toEpochMilli())),
+                            Updates.set("legiticoins", player.legiticoins()),
                             Updates.setOnInsert("blocked", player.blocked()));
 
             playerOperations.add(new UpdateOneModel<>(
