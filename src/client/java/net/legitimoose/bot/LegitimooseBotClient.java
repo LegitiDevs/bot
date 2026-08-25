@@ -1,23 +1,29 @@
 package net.legitimoose.bot;
 
+import baritone.api.BaritoneAPI;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.chat.GameChatHandler;
+import net.legitimoose.bot.chat.command.argument.BlockPosArgumentType;
 import net.legitimoose.bot.discord.DiscordBot;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.http.HttpServer;
 import net.legitimoose.bot.scraper.Scraper;
+import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -33,38 +39,16 @@ public class LegitimooseBotClient implements ClientModInitializer {
 
     private static final String MESSAGE =
             "<br><red>I am a bot that syncs lobby chat to a community Discord<br>" +
-            "To prevent messages being sent to discord, prefix your messages with <u>::<br>" +
-            "<reset>You can check out our work at <b>https://legiti.dev/";
-
-    private static volatile long lastJoinTimestamp = 0L;
-
+                    "To prevent messages being sent to discord, prefix your messages with <u>::<br>" +
+                    "<reset>You can check out our work at <b>https://legiti.dev/";
     private static final long REJOIN_COOLDOWN_MS = 5000L;
-
     private static final int TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-
+    private static volatile long lastJoinTimestamp = 0L;
+    private static ExecutorService threadPool;
     private final Timer timer = new Timer();
 
-    private static ExecutorService threadPool;
-
-    @Override
-    public void onInitializeClient() {
-        scheduleExit();
-
-        registerCommands();
-
-        threadPool = Executors.newFixedThreadPool(4);
-
-        threadPool.execute(DiscordBot::run);
-
-        ClientTickEvents.END_CLIENT_TICK.register((minecraft) -> attemptRejoin(false));
-
-        schedulePeriodicalMessage();
-
-        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            threadPool.execute(() -> GameChatHandler.getInstance().handleChat(message));
-        });
-
-        threadPool.execute(() -> HttpServer.getInstance().start());
+    public static ExecutorService getThreadPool() {
+        return threadPool;
     }
 
     public static void handleLogin() {
@@ -73,53 +57,10 @@ public class LegitimooseBotClient implements ClientModInitializer {
         }
     }
 
-    private void scheduleExit() {
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                System.exit(67);
-            }
-        }, TWENTY_FOUR_HOURS, TWENTY_FOUR_HOURS);
-    }
-
-    private void schedulePeriodicalMessage() {
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
-        scheduler.scheduleAtFixedRate(() -> {
-            LocalPlayer player = Minecraft.getInstance().player;
-
-            if (player != null) {
-                player.connection.sendChat(MESSAGE);
-            }
-        }, 0, 20, TimeUnit.MINUTES);
-    }
-
-    private void registerCommands() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, context) -> {
-            dispatcher.register(
-                    ClientCommands.literal("scraper")
-                    .then(ClientCommands.literal("reload")
-                      .executes(LegitimooseBotClient::reloadConfig)
-                    )
-                    .then(ClientCommands.literal("on")
-                       .executes((source)->{
-                           Scraper.getInstance().override(false);
-                           return 0;
-                       })
-                    )
-                    .then(ClientCommands.literal("off")
-                        .executes((source)->{
-                            Scraper.getInstance().override(true);
-                            return 0;
-                        })
-                    )
-            );
-        });
-    }
-
     private static int reloadConfig(CommandContext<?> context) {
         try {
             CONFIG.reload();
+            GameChatHandler.getInstance().webhook = new DiscordWebhook(CONFIG.webhook);
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             return 1;
@@ -155,11 +96,11 @@ public class LegitimooseBotClient implements ClientModInitializer {
     }
 
     private static boolean hasDisconnected() {
-        Screen screen = Minecraft.getInstance().screen;
+        Screen screen = Minecraft.getInstance().gui.screen();
         return screen instanceof DisconnectedScreen ||
-               screen instanceof JoinMultiplayerScreen ||
-               screen instanceof TitleScreen ||
-               screen instanceof AccessibilityOnboardingScreen;
+                screen instanceof JoinMultiplayerScreen ||
+                screen instanceof TitleScreen ||
+                screen instanceof AccessibilityOnboardingScreen;
     }
 
     private static void message(String message) {
@@ -171,6 +112,87 @@ public class LegitimooseBotClient implements ClientModInitializer {
     }
 
     public static void messageFromOtherThread(String message) {
-        Minecraft.getInstance().submit(()->message(message));
+        Minecraft.getInstance().submit(() -> message(message));
+    }
+
+    @Override
+    public void onInitializeClient() {
+        scheduleExit();
+
+        registerCommands();
+
+        setupBaritone();
+
+        threadPool = Executors.newFixedThreadPool(4);
+
+        threadPool.execute(DiscordBot::run);
+
+        ClientTickEvents.END_CLIENT_TICK.register((minecraft) -> attemptRejoin(false));
+
+        schedulePeriodicalEvents();
+
+        threadPool.execute(() -> HttpServer.getInstance().start());
+    }
+
+    private void setupBaritone() {
+        BaritoneAPI.getSettings().allowBreak.value = false;
+        BaritoneAPI.getSettings().freeLook.value = false;
+    }
+
+    private void scheduleExit() {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.exit(67);
+            }
+        }, TWENTY_FOUR_HOURS, TWENTY_FOUR_HOURS);
+    }
+
+    private void schedulePeriodicalEvents() {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+        scheduler.scheduleAtFixedRate(() -> {
+            LocalPlayer player = Minecraft.getInstance().player;
+
+            if (player != null) {
+                player.connection.sendChat(MESSAGE);
+            }
+        }, 0, 20, TimeUnit.MINUTES);
+
+        // Mutes may take an extra 20s to be retracted but that is no problem
+        // Could calculate relative time and subtract 0-20s from each mute when
+        // given to make time exact, would need to store extra stuff too. Not worth the effort
+        scheduler.scheduleAtFixedRate(() -> {
+            BotMuteHandler.getInstance().refresh();
+        }, 0, 20, TimeUnit.SECONDS);
+    }
+
+    private void registerCommands() {
+        ArgumentTypeRegistry.registerArgumentType(
+                Identifier.fromNamespaceAndPath("legitimoose-bot", "block_pos"),
+                BlockPosArgumentType.class,
+                SingletonArgumentInfo.contextFree(BlockPosArgumentType::new)
+        );
+
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, context) -> {
+            dispatcher.register(
+                    ClientCommands.literal("scraper")
+                            .then(ClientCommands.literal("reload")
+                                    .executes(LegitimooseBotClient::reloadConfig)
+                            )
+                            .then(ClientCommands.literal("on")
+                                    .executes((source) -> {
+                                        Scraper.getInstance().override(false);
+                                        return 0;
+                                    })
+                            )
+                            .then(ClientCommands.literal("off")
+                                    .executes((source) -> {
+                                        Scraper.getInstance().override(true);
+                                        return 0;
+                                    })
+                            )
+            );
+        });
     }
 }

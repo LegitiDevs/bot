@@ -3,6 +3,7 @@ package net.legitimoose.bot.discord.command;
 import com.mongodb.client.model.Filters;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
 
@@ -11,6 +12,11 @@ public class StreakCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (!event.getName().equals("streak")) return;
+
+        if (BotMuteHandler.getInstance().shouldCancelCommand(event)) {
+            return;
+        }
+
         switch (event.getSubcommandName()) {
             case "player" -> {
                 String player = event.getOption("player").getAsString();

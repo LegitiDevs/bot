@@ -2,7 +2,6 @@ package net.legitimoose.bot.chat;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mongodb.client.MongoCollection;
 import net.dv8tion.jda.api.entities.User;
 import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.chat.command.*;
@@ -10,6 +9,7 @@ import net.legitimoose.bot.chat.matcher.*;
 import net.legitimoose.bot.discord.DiscordBot;
 import net.legitimoose.bot.discord.command.MsgCommand;
 import net.legitimoose.bot.discord.command.ReplyCommand;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.scraper.*;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
@@ -25,7 +25,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,13 +33,13 @@ import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class GameChatHandler {
+    public DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhook);
 
     private static GameChatHandler instance;
 
     private final CommandDispatcher<CommandSource> dispatcher;
 
-    public volatile List<String> lastMessages = new ArrayList<>();
-    public boolean handleChat = true;
+    public volatile List<Component> lastMessages = new ArrayList<>();
 
     private final Pattern worldPattern = Pattern.compile("(?<=joined\\s)(.*)(?=\\s+Click to Join)");
 
@@ -53,6 +52,7 @@ public class GameChatHandler {
         BlockCommands.register(dispatcher);
         StreakCommand.register(dispatcher);
         PingCommand.register(dispatcher);
+        BotCommands.register(dispatcher);
 
         // Ordered for efficiency B)
         matchers = List.of(
@@ -69,16 +69,14 @@ public class GameChatHandler {
     }
 
     public void handleChat(Component component) {
-        String message = component.getString();
-        lastMessages.add(message);
+        lastMessages.add(component);
 
-        if (handleChat) {
-            DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhook);
-            handleChat(component, message, webhook);
-        }
+        handleChat(component, component.getString(), webhook);
     }
 
     private void handleChat(Component original, String message, DiscordWebhook webhook) {
+        webhook.setUsername("Legitimoose Chat Sync");
+        webhook.setAvatarUrl("https://cdn.discordapp.com/attachments/1354457578242969822/1511222264656560249/legitidevslogopride.png?ex=6a76ade9&is=6a755c69&hm=0287760c5ead6880a5d24aa0e4f6633184cd8583dc2c1332fc163a1be7d9c720");
         for (MessageMatcher matcher : matchers) {
             if (matcher.matches(message)) {
                 matcher.handle(this, webhook, original);
@@ -110,13 +108,14 @@ public class GameChatHandler {
         long time = System.currentTimeMillis() / 1000L;
         String moderator = tempBan.getModerator();
         String banned = tempBan.getBanned();
-        int hours = tempBan.getHours();
+        long duration = tempBan.getDuration();
+        String banType = tempBan.getBanType();
         String reason = tempBan.getReason();
-        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s** for **%s** hours", banned, moderator, hours)), 0xF25757);
+        String banTimeString = tempBan.getBanTimeString();
+        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was %s by **%s** for **%s**", banned, banType, moderator, banTimeString)), 0xF25757);
         embed.setDescription(DiscordUtil.sanitizeString(reason));
         webhook.setUsername("Legitimoose Ban");
         executeWebhook(webhook, embed, true);
-        long duration = TimeUnit.HOURS.toSeconds(hours);
         Ban.writeTempBan(time, banned, moderator, reason, duration);
     }
 
@@ -134,6 +133,9 @@ public class GameChatHandler {
 
     public void handleMsgMessage(MsgMatcher msg) {
         String senderUsername = msg.getSenderUsername();
+        if (BotMuteHandler.getInstance().shouldCancelPlayer(senderUsername, true)) {
+            return;
+        }
         String discordReceiverName = msg.getDiscordReceiver();
         String message = msg.getMessage();
         User user;
@@ -155,6 +157,8 @@ public class GameChatHandler {
      * Handles a bot command sent by a user. See {@link #handleChatMessage}.
      */
     private void handleCommandMessage(String command, String senderUsername) {
+        if (BotMuteHandler.getInstance().shouldCancelPlayer(senderUsername, false))
+            return;
         try {
             dispatcher.execute(command, new CommandSource(senderUsername));
         } catch (CommandSyntaxException e) {
@@ -212,6 +216,7 @@ public class GameChatHandler {
 
         String uuid = McUtil.getUuidOrThrow(username);
         int days;
+        int legiticoins;
         boolean notify;
         Instant lastJoined;
         String rank = join.getRank();
@@ -220,6 +225,7 @@ public class GameChatHandler {
         if (dbPlayer == null) {
             lastJoined = time;
             days = 1;
+            legiticoins = 0;
             notify = false;
             messageToSend = String.format("**%s** joined the server for the first time!", username);
         } else {
@@ -239,6 +245,11 @@ public class GameChatHandler {
                     notify = dbPlayer.streak().notifications();
                 }
             }
+            if (dbPlayer.legiticoins() != null) {
+                legiticoins = dbPlayer.legiticoins();
+            } else {
+                legiticoins = 0;
+            }
             messageToSend = String.format("**%s** joined the server.", username);
         }
 
@@ -251,7 +262,7 @@ public class GameChatHandler {
             days = 1;
         }
 
-        new Player(uuid, username, Rank.getEnum(rank), List.of(), new Player.Streak(days, notify), time).write();
+        new Player(uuid, username, Rank.getEnum(rank), List.of(), new Player.Streak(days, notify), time, legiticoins).write();
         Embed embed = new Embed(DiscordUtil.sanitizeString(messageToSend), 0x57F287);
         embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
         executeWebhook(webhook, embed, false);

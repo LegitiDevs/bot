@@ -4,8 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.legitimoose.bot.chat.GameChatHandler;
-import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -15,14 +16,15 @@ import java.util.regex.Pattern;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class PlayersEndpoint {
-    private final Pattern glistPattern = Pattern.compile("\\[(.*)] \\(\\d*\\): (.*)");
+    private final Pattern listallPattern = Pattern.compile("\\[(.*)] \\(\\d*\\): (.*)");
     private final Gson gson = new Gson();
 
     public JsonArray handleRequest() {
         JsonArray response = new JsonArray();
-        List<String> glist = getGlist();
-        for (String worldMessage : glist) {
-            Matcher matcher = glistPattern.matcher(worldMessage);
+        List<Component> listall = getListall();
+        for (Component worldMessage : listall) {
+            String worldString = worldMessage.getString();
+            Matcher matcher = listallPattern.matcher(worldString);
             if (!matcher.matches()) continue;
             JsonObject world = new JsonObject();
 
@@ -32,8 +34,13 @@ public class PlayersEndpoint {
             for (String username : usernames) {
                 players.add(username);
             }
+            String uuid;
+            String worldCommand = ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
+            if (worldCommand.equals("/lobby")) {
+                uuid = "lobby";
+            } else uuid = worldCommand.substring(7);
 
-            world.addProperty("world", matcher.group(1));
+            world.addProperty("world", uuid);
             world.add("players", players);
             response.add(world);
         }
@@ -43,12 +50,19 @@ public class PlayersEndpoint {
 
     public JsonObject handleRequest(String uuid) {
         JsonObject response = new JsonObject();
-        List<String> glist = getGlist(uuid);
-        for (String worldMessage : glist) {
-            Matcher matcher = glistPattern.matcher(worldMessage);
+        List<Component> glist = getListall();
+        for (Component worldMessage : glist) {
+            String worldString = worldMessage.getString();
+            Matcher matcher = listallPattern.matcher(worldString);
             if (!matcher.matches()) continue;
 
             String[] usernames = matcher.group(2).split(", ", -1);
+            String worldUuid;
+            String worldCommand = ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
+            if (worldCommand.equals("/lobby")) {
+                worldUuid = "lobby";
+            } else worldUuid = worldCommand.substring(7);
+            if (!worldUuid.equals(uuid)) continue;
 
             JsonArray players = new JsonArray();
             for (String username : usernames) {
@@ -60,38 +74,10 @@ public class PlayersEndpoint {
         return response;
     }
 
-    public List<String> getListall() {
+    public List<Component> getListall() {
         // Get /listall and output
         GameChatHandler.getInstance().lastMessages.clear();
         Minecraft.getInstance().player.connection.sendCommand("listall");
-        GameChatHandler.getInstance().handleChat = false;
-        try {
-            TimeUnit.SECONDS.sleep(1);
-        } catch (InterruptedException e) {
-            LOGGER.error(e.getMessage());
-            GameChatHandler.getInstance().handleChat = true;
-        }
-        GameChatHandler.getInstance().handleChat = true;
-        return GameChatHandler.getInstance().lastMessages;
-    }
-
-    public List<String> getGlist() {
-        // Get /glist all and output
-        GameChatHandler.getInstance().lastMessages.clear();
-        Minecraft.getInstance().player.connection.sendCommand("glist all");
-        try {
-            TimeUnit.SECONDS.sleep(1);
-        } catch (InterruptedException e) {
-            LOGGER.error(e.getMessage());
-        }
-        while (GameChatHandler.getInstance().lastMessages.getLast().startsWith("[")) ;
-        return GameChatHandler.getInstance().lastMessages;
-    }
-
-    public List<String> getGlist(String uuid) {
-        // Get /glist all and output
-        GameChatHandler.getInstance().lastMessages.clear();
-        Minecraft.getInstance().player.connection.sendCommand(McUtil.sanitizeString(String.format("glist %s", uuid)));
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {

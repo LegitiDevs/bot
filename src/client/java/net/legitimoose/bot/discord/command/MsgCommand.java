@@ -2,6 +2,7 @@ package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
 import net.legitimoose.bot.util.DiscordUtil;
@@ -20,6 +21,11 @@ public class MsgCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (!event.getName().equals("msg")) return;
+
+        if (BotMuteHandler.getInstance().shouldCancelCommand(event)) {
+            return;
+        }
+
         String message = event.getOption("message").getAsString();
         String player = event.getOption("player").getAsString();
         Player playerObj = Database.getPlayers().find(regex("name", player, "i")).first();

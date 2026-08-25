@@ -3,6 +3,7 @@ package net.legitimoose.bot.discord.command;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.chat.GameChatHandler;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
@@ -15,6 +16,11 @@ public class FindCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (!event.getName().equals("find")) return;
+
+        if (BotMuteHandler.getInstance().shouldCancelCommand(event)) {
+            return;
+        }
+
         String player = event.getOption("player").getAsString();
         if (player.length() >= 200) {
             event.reply("player name too long, sorry!").setEphemeral(true).queue();
@@ -26,6 +32,6 @@ public class FindCommand extends ListenerAdapter {
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        event.reply(DiscordUtil.sanitizeString(GameChatHandler.getInstance().lastMessages.getLast().replace(" Click HERE to join.", "").trim())).queue();
+        event.reply(DiscordUtil.sanitizeString(GameChatHandler.getInstance().lastMessages.getLast().getString().replace(" Click HERE to join.", "").trim())).queue();
     }
 }

@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -16,9 +17,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.legitimoose.bot.discord.command.*;
-import net.legitimoose.bot.discord.command.staff.Rejoin;
-import net.legitimoose.bot.discord.command.staff.Restart;
-import net.legitimoose.bot.discord.command.staff.Send;
+import net.legitimoose.bot.discord.command.staff.*;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 
@@ -42,7 +41,10 @@ public class DiscordBot extends ListenerAdapter {
 
                 new Restart(),
                 new Rejoin(),
-                new Send()
+                new Send(),
+                new Mute(),
+                new UnMute(),
+                new MuteList()
         );
         jda = JDABuilder.createDefault(CONFIG.token)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
@@ -92,7 +94,8 @@ public class DiscordBot extends ListenerAdapter {
                                         new SubcommandData("player", "Get a player's streak")
                                                 .addOption(OptionType.STRING, "player", "The player whose streak you want to check", true),
                                         new SubcommandData("lb", "Leaderboard")
-                                ))
+                                )
+                )
                 .queue();
     }
 
@@ -111,7 +114,24 @@ public class DiscordBot extends ListenerAdapter {
                         Commands.slash("send", "Send message")
                                 .setDefaultPermissions(
                                         DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
-                                .addOption(OptionType.STRING, "message", "The message to send", true))
+                                .addOption(OptionType.STRING, "message", "The message to send", true),
+                        Commands.slash("botmute", "Stop a player from using the bot")
+                                .addOption(OptionType.USER, "discord_id", "The discord ID of the player", true)
+                                .addOption(OptionType.STRING, "minecraft_name", "The minecraft username of the player", true)
+                                .addOption(OptionType.STRING, "duration", "The length of the punishment", true)
+                                .addOption(OptionType.STRING, "reason", "The reason for this punishment", true)
+                                .setDefaultPermissions(
+                                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+                        Commands.slash("unbotmute", "Take back a bot mute")
+                                .addOption(OptionType.USER, "discord_id", "The discord ID of the player", true)
+                                .addOption(OptionType.STRING, "minecraft_name", "The minecraft name of the player", true)
+                                .setDefaultPermissions(
+                                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+                        Commands.slash("botmutelist", "See all bot mutes")
+                                .setDefaultPermissions(
+                                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
+                                .addOption(OptionType.INTEGER, "page", "The page to display", false)
+                )
                 .queue();
     }
 
@@ -137,4 +157,29 @@ public class DiscordBot extends ListenerAdapter {
             Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
         }
     }
+
+    @Override
+    public void onMessageUpdate(MessageUpdateEvent event) {
+        String discordNick;
+        if (event.getMessage().isWebhookMessage()) {
+            if (!event.getAuthor().getId().equals(CONFIG.bridgeWebhookId)) return;
+            discordNick = event.getAuthor().getEffectiveName();
+        } else {
+            discordNick = event.getMember().getEffectiveName();
+        }
+        Component formattedMesssage = MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
+        String message =
+                String.format("<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick) +
+                        MiniMessage.miniMessage().serialize(formattedMesssage);
+        if (!event.getMessage().getAttachments().isEmpty()) {
+            message += " <blue>[Attachment Included]</blue>";
+        }
+        message += " <blue>[Edited]</blue>";
+        if (CONFIG.channelId.isEmpty())
+            LOGGER.error("Discord channel ID is not set in config!");
+        if (event.getChannel().getId().equals(CONFIG.channelId)) {
+            Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
+        }
+    }
+
 }

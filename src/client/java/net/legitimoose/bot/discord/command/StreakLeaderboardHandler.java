@@ -33,13 +33,20 @@ public class StreakLeaderboardHandler extends ListenerAdapter {
             if (page == 1) {
                 event.deferEdit().queue();
                 return;
-            } else {
-                page -= 1;
             }
+
+            page -= 1;
             event.editMessage(getLeaderboardString(page)).queue();
         } else if (componentId.equals("forward-" + id)) {
+            String nextPage = getLeaderboardString(page + 1);
+
+            if (nextPage.isEmpty()) {
+                event.deferEdit().queue();
+                return;
+            }
+
             page += 1;
-            event.editMessage(getLeaderboardString(page)).queue();
+            event.editMessage(nextPage).queue();
         }
     }
 
@@ -47,7 +54,7 @@ public class StreakLeaderboardHandler extends ListenerAdapter {
         StringBuilder lbString = new StringBuilder();
         int i = 1;
         for (Player player : Database.getPlayers().find(Filters.exists("streak.days")).sort(descending("streak.days", "last_joined")).skip((page - 1) * 5).limit(5)) {
-            lbString.append((page - 1) * 5 + i).append(". ").append(player.name()).append(" - ").append(player.streak().days()).append(" day(s)").append('\n');
+            lbString.append((page - 1) * 5 + i).append(". ").append(player.name()).append(" - ").append(player.streak().days()).append(" day(s) (<t:").append(player.last_joined().getEpochSecond()).append(":R>)\n");
             i++;
         }
         return lbString.toString().trim();

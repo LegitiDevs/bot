@@ -1,5 +1,5 @@
 plugins {
-  id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
+  id("net.fabricmc.fabric-loom") version "1.17-SNAPSHOT"
   id("com.gradleup.shadow") version "9.3.1"
 }
 
@@ -44,6 +44,8 @@ dependencies {
 
   implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
+  implementation(files("lib/baritone-api-fabric-1.11.1-17-g57758940.jar"))
+
   shadow(implementation("org.mongodb:mongodb-driver-sync:5.6.3")!!)
   shadow(implementation("net.dv8tion:JDA:6.3.0") { exclude("opus-java") })
   shadow(implementation("dev.vankka:mcdiscordreserializer:4.3.0")!!)
@@ -51,7 +53,13 @@ dependencies {
 
   shadow(implementation("com.sparkjava:spark-core:2.9.4")!!)
 
-  runtimeOnly("net.litetex.mcm:dev-auth-neo:1.1.0")
+  localRuntime("net.litetex.mcm:dev-auth-neo:1.1.1")
+
+  // YoinkGUI & deps
+  localRuntime("maven.modrinth:5j4oEPp2:S2hjxT0a")
+  localRuntime("maven.modrinth:mOgUt4GM:njXb639R")
+  localRuntime("maven.modrinth:1eAoo2KR:cnfPzuFU")
+  localRuntime("maven.modrinth:Ha28R6CL:bdhiINYC")
 }
 
 tasks.processResources {
