@@ -2,8 +2,6 @@ package net.legitimoose.bot.scraper;
 
 import com.google.gson.JsonObject;
 
-import java.time.Instant;
-
 public record World(
         String creation_date,
         int creation_date_unix_seconds,
@@ -28,14 +26,14 @@ public record World(
         String raw_description,
         int featured_instant,
 
-        String jam,
+        JsonObject jam,
 
         String icon,
 
         @Deprecated
         long last_scraped,
 
-        Instant last_scraped_ms,
+        long last_scraped_ms,
 
         boolean deleted
 ) {

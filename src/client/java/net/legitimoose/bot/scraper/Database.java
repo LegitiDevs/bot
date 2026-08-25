@@ -31,7 +31,11 @@ public class Database {
     private final MongoCollection<Ban> bans;
 
     private Database() {
-        worlds = database.getCollection("worlds", World.class);
+        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
+                CodecRegistries.fromCodecs(new JsonObjectCodec()),
+                MongoClientSettings.getDefaultCodecRegistry());
+
+        worlds = database.getCollection("worlds", World.class).withCodecRegistry(codecRegistry);
         worldStats = database.getCollection("world_stats");
         players = database.getCollection("players", Player.class);
         stats = database.getCollection("stats");
