@@ -1,5 +1,6 @@
 package net.legitimoose.bot.scraper;
 
+import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.json.JsonObject;
 
 public record World(
@@ -35,6 +36,7 @@ public record World(
 
         long last_scraped_ms,
 
+        @BsonProperty("legitidevs.deleted")
         boolean deleted
 ) {
 }
