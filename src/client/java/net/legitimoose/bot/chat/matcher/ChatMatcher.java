@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class ChatMatcher implements MessageMatcher {
     public static final String COMMAND_PREFIX = "!";
 
-    private static final Pattern PATTERN = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?([^:]+): (.*)", Pattern.DOTALL);
+    private static final Pattern PATTERN = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?(\\w{3,16}): (.*)$", Pattern.DOTALL);
 
     private String username;
 
