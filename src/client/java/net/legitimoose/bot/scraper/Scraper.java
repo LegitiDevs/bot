@@ -189,6 +189,7 @@ public class Scraper {
                 while (!itemStack.get(DataComponents.LORE).lines().get(ownerLine).getString().startsWith("by")) {
                     ownerLine++;
                 }
+                descriptionLines = ownerLine - 1;
                 Matcher ownerNameMatcher = ownerNamePattern.matcher(itemStack.get(DataComponents.LORE).lines().get(ownerLine).getString());
                 if (ownerNameMatcher.find()) {
                     owner_name = ownerNameMatcher.group(1);
