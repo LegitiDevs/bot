@@ -47,7 +47,10 @@ dependencies {
   implementation(files("lib/baritone-api-fabric-1.11.1-17-g57758940.jar"))
 
   shadow(implementation("org.mongodb:mongodb-driver-sync:5.6.3")!!)
-  shadow(implementation("net.dv8tion:JDA:6.3.0") { exclude("opus-java") })
+  shadow(implementation("net.dv8tion:JDA:6.3.0") {
+    exclude(group = "net.java.dev.jna", module = "jna")
+    exclude("opus-java")
+  })
   shadow(implementation("dev.vankka:mcdiscordreserializer:4.3.0")!!)
   shadow(implementation("net.kyori:adventure-platform-mod-shared:6.9.0")!!)
 
