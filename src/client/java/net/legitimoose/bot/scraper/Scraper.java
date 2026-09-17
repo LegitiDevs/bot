@@ -102,12 +102,6 @@ public class Scraper {
         if (!CONFIG.scrape) return;
         Minecraft client = Minecraft.getInstance();
         MongoCollection<Document> stats = Database.getStats();
-        stats.createIndex(Indexes.descending("timestamp"));
-
-        Database.getWorlds().dropIndex(new IndexModel(Indexes.ascending("last_scraped_ms"), new IndexOptions().expireAfter(24L, TimeUnit.HOURS)).getKeys());
-        List<IndexModel> indexes = new ArrayList<>();
-        indexes.add(new IndexModel(Indexes.ascending("world_uuid")));
-        Database.getWorlds().createIndexes(indexes);
 
         // Please ignore the nulls. Only the 'input' is actually used
         CommandContext context = new CommandContextBuilder(null, null, null, 1).build("/find ");
