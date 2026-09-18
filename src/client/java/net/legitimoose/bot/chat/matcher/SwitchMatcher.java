@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * These are in the format <code>[→] Rank | Username</code>
  */
 public class SwitchMatcher implements MessageMatcher {
-    private static final Pattern PATTERN = Pattern.compile("^\\[→\\]\\s(?:.*\\|\\s)?(\\w*)$");
+    private static final Pattern PATTERN = Pattern.compile("^\\[→\\]\\s(?:.*\\|\\s)?(\\w{3,16})$");
 
     private String username;
 
