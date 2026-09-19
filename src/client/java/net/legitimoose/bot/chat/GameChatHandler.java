@@ -49,6 +49,7 @@ public class GameChatHandler {
         this.dispatcher = new CommandDispatcher<>();
 
         HelpCommand.register(dispatcher);
+        InfoCommand.register(dispatcher);
         BlockCommands.register(dispatcher);
         StreakCommand.register(dispatcher);
         PingCommand.register(dispatcher);
