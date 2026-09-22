@@ -2,7 +2,10 @@ package net.legitimoose.bot.scraper;
 
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 
-import com.mongodb.client.*;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import net.legitimoose.bot.discord.command.mute.BotMute;
 import org.bson.Document;
 
@@ -61,5 +64,4 @@ public class Database {
     public static MongoCollection<BotMute> getBotMutes() {
         return getInstance().mutes;
     }
-
 }
