@@ -1,5 +1,11 @@
 package net.legitimoose.bot.util;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class Unicode {
@@ -86,7 +92,7 @@ public class Unicode {
             Map.entry("z", "𝑍𝒁𝒵𝓩𝖹𝙕𝚉𝚭𝛧𝜡𝝛𝞕ᵶꮓ𝐳𝑧𝒛𝓏𝔃𝔷𝕫𝖟𝗓𝘇𝘻𝙯𝚣ⓩｚźẑżžẓẕƶȥɀᴢጊʐⱬᶎʑᙆ")
     );
 
-    public static String normalize(String orig) {
+    public static String normalize(String orig) throws CharacterCodingException {
         StringBuilder normalized = new StringBuilder();
         for (char c : orig.toCharArray()) {
             String cStr = Character.toString(c);
@@ -99,6 +105,18 @@ public class Unicode {
                             .findFirst().orElse(cStr)
             );
         }
-        return normalized.toString();
+        return cleanUtf8(normalized.toString());
+    }
+
+    public static String cleanUtf8(String input) throws CharacterCodingException {
+        if (input == null) return null;
+        CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
+        decoder.onMalformedInput(CodingErrorAction.REPLACE);
+        decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+        decoder.replaceWith("?"); // Or use "�" or empty string ""
+
+        ByteBuffer bytes = ByteBuffer.wrap(input.getBytes(StandardCharsets.ISO_8859_1));
+        CharBuffer chars = decoder.decode(bytes);
+        return chars.toString();
     }
 }
