@@ -2,6 +2,7 @@ package net.legitimoose.bot.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.chat.GameChatHandler;
 import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
@@ -11,8 +12,10 @@ import net.minecraft.client.Minecraft;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.client.model.Filters.regex;
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class MsgCommand extends ListenerAdapter {
 
@@ -44,6 +47,16 @@ public class MsgCommand extends ListenerAdapter {
                 .player
                 .connection
                 .sendCommand(McUtil.sanitizeString("msg " + newMessage));
+
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage());
+        }
+        if (GameChatHandler.getInstance().lastMessages.getLast().getString().startsWith("Invalid argument: ")) {
+            event.reply(DiscordUtil.sanitizeString(GameChatHandler.getInstance().lastMessages.getLast().getString().replace("Invalid argument: ", ""))).setEphemeral(true).queue();
+            return;
+        }
 
         event.reply(DiscordUtil.sanitizeString("Sent `" + message.trim() + "` to " + player)).setEphemeral(true).queue();
         lastSent.put(player, event.getUser().getIdLong());
