@@ -12,31 +12,27 @@ public class Mute extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        if (!event.getName().equals("botmute"))
-            return;
+        if (!event.getName().equals("botmute")) return;
 
         event.deferReply().queue();
 
         String timeString = event.getOption("duration").getAsString();
 
         long endTime = validateDuration(timeString, event.getHook());
-        if (endTime == -1)
-            return;
+        if (endTime == -1) return;
 
         User user = event.getOption("discord_id").getAsUser();
         String minecraftName = event.getOption("minecraft_name").getAsString();
         String reason = event.getOption("reason").getAsString();
 
-        if (!validateReason(reason, event.getHook()))
-            return;
+        if (!validateReason(reason, event.getHook())) return;
 
-        if (!validateUser(user.getId(), minecraftName, event.getHook()))
-            return;
+        if (!validateUser(user.getId(), minecraftName, event.getHook())) return;
 
         BotMuteHandler.getInstance().add(new BotMute(minecraftName, user.getId(), endTime, reason));
 
-        String notice = "User <@" + user.getId() + "> | " + minecraftName +
-                " has been muted from the bot for " + timeString + " due to " + reason;
+        String notice = "User <@" + user.getId() + "> | " + minecraftName + " has been muted from the bot for "
+                + timeString + " due to " + reason;
 
         event.getHook().sendMessage(notice).queue();
     }
@@ -65,5 +61,4 @@ public class Mute extends ListenerAdapter {
         }
         return time + System.currentTimeMillis();
     }
-
 }

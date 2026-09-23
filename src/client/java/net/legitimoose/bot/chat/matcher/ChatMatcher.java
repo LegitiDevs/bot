@@ -1,11 +1,10 @@
 package net.legitimoose.bot.chat.matcher;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.legitimoose.bot.chat.GameChatHandler;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.network.chat.Component;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Matcher for chat messages, including shout.
@@ -15,7 +14,8 @@ import java.util.regex.Pattern;
 public class ChatMatcher implements MessageMatcher {
     public static final String COMMAND_PREFIX = "!";
 
-    private static final Pattern PATTERN = Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?(\\w{3,16}): (.*)$", Pattern.DOTALL);
+    private static final Pattern PATTERN =
+            Pattern.compile("^(?:\\[SHOUT]\\s*)?(?:[^|]+\\|\\s*)?(\\w{3,16}): (.*)$", Pattern.DOTALL);
 
     private String username;
 
@@ -36,8 +36,7 @@ public class ChatMatcher implements MessageMatcher {
     public boolean matches(String message) {
         Matcher matcher = PATTERN.matcher(message);
 
-        if (!matcher.find())
-            return false;
+        if (!matcher.find()) return false;
 
         this.username = matcher.group(1);
         this.message = matcher.group(2);
@@ -67,5 +66,4 @@ public class ChatMatcher implements MessageMatcher {
     public boolean isCommand() {
         return isCommand;
     }
-
 }

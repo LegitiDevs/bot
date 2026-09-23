@@ -1,7 +1,19 @@
 package net.legitimoose.bot.chat;
 
+import static com.mongodb.client.model.Filters.eq;
+import static net.legitimoose.bot.LegitimooseBot.CONFIG;
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.dv8tion.jda.api.entities.User;
 import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.chat.command.*;
@@ -18,19 +30,6 @@ import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.mongodb.client.model.Filters.eq;
-import static net.legitimoose.bot.LegitimooseBot.CONFIG;
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class GameChatHandler {
     public DiscordWebhook webhook = new DiscordWebhook(CONFIG.webhook);
@@ -65,8 +64,7 @@ public class GameChatHandler {
                 new TempBanMatcher(),
                 new PermBanMatcher(),
                 new UnbanMatcher(),
-                new BroadcastMatcher()
-        );
+                new BroadcastMatcher());
     }
 
     public void handleChat(Component component) {
@@ -77,7 +75,8 @@ public class GameChatHandler {
 
     private void handleChat(Component original, String message, DiscordWebhook webhook) {
         webhook.setUsername("Legitimoose Chat Sync");
-        webhook.setAvatarUrl("https://cdn.discordapp.com/attachments/1354457578242969822/1511222264656560249/legitidevslogopride.png?ex=6a76ade9&is=6a755c69&hm=0287760c5ead6880a5d24aa0e4f6633184cd8583dc2c1332fc163a1be7d9c720");
+        webhook.setAvatarUrl(
+                "https://cdn.discordapp.com/attachments/1354457578242969822/1511222264656560249/legitidevslogopride.png?ex=6a76ade9&is=6a755c69&hm=0287760c5ead6880a5d24aa0e4f6633184cd8583dc2c1332fc163a1be7d9c720");
         for (MessageMatcher matcher : matchers) {
             if (matcher.matches(message)) {
                 matcher.handle(this, webhook, original);
@@ -99,7 +98,9 @@ public class GameChatHandler {
         String moderator = unban.getModerator();
         String unbanned = unban.getUnbanned();
         String reason = unban.getReason();
-        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s**", unbanned, moderator)), 0x57F287);
+        Embed embed = new Embed(
+                DiscordUtil.sanitizeString(String.format("**%s** was unbanned by **%s**", unbanned, moderator)),
+                0x57F287);
         embed.setDescription(DiscordUtil.sanitizeString(reason));
         webhook.setUsername("Legitimoose Ban");
         executeWebhook(webhook, embed, true);
@@ -113,7 +114,10 @@ public class GameChatHandler {
         String banType = tempBan.getBanType();
         String reason = tempBan.getReason();
         String banTimeString = tempBan.getBanTimeString();
-        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was %s by **%s** for **%s**", banned, banType, moderator, banTimeString)), 0xF25757);
+        Embed embed = new Embed(
+                DiscordUtil.sanitizeString(
+                        String.format("**%s** was %s by **%s** for **%s**", banned, banType, moderator, banTimeString)),
+                0xF25757);
         embed.setDescription(DiscordUtil.sanitizeString(reason));
         webhook.setUsername("Legitimoose Ban");
         executeWebhook(webhook, embed, true);
@@ -125,7 +129,8 @@ public class GameChatHandler {
         String moderator = permBan.getModerator();
         String banned = permBan.getBanned();
         String reason = permBan.getReason();
-        Embed embed = new Embed(DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s**", banned, moderator)), 0xF25757);
+        Embed embed = new Embed(
+                DiscordUtil.sanitizeString(String.format("**%s** was banned by **%s**", banned, moderator)), 0xF25757);
         embed.setDescription(DiscordUtil.sanitizeString(reason));
         webhook.setUsername("Legitimoose Ban");
         executeWebhook(webhook, embed, true);
@@ -142,11 +147,16 @@ public class GameChatHandler {
         User user;
         if (discordReceiverName != null) {
             String finalUsername = discordReceiverName.replace("@", "");
-            user = DiscordBot.jda.getGuildById(CONFIG.guildId)
+            user = DiscordBot.jda
+                    .getGuildById(CONFIG.guildId)
                     .findMembers(s -> s.getUser().getName().equals(finalUsername))
-                    .get().getFirst().getUser();
+                    .get()
+                    .getFirst()
+                    .getUser();
         } else {
-            user = DiscordBot.jda.retrieveUserById(MsgCommand.lastSent.get(senderUsername)).complete();
+            user = DiscordBot.jda
+                    .retrieveUserById(MsgCommand.lastSent.get(senderUsername))
+                    .complete();
         }
         user.openPrivateChannel()
                 .flatMap(channel -> channel.sendMessage(String.format("%s: %s", senderUsername, message)))
@@ -158,8 +168,7 @@ public class GameChatHandler {
      * Handles a bot command sent by a user. See {@link #handleChatMessage}.
      */
     private void handleCommandMessage(String command, String senderUsername) {
-        if (BotMuteHandler.getInstance().shouldCancelPlayer(senderUsername, false))
-            return;
+        if (BotMuteHandler.getInstance().shouldCancelPlayer(senderUsername, false)) return;
         try {
             dispatcher.execute(command, new CommandSource(senderUsername));
         } catch (CommandSyntaxException e) {
@@ -178,8 +187,7 @@ public class GameChatHandler {
         if (chat.isShout()) {
             webhook.setUsername(String.format("[SHOUT] %s", username));
         } else {
-            if (chat.isCommand())
-                handleCommandMessage(message.substring(1), username);
+            if (chat.isCommand()) handleCommandMessage(message.substring(1), username);
             // Currently bot command messages are sent to Discord
             webhook.setUsername(username);
         }
@@ -254,16 +262,21 @@ public class GameChatHandler {
             messageToSend = String.format("**%s** joined the server.", username);
         }
 
-        long difference = ChronoUnit.DAYS.between(lastJoined.truncatedTo(ChronoUnit.DAYS), time.truncatedTo(ChronoUnit.DAYS));
+        long difference =
+                ChronoUnit.DAYS.between(lastJoined.truncatedTo(ChronoUnit.DAYS), time.truncatedTo(ChronoUnit.DAYS));
         if (difference == 1) {
             days++;
         } else if (difference > 1) {
             if (notify)
-                Minecraft.getInstance().player.connection.sendChat(String.format("%s's streak of %s days has been reset!", username, days));
+                Minecraft.getInstance()
+                        .player
+                        .connection
+                        .sendChat(String.format("%s's streak of %s days has been reset!", username, days));
             days = 1;
         }
 
-        new Player(uuid, username, Rank.getEnum(rank), List.of(), new Player.Streak(days, notify), time, legiticoins).write();
+        new Player(uuid, username, Rank.getEnum(rank), List.of(), new Player.Streak(days, notify), time, legiticoins)
+                .write();
         Embed embed = new Embed(DiscordUtil.sanitizeString(messageToSend), 0x57F287);
         embed.setThumbnail(String.format("https://mc-heads.net/head/%s/50/left", username));
         executeWebhook(webhook, embed, false);
@@ -273,16 +286,15 @@ public class GameChatHandler {
         try {
             webhook.execute(embed);
         } catch (IOException | URISyntaxException e) {
-            if (throwErrors)
-                throw new RuntimeException(e);
+            if (throwErrors) throw new RuntimeException(e);
             LOGGER.warn(e.getMessage());
         }
     }
 
     private boolean shouldLogMessage(String senderName, String message) {
-        if (senderName.isEmpty() || (!FabricLoader.getInstance().isDevelopmentEnvironment() &&
-                Minecraft.getInstance().player.getPlainTextName().equals(senderName)))
-            return false;
+        if (senderName.isEmpty()
+                || (!FabricLoader.getInstance().isDevelopmentEnvironment()
+                        && Minecraft.getInstance().player.getPlainTextName().equals(senderName))) return false;
 
         return !message.startsWith(CONFIG.secretPrefix);
     }

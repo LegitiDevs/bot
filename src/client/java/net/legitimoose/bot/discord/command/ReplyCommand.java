@@ -1,14 +1,13 @@
 package net.legitimoose.bot.discord.command;
 
+import java.util.HashMap;
+import java.util.Map;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class ReplyCommand extends ListenerAdapter {
     public static final Map<Long, String> lastSentReply = new HashMap<>();
@@ -23,23 +22,28 @@ public class ReplyCommand extends ListenerAdapter {
 
         String message = event.getOption("message").getAsString();
         if (lastSentReply.get(event.getUser().getIdLong()) == null) {
-            event.reply("You have no incoming messages to reply.").setEphemeral(true).queue();
+            event.reply("You have no incoming messages to reply.")
+                    .setEphemeral(true)
+                    .queue();
             return;
         }
 
         String player = lastSentReply.get(event.getUser().getIdLong());
-        String newMessage = player.replace("§", "?") + " [ᴅɪsᴄᴏʀᴅ] @" + event.getUser().getName() + ": " + message.replace("\n", "<br>").replace("§", "?");
+        String newMessage =
+                player.replace("§", "?") + " [ᴅɪsᴄᴏʀᴅ] @" + event.getUser().getName() + ": "
+                        + message.replace("\n", "<br>").replace("§", "?");
 
         if (newMessage.length() >= 200) {
-            event.reply("Failed to send, message and/or player name too long!").setEphemeral(true).queue();
+            event.reply("Failed to send, message and/or player name too long!")
+                    .setEphemeral(true)
+                    .queue();
             return;
         }
 
-        Minecraft.getInstance()
-                .player
-                .connection
-                .sendCommand(McUtil.sanitizeString("msg " + newMessage));
+        Minecraft.getInstance().player.connection.sendCommand(McUtil.sanitizeString("msg " + newMessage));
 
-        event.reply(DiscordUtil.sanitizeString("Sent `" + message.trim() + "` to " + player)).setEphemeral(true).queue();
+        event.reply(DiscordUtil.sanitizeString("Sent `" + message.trim() + "` to " + player))
+                .setEphemeral(true)
+                .queue();
     }
 }

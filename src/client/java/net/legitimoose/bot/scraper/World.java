@@ -31,12 +31,8 @@ public record World(
 
         String icon,
 
-        @Deprecated
-        long last_scraped,
+        @Deprecated long last_scraped,
 
         long last_scraped_ms,
 
-        @BsonProperty("legitidevs.deleted")
-        boolean deleted
-) {
-}
+        @BsonProperty("legitidevs.deleted") boolean deleted) {}

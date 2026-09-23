@@ -1,25 +1,20 @@
 package net.legitimoose.bot.discord.command;
 
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
-import com.mongodb.client.MongoCollection;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
-import net.legitimoose.bot.scraper.Scraper;
-import net.legitimoose.bot.util.DiscordUtil;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.PlayerInfo;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
+import net.legitimoose.bot.util.DiscordUtil;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.PlayerInfo;
 
 public class ListCommand extends ListenerAdapter {
     @Override
@@ -41,19 +36,16 @@ public class ListCommand extends ListenerAdapter {
                 event.reply(DiscordUtil.sanitizeString(players.toString())).queue();
             }
             case "all" -> {
-                event
-                        .deferReply()
-                        .queue(); // It *does* send a packet to the mc server, so keeping this is safer...
+                event.deferReply().queue(); // It *does* send a packet to the mc server, so keeping this is safer...
 
                 // Please ignore the nulls. Only the 'input' is actually used
                 CommandContext context = new CommandContextBuilder(null, null, null, 1).build("/find ");
 
-                CompletableFuture<Suggestions> pendingParse =
-                        Minecraft.getInstance()
-                                .player
-                                .connection
-                                .getSuggestionsProvider()
-                                .customSuggestion(context);
+                CompletableFuture<Suggestions> pendingParse = Minecraft.getInstance()
+                        .player
+                        .connection
+                        .getSuggestionsProvider()
+                        .customSuggestion(context);
 
                 pendingParse.thenRun(() -> {
                     if (!pendingParse.isDone()) {
@@ -66,12 +58,11 @@ public class ListCommand extends ListenerAdapter {
                         suggestions.append(suggestion.getText() + '\n');
                     }
                     event.getHook()
-                            .sendMessage(
-                                    DiscordUtil.sanitizeString(String.format("There are %s player(s) online:\n```\n%s```", mcSuggestions.size(), suggestions)))
+                            .sendMessage(DiscordUtil.sanitizeString(String.format(
+                                    "There are %s player(s) online:\n```\n%s```", mcSuggestions.size(), suggestions)))
                             .queue();
                 });
             }
         }
     }
 }
-

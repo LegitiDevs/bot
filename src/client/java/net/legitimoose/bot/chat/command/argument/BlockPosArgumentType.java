@@ -29,7 +29,9 @@ public class BlockPosArgumentType implements ArgumentType<BlockPos> {
             return new BlockPos(x, y, z);
         } catch (Exception e) {
             // Throw an exception if anything fails inside the try block.
-            throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherParseException().create("Invalid BlockPos format. Expected {x, y, z}");
+            throw CommandSyntaxException.BUILT_IN_EXCEPTIONS
+                    .dispatcherParseException()
+                    .create("Invalid BlockPos format. Expected {x, y, z}");
         }
     }
 }

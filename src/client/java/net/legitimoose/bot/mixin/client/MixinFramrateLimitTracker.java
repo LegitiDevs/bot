@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(FramerateLimitTracker.class)
 public class MixinFramrateLimitTracker {
-    @Inject(method = "getFramerateLimit", cancellable = true, at= @At("HEAD"))
+    @Inject(method = "getFramerateLimit", cancellable = true, at = @At("HEAD"))
     public void disableFramerateLimit(CallbackInfoReturnable<Integer> cir) {
         cir.setReturnValue(Minecraft.getInstance().options.framerateLimit().get());
     }

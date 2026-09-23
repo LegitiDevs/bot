@@ -1,5 +1,8 @@
 package net.legitimoose.bot.discord.command;
 
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+
+import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.chat.GameChatHandler;
@@ -7,10 +10,6 @@ import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
-
-import java.util.concurrent.TimeUnit;
-
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class FindCommand extends ListenerAdapter {
     @Override
@@ -32,6 +31,12 @@ public class FindCommand extends ListenerAdapter {
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
-        event.reply(DiscordUtil.sanitizeString(GameChatHandler.getInstance().lastMessages.getLast().getString().replace(" Click HERE to join.", "").trim())).queue();
+        event.reply(DiscordUtil.sanitizeString(GameChatHandler.getInstance()
+                        .lastMessages
+                        .getLast()
+                        .getString()
+                        .replace(" Click HERE to join.", "")
+                        .trim()))
+                .queue();
     }
 }

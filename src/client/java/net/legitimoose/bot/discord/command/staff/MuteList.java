@@ -14,14 +14,12 @@ public class MuteList extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        if (!event.getName().equals("botmutelist"))
-            return;
+        if (!event.getName().equals("botmutelist")) return;
 
         event.deferReply(true).queue();
 
         int page = validatePage(event);
-        if (page == -1)
-            return;
+        if (page == -1) return;
 
         StringBuilder sb = new StringBuilder();
         int start = (page - 1) * MUTES_PER_PAGE;
@@ -53,10 +51,12 @@ public class MuteList extends ListenerAdapter {
         OptionMapping option = event.getOption("page");
         int page = option == null ? 1 : option.getAsInt();
         if (page < 1) {
-            event.getHook().sendMessage("Invalid page number").setEphemeral(true).queue();
+            event.getHook()
+                    .sendMessage("Invalid page number")
+                    .setEphemeral(true)
+                    .queue();
             return -1;
         }
         return page;
     }
-
 }

@@ -1,7 +1,6 @@
 package net.legitimoose.bot;
 
 import com.google.gson.Gson;
-
 import java.io.*;
 import java.nio.file.Files;
 

@@ -1,5 +1,10 @@
 package net.legitimoose.bot.discord.command;
 
+import static net.legitimoose.bot.LegitimooseBot.CONFIG;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -7,12 +12,6 @@ import net.legitimoose.bot.discord.command.mute.BotMuteHandler;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 
 public class ShoutCommand extends ListenerAdapter {
     private static final Map<Long, Long> cooldown = new HashMap<>();
@@ -35,22 +34,31 @@ public class ShoutCommand extends ListenerAdapter {
             bypassCooldown = false;
             username = event.getUser().getEffectiveName();
         } else {
-            bypassCooldown = event.getMember().getPermissions().contains(Permission.MANAGE_SERVER) && event.getGuild().getId().equals(CONFIG.guildId);
+            bypassCooldown = event.getMember().getPermissions().contains(Permission.MANAGE_SERVER)
+                    && event.getGuild().getId().equals(CONFIG.guildId);
             username = event.getMember().getEffectiveName();
         }
 
-        if (lastUsed != null && System.currentTimeMillis() - lastUsed < TimeUnit.SECONDS.toMillis(30) && !bypassCooldown) {
-            event.reply(String.format("Can't shout now. Try again in %.0f seconds", Math.abs((System.currentTimeMillis() - lastUsed) * 0.001 - 30))).setEphemeral(true).queue();
+        if (lastUsed != null
+                && System.currentTimeMillis() - lastUsed < TimeUnit.SECONDS.toMillis(30)
+                && !bypassCooldown) {
+            event.reply(String.format(
+                            "Can't shout now. Try again in %.0f seconds",
+                            Math.abs((System.currentTimeMillis() - lastUsed) * 0.001 - 30)))
+                    .setEphemeral(true)
+                    .queue();
             return;
         }
 
-        String newMessage = ("[ᴅɪsᴄᴏʀᴅ] " + username + ": " + message).replace("\n", "<br>").replace("§", "?");
+        String newMessage =
+                ("[ᴅɪsᴄᴏʀᴅ] " + username + ": " + message).replace("\n", "<br>").replace("§", "?");
         if (newMessage.length() >= 100) {
             event.reply("Failed to send, message too long!").setEphemeral(true).queue();
             return;
         }
         Minecraft.getInstance().getConnection().sendCommand(McUtil.sanitizeString("shout " + newMessage));
-        event.reply(DiscordUtil.sanitizeString(String.format("Shouted `%s`", message.trim()))).queue();
+        event.reply(DiscordUtil.sanitizeString(String.format("Shouted `%s`", message.trim())))
+                .queue();
         cooldown.put(userId, System.currentTimeMillis());
     }
 }

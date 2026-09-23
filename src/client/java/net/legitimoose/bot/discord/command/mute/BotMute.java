@@ -14,5 +14,4 @@ public record BotMute(String minecraft_name, String discord_id, long end_time, S
     public boolean hasExpired() {
         return end_time < System.currentTimeMillis();
     }
-
 }

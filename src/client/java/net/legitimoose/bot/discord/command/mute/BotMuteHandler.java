@@ -1,14 +1,13 @@
 package net.legitimoose.bot.discord.command.mute;
 
 import com.mongodb.client.model.Filters;
+import java.util.HashSet;
+import java.util.Set;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.legitimoose.bot.scraper.Database;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import org.bson.conversions.Bson;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class BotMuteHandler {
 
@@ -84,10 +83,8 @@ public class BotMuteHandler {
     public boolean shouldCancelPlayer(String player, boolean privateMessage) {
         if (isMutedIngame(player)) {
             ClientPacketListener connection = Minecraft.getInstance().getConnection();
-            if (privateMessage)
-                connection.sendCommand("msg " + player + " " + MUTED_MESSAGE);
-            else
-                connection.sendChat(MUTED_MESSAGE);
+            if (privateMessage) connection.sendCommand("msg " + player + " " + MUTED_MESSAGE);
+            else connection.sendChat(MUTED_MESSAGE);
             return true;
         }
         return false;
@@ -105,10 +102,6 @@ public class BotMuteHandler {
     }
 
     private static Bson filter(String discordId, String minecraftName) {
-        return Filters.and(
-                Filters.eq("discord_id", discordId),
-                Filters.eq("minecraft_name", minecraftName)
-        );
+        return Filters.and(Filters.eq("discord_id", discordId), Filters.eq("minecraft_name", minecraftName));
     }
-
 }

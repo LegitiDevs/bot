@@ -1,6 +1,10 @@
 package net.legitimoose.bot.discord;
 
+import static net.legitimoose.bot.LegitimooseBot.CONFIG;
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+
 import dev.vankka.mcdiscordreserializer.minecraft.MinecraftSerializer;
+import java.util.List;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
@@ -21,11 +25,6 @@ import net.legitimoose.bot.discord.command.staff.*;
 import net.legitimoose.bot.util.McUtil;
 import net.minecraft.client.Minecraft;
 
-import java.util.List;
-
-import static net.legitimoose.bot.LegitimooseBot.CONFIG;
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
-
 public class DiscordBot extends ListenerAdapter {
     public static JDA jda;
 
@@ -38,14 +37,12 @@ public class DiscordBot extends ListenerAdapter {
                 new ReplyCommand(),
                 new ShoutCommand(),
                 new StreakCommand(),
-
                 new Restart(),
                 new Rejoin(),
                 new Send(),
                 new Mute(),
                 new UnMute(),
-                new MuteList()
-        );
+                new MuteList());
         jda = JDABuilder.createDefault(CONFIG.token)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
                 .build();
@@ -59,8 +56,7 @@ public class DiscordBot extends ListenerAdapter {
                         Commands.slash("list", "List online players in the server")
                                 .addSubcommands(
                                         new SubcommandData("all", "Get all online players"),
-                                        new SubcommandData("lobby", "Get all players in the lobby")
-                                ),
+                                        new SubcommandData("lobby", "Get all players in the lobby")),
                         Commands.slash("find", "Find which world a player is in")
                                 .addOption(
                                         OptionType.STRING,
@@ -76,26 +72,18 @@ public class DiscordBot extends ListenerAdapter {
                                 .addOption(OptionType.STRING, "message", "The message you want to send", true),
                         Commands.slash("listall", "List all online worlds with the players in them"),
                         Commands.slash("shout", "Send a shout message")
-                                .addOption(
-                                        OptionType.STRING,
-                                        "message",
-                                        "The message to shout",
-                                        true
-                                ),
+                                .addOption(OptionType.STRING, "message", "The message to shout", true),
                         Commands.slash("reply", "Reply to an incoming message")
-                                .addOption(
-                                        OptionType.STRING,
-                                        "message",
-                                        "The reply to send",
-                                        true
-                                ),
+                                .addOption(OptionType.STRING, "message", "The reply to send", true),
                         Commands.slash("streak", "Streak-related commands")
                                 .addSubcommands(
                                         new SubcommandData("player", "Get a player's streak")
-                                                .addOption(OptionType.STRING, "player", "The player whose streak you want to check", true),
-                                        new SubcommandData("lb", "Leaderboard")
-                                )
-                )
+                                                .addOption(
+                                                        OptionType.STRING,
+                                                        "player",
+                                                        "The player whose streak you want to check",
+                                                        true),
+                                        new SubcommandData("lb", "Leaderboard")))
                 .queue();
     }
 
@@ -106,32 +94,30 @@ public class DiscordBot extends ListenerAdapter {
                 .updateCommands()
                 .addCommands(
                         Commands.slash("rejoin", "Rejoin server")
-                                .setDefaultPermissions(
-                                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
                         Commands.slash("restart", "Restart bot")
-                                .setDefaultPermissions(
-                                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
                         Commands.slash("send", "Send message")
-                                .setDefaultPermissions(
-                                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
                                 .addOption(OptionType.STRING, "message", "The message to send", true),
                         Commands.slash("botmute", "Stop a player from using the bot")
                                 .addOption(OptionType.USER, "discord_id", "The discord ID of the player", true)
-                                .addOption(OptionType.STRING, "minecraft_name", "The minecraft username of the player", true)
+                                .addOption(
+                                        OptionType.STRING,
+                                        "minecraft_name",
+                                        "The minecraft username of the player",
+                                        true)
                                 .addOption(OptionType.STRING, "duration", "The length of the punishment", true)
                                 .addOption(OptionType.STRING, "reason", "The reason for this punishment", true)
-                                .setDefaultPermissions(
-                                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
                         Commands.slash("unbotmute", "Take back a bot mute")
                                 .addOption(OptionType.USER, "discord_id", "The discord ID of the player", true)
-                                .addOption(OptionType.STRING, "minecraft_name", "The minecraft name of the player", true)
-                                .setDefaultPermissions(
-                                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
+                                .addOption(
+                                        OptionType.STRING, "minecraft_name", "The minecraft name of the player", true)
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)),
                         Commands.slash("botmutelist", "See all bot mutes")
-                                .setDefaultPermissions(
-                                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
-                                .addOption(OptionType.INTEGER, "page", "The page to display", false)
-                )
+                                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
+                                .addOption(OptionType.INTEGER, "page", "The page to display", false))
                 .queue();
     }
 
@@ -144,15 +130,15 @@ public class DiscordBot extends ListenerAdapter {
         } else {
             discordNick = event.getMember().getEffectiveName();
         }
-        Component formattedMesssage = MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
-        String message =
-                String.format("<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick) +
-                        MiniMessage.miniMessage().serialize(formattedMesssage);
+        Component formattedMesssage =
+                MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
+        String message = String.format(
+                        "<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick)
+                + MiniMessage.miniMessage().serialize(formattedMesssage);
         if (!event.getMessage().getAttachments().isEmpty()) {
             message += " <blue>[Attachment Included]</blue>";
         }
-        if (CONFIG.channelId.isEmpty())
-            LOGGER.error("Discord channel ID is not set in config!");
+        if (CONFIG.channelId.isEmpty()) LOGGER.error("Discord channel ID is not set in config!");
         if (event.getChannel().getId().equals(CONFIG.channelId)) {
             Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
         }
@@ -167,19 +153,18 @@ public class DiscordBot extends ListenerAdapter {
         } else {
             discordNick = event.getMember().getEffectiveName();
         }
-        Component formattedMesssage = MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
-        String message =
-                String.format("<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick) +
-                        MiniMessage.miniMessage().serialize(formattedMesssage);
+        Component formattedMesssage =
+                MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
+        String message = String.format(
+                        "<br><blue><b>ᴅɪsᴄᴏʀᴅ</b></blue> <yellow>%s</yellow><dark_gray>:</dark_gray> ", discordNick)
+                + MiniMessage.miniMessage().serialize(formattedMesssage);
         if (!event.getMessage().getAttachments().isEmpty()) {
             message += " <blue>[Attachment Included]</blue>";
         }
         message += " <blue>[Edited]</blue>";
-        if (CONFIG.channelId.isEmpty())
-            LOGGER.error("Discord channel ID is not set in config!");
+        if (CONFIG.channelId.isEmpty()) LOGGER.error("Discord channel ID is not set in config!");
         if (event.getChannel().getId().equals(CONFIG.channelId)) {
             Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
         }
     }
-
 }

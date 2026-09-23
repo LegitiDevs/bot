@@ -16,9 +16,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinClientConnection {
     // Wtf is this method name
     @Inject(method = "genericsFtw", at = @At("HEAD"), cancellable = true)
-    private static <T extends PacketListener> void handlePacket(Packet<T> packet, PacketListener listener, CallbackInfo ci) {
+    private static <T extends PacketListener> void handlePacket(
+            Packet<T> packet, PacketListener listener, CallbackInfo ci) {
         if (packet instanceof ClientboundSystemChatPacket(Component content, boolean overlay)) {
-            LegitimooseBotClient.getThreadPool().execute(() -> GameChatHandler.getInstance().handleChat(content));
+            LegitimooseBotClient.getThreadPool()
+                    .execute(() -> GameChatHandler.getInstance().handleChat(content));
         }
     }
 }

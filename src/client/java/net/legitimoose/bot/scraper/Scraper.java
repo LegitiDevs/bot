@@ -1,5 +1,9 @@
 package net.legitimoose.bot.scraper;
 
+import static com.mongodb.client.model.Filters.eq;
+import static net.legitimoose.bot.LegitimooseBot.CONFIG;
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
@@ -7,6 +11,17 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.serialization.JsonOps;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.*;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.legitimoose.bot.LegitimooseBotClient;
 import net.legitimoose.bot.util.DiscordUtil;
 import net.legitimoose.bot.util.DiscordWebhook;
@@ -25,22 +40,6 @@ import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.mongodb.client.model.Filters.eq;
-import static net.legitimoose.bot.LegitimooseBot.CONFIG;
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 public class Scraper {
 
@@ -107,30 +106,25 @@ public class Scraper {
         CommandContext context = new CommandContextBuilder(null, null, null, 1).build("/find ");
 
         CompletableFuture<Suggestions> pendingParse;
-        pendingParse =
-                Minecraft.getInstance()
-                        .player
-                        .connection
-                        .getSuggestionsProvider()
-                        .customSuggestion(context);
+        pendingParse = Minecraft.getInstance()
+                .player
+                .connection
+                .getSuggestionsProvider()
+                .customSuggestion(context);
 
         pendingParse.thenAccept((suggestions) -> {
             int playerCount = suggestions.getList().size();
 
-            Document latest = stats.find()
-                    .sort(Sorts.descending("timestamp"))
-                    .limit(1)
-                    .first();
+            Document latest =
+                    stats.find().sort(Sorts.descending("timestamp")).limit(1).first();
 
             if (latest != null && latest.getInteger("player_count") == playerCount) {
                 return;
             }
 
-            stats.insertOne(
-                    new Document()
-                            .append("timestamp", new BsonDateTime(System.currentTimeMillis()))
-                            .append("player_count", playerCount)
-            );
+            stats.insertOne(new Document()
+                    .append("timestamp", new BsonDateTime(System.currentTimeMillis()))
+                    .append("player_count", playerCount));
         });
 
         Collection<PlayerInfo> playerList =
@@ -138,10 +132,12 @@ public class Scraper {
         Scoreboard scoreboard = Minecraft.getInstance().level.getScoreboard();
         Objective listObjective = scoreboard.getDisplayObjective(DisplaySlot.LIST);
         for (PlayerInfo player : playerList) {
-            ReadOnlyScoreInfo score = scoreboard.getPlayerScoreInfo(ScoreHolder.fromGameProfile(player.getProfile()), listObjective);
+            ReadOnlyScoreInfo score =
+                    scoreboard.getPlayerScoreInfo(ScoreHolder.fromGameProfile(player.getProfile()), listObjective);
             if (score == null) continue;
             int legiticoins = score.value();
-            Database.getPlayers().updateOne(eq("name", player.getProfile().name()), Updates.set("legiticoins", legiticoins));
+            Database.getPlayers()
+                    .updateOne(eq("name", player.getProfile().name()), Updates.set("legiticoins", legiticoins));
         }
 
         client.player.closeContainer();
@@ -151,49 +147,40 @@ public class Scraper {
         World lobby = new World(
                 "Nov 28, 2023, 4:57 PM",
                 1701219420,
-
                 false,
                 true,
-
                 "5f4641cb-a718-4556-8c87-fbf153a8cc9a",
                 "Legitermoose",
                 Rank.Moose,
-
                 Minecraft.getInstance().getConnection().getOnlinePlayers().size(),
-
                 100,
                 100,
-
                 "",
                 "lobby",
 
                 // Change on moose/bot update
                 "1.21.10",
-
                 300000,
                 300000,
-
                 false,
-
                 "Legitimoose Lobby",
                 Unicode.normalize("Legitimoose Lobby"),
                 Minecraft.getInstance().getCurrentServer().motd.getString(),
-
                 "{\"text\":\"Legitimoose Lobby\",\"color\":\"white\",\"italic\":false}",
-                lobbyRawDescription + ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, Minecraft.getInstance().getCurrentServer().motd)
-                        .result()
-                        .get() + "]",
-
+                lobbyRawDescription
+                        + ComponentSerialization.CODEC
+                                .encodeStart(
+                                        JsonOps.INSTANCE,
+                                        Minecraft.getInstance().getCurrentServer().motd)
+                                .result()
+                                .get()
+                        + "]",
                 -1,
-
                 new org.bson.json.JsonObject("{}"),
-
                 "minecraft:grass_block",
-
                 System.currentTimeMillis() / 1000L,
                 System.currentTimeMillis(),
-                false
-        );
+                false);
         bulkUpsert(List.of(lobby), List.of());
 
         client.player.connection.sendCommand("browse");
@@ -223,23 +210,41 @@ public class Scraper {
                     break;
                 }
 
-                CompoundTag legitimooseData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("legitimoose_data").orElseThrow(() -> {
-                    return new Exception("legitimoose_data tag missing");
-                });
+                CompoundTag legitimooseData = itemStack
+                        .get(DataComponents.CUSTOM_DATA)
+                        .copyTag()
+                        .getCompound("legitimoose_data")
+                        .orElseThrow(() -> {
+                            return new Exception("legitimoose_data tag missing");
+                        });
 
                 int descriptionLines = 0;
-                while (!itemStack.get(DataComponents.LORE).lines().get(descriptionLines).getString().isEmpty()) {
+                while (!itemStack
+                        .get(DataComponents.LORE)
+                        .lines()
+                        .get(descriptionLines)
+                        .getString()
+                        .isEmpty()) {
                     descriptionLines++;
                 }
 
                 String owner_name = "";
                 Rank owner_rank = Rank.Unknown;
                 int ownerLine = descriptionLines;
-                while (!itemStack.get(DataComponents.LORE).lines().get(ownerLine).getString().startsWith("by")) {
+                while (!itemStack
+                        .get(DataComponents.LORE)
+                        .lines()
+                        .get(ownerLine)
+                        .getString()
+                        .startsWith("by")) {
                     ownerLine++;
                 }
                 descriptionLines = ownerLine - 3;
-                Matcher ownerNameMatcher = ownerNamePattern.matcher(itemStack.get(DataComponents.LORE).lines().get(ownerLine).getString());
+                Matcher ownerNameMatcher = ownerNamePattern.matcher(itemStack
+                        .get(DataComponents.LORE)
+                        .lines()
+                        .get(ownerLine)
+                        .getString());
                 if (ownerNameMatcher.find()) {
                     owner_name = ownerNameMatcher.group(2);
                     if (ownerNameMatcher.group(1) == null) {
@@ -250,7 +255,8 @@ public class Scraper {
                 }
 
                 String owner_uuid = getNbtString(legitimooseData, "owner").get();
-                Player dbPlayer = Database.getPlayers().find(eq("uuid", owner_uuid)).first();
+                Player dbPlayer =
+                        Database.getPlayers().find(eq("uuid", owner_uuid)).first();
                 int streak;
                 int legiticoins;
                 Instant last_joined;
@@ -275,17 +281,28 @@ public class Scraper {
                         legiticoins = dbPlayer.legiticoins();
                     }
                 }
-                players.add(new Player(owner_uuid, owner_name, owner_rank, List.of(), new Player.Streak(streak, false), last_joined, legiticoins));
+                players.add(new Player(
+                        owner_uuid,
+                        owner_name,
+                        owner_rank,
+                        List.of(),
+                        new Player.Streak(streak, false),
+                        last_joined,
+                        legiticoins));
 
                 StringBuilder description = new StringBuilder();
                 for (int k = 0; k < descriptionLines; k++) {
-                    description.append(itemStack.get(DataComponents.LORE).lines().get(k).getString());
+                    description.append(
+                            itemStack.get(DataComponents.LORE).lines().get(k).getString());
                     if (k != descriptionLines - 1) description.append("\n");
                 }
 
                 StringBuilder raw_description = new StringBuilder("[");
                 for (int k = 0; k < descriptionLines; k++) {
-                    raw_description.append(ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.LORE).lines().get(k))
+                    raw_description.append(ComponentSerialization.CODEC
+                            .encodeStart(
+                                    JsonOps.INSTANCE,
+                                    itemStack.get(DataComponents.LORE).lines().get(k))
                             .result()
                             .get());
                     if (k != descriptionLines - 1) raw_description.append(",");
@@ -327,46 +344,35 @@ public class Scraper {
                 World world = new World(
                         getNbtString(legitimooseData, "creation_date").get(),
                         getNbtInt(legitimooseData, "creation_date_unix_seconds"),
-
                         getNbtBoolean(legitimooseData, "enforce_whitelist"),
                         getNbtBoolean(legitimooseData, "locked"),
-
                         owner_uuid,
                         owner_name,
                         owner_rank,
-
                         getNbtInt(legitimooseData, "player_count"),
                         getNbtInt(legitimooseData, "max_players"),
                         getNbtInt(legitimooseData, "max_datapack_size"),
-
                         getNbtString(legitimooseData, "resource_pack_url").get(),
                         getNbtString(legitimooseData, "uuid").get(),
                         getNbtString(legitimooseData, "version").get(),
-
                         getNbtInt(legitimooseData, "visits"),
                         getNbtInt(legitimooseData, "votes"),
-
                         getNbtBoolean(legitimooseData, "whitelist_on_version_change"),
-
                         itemName,
                         Unicode.normalize(itemName),
                         description.toString(),
-
-                        ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
+                        ComponentSerialization.CODEC
+                                .encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
                                 .result()
                                 .get()
                                 .toString(),
                         raw_description.toString(),
-
                         featured_instant,
-
                         new org.bson.json.JsonObject(jam.toString()),
-
                         itemStack.get(DataComponents.ITEM_MODEL).toString(),
                         System.currentTimeMillis() / 1000L,
                         System.currentTimeMillis(),
-                        false
-                );
+                        false);
 
                 worlds.add(world);
                 LOGGER.info("Scraped World {} {}: {}", j, world.world_uuid(), world.name());
@@ -377,8 +383,7 @@ public class Scraper {
             Minecraft.getInstance()
                     .gameMode
                     .handleContainerInput(
-                            client.player.containerMenu.containerId, 32, 0, ContainerInput.PICKUP, client.player
-                    );
+                            client.player.containerMenu.containerId, 32, 0, ContainerInput.PICKUP, client.player);
             waitSeconds(1); // wait a sec to give legmos time to load
         }
         client.player.closeContainer();
@@ -391,74 +396,71 @@ public class Scraper {
         LOGGER.info("writing world");
         for (World world : worlds) {
             boolean deleted = false;
-            World worldPrev = Database.getWorlds().find(eq("world_uuid", world.world_uuid())).first();
-            if (worldPrev != null && System.currentTimeMillis() - worldPrev.last_scraped_ms() > TimeUnit.HOURS.toMillis(24)) {
+            World worldPrev = Database.getWorlds()
+                    .find(eq("world_uuid", world.world_uuid()))
+                    .first();
+            if (worldPrev != null
+                    && System.currentTimeMillis() - worldPrev.last_scraped_ms() > TimeUnit.HOURS.toMillis(24)) {
                 deleted = true;
             }
 
-            Document prevWorldStats = Database.getWorldStats().find(eq("world_uuid", world.world_uuid())).first();
+            Document prevWorldStats = Database.getWorldStats()
+                    .find(eq("world_uuid", world.world_uuid()))
+                    .first();
             JsonObject statsObj = new JsonObject();
             if (prevWorldStats != null) {
                 Document stats = prevWorldStats.getList("stats", Document.class).getLast();
-                if (world.visits() != stats.getInteger("visits")
-                        || world.votes() != stats.getInteger("votes")) {
+                if (world.visits() != stats.getInteger("visits") || world.votes() != stats.getInteger("votes")) {
                     writeWorldStats(world, statsObj);
                 }
             } else {
                 writeWorldStats(world, statsObj);
             }
 
-            Bson updates =
-                    Updates.combine(
-                            Updates.set("creation_date", world.creation_date()),
-                            Updates.set("creation_date_unix_seconds", world.creation_date_unix_seconds()),
-                            Updates.set("enforce_whitelist", world.enforce_whitelist()),
-                            Updates.set("locked", world.locked()),
-                            Updates.set("owner_uuid", world.owner_uuid()),
-                            Updates.set("owner_name", world.owner_name()),
-                            Updates.set("owner_rank", world.owner_rank()),
-                            Updates.set("player_count", world.player_count()),
-                            Updates.set("max_players", world.max_players()),
-                            Updates.set("max_datapack_size", world.max_datapack_size()),
-                            Updates.set("resource_pack_url", world.resource_pack_url()),
-                            Updates.set("version", world.version()),
-                            Updates.set("visits", world.visits()),
-                            Updates.set("votes", world.votes()),
-                            Updates.set("whitelist_on_version_change", world.whitelist_on_version_change()),
-                            Updates.set("name", world.name()),
-                            Updates.set("normalized_name", world.normalized_name()),
-                            Updates.set("description", world.description()),
-                            Updates.set("raw_name", Document.parse(world.raw_name())),
-                            Updates.set("raw_description", BsonArray.parse(world.raw_description())),
-                            Updates.set("featured_instant", world.featured_instant()),
-                            Updates.set("jam", world.jam()),
-                            Updates.set("icon", world.icon()),
-                            Updates.set("last_scraped", world.last_scraped()),
-                            Updates.set("last_scraped_ms", new BsonDateTime(world.last_scraped_ms())),
-                            Updates.set("deleted", deleted));
+            Bson updates = Updates.combine(
+                    Updates.set("creation_date", world.creation_date()),
+                    Updates.set("creation_date_unix_seconds", world.creation_date_unix_seconds()),
+                    Updates.set("enforce_whitelist", world.enforce_whitelist()),
+                    Updates.set("locked", world.locked()),
+                    Updates.set("owner_uuid", world.owner_uuid()),
+                    Updates.set("owner_name", world.owner_name()),
+                    Updates.set("owner_rank", world.owner_rank()),
+                    Updates.set("player_count", world.player_count()),
+                    Updates.set("max_players", world.max_players()),
+                    Updates.set("max_datapack_size", world.max_datapack_size()),
+                    Updates.set("resource_pack_url", world.resource_pack_url()),
+                    Updates.set("version", world.version()),
+                    Updates.set("visits", world.visits()),
+                    Updates.set("votes", world.votes()),
+                    Updates.set("whitelist_on_version_change", world.whitelist_on_version_change()),
+                    Updates.set("name", world.name()),
+                    Updates.set("normalized_name", world.normalized_name()),
+                    Updates.set("description", world.description()),
+                    Updates.set("raw_name", Document.parse(world.raw_name())),
+                    Updates.set("raw_description", BsonArray.parse(world.raw_description())),
+                    Updates.set("featured_instant", world.featured_instant()),
+                    Updates.set("jam", world.jam()),
+                    Updates.set("icon", world.icon()),
+                    Updates.set("last_scraped", world.last_scraped()),
+                    Updates.set("last_scraped_ms", new BsonDateTime(world.last_scraped_ms())),
+                    Updates.set("deleted", deleted));
             operations.add(new UpdateOneModel<>(
-                    eq("world_uuid", world.world_uuid()),
-                    updates,
-                    new UpdateOptions().upsert(true)
-            ));
+                    eq("world_uuid", world.world_uuid()), updates, new UpdateOptions().upsert(true)));
         }
 
         for (Player player : players) {
-            Bson playerUpdates =
-                    Updates.combine(
-                            Updates.set("uuid", player.uuid()),
-                            Updates.set("name", player.name()),
-                            Updates.set("rank", player.rank()),
-                            Updates.set("streak", player.streak()),
-                            Updates.set("last_joined", new BsonDateTime(player.last_joined().toEpochMilli())),
-                            Updates.set("legiticoins", player.legiticoins()),
-                            Updates.setOnInsert("blocked", player.blocked()));
+            Bson playerUpdates = Updates.combine(
+                    Updates.set("uuid", player.uuid()),
+                    Updates.set("name", player.name()),
+                    Updates.set("rank", player.rank()),
+                    Updates.set("streak", player.streak()),
+                    Updates.set(
+                            "last_joined", new BsonDateTime(player.last_joined().toEpochMilli())),
+                    Updates.set("legiticoins", player.legiticoins()),
+                    Updates.setOnInsert("blocked", player.blocked()));
 
-            playerOperations.add(new UpdateOneModel<>(
-                    eq("uuid", player.uuid()),
-                    playerUpdates,
-                    new UpdateOptions().upsert(true)
-            ));
+            playerOperations.add(
+                    new UpdateOneModel<>(eq("uuid", player.uuid()), playerUpdates, new UpdateOptions().upsert(true)));
         }
 
         if (!operations.isEmpty()) {
@@ -479,7 +481,8 @@ public class Scraper {
 
         Bson statUpdates = Updates.push("stats", Document.parse(statsObj.toString()));
 
-        Database.getWorldStats().updateOne(eq("world_uuid", world.world_uuid()), statUpdates, new UpdateOptions().upsert(true));
+        Database.getWorldStats()
+                .updateOne(eq("world_uuid", world.world_uuid()), statUpdates, new UpdateOptions().upsert(true));
     }
 
     private Optional<String> getNbtString(CompoundTag tag, String field) {
@@ -492,7 +495,8 @@ public class Scraper {
     }
 
     private int getNbtInt(CompoundTag tag, String field) {
-        if (!getNbtString(tag, field).orElseThrow().isEmpty() && !getNbtString(tag, field).orElseThrow().equals("null")) {
+        if (!getNbtString(tag, field).orElseThrow().isEmpty()
+                && !getNbtString(tag, field).orElseThrow().equals("null")) {
             return Integer.parseInt(getNbtString(tag, field).get());
         } else {
             return -1;

@@ -1,11 +1,10 @@
 package net.legitimoose.bot.chat.matcher;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.legitimoose.bot.chat.GameChatHandler;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.network.chat.Component;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Matcher for player join messages.
@@ -28,17 +27,15 @@ public class JoinMatcher implements MessageMatcher {
     public boolean matches(String message) {
         // I believe quickly discarding incorrect messages this way first
         // is more efficient than calling Pattern#matcher on the message
-        if (!message.startsWith("[+]"))
-            return false;
+        if (!message.startsWith("[+]")) return false;
 
         Matcher matcher = PATTERN.matcher(message);
 
-        if (!matcher.find())
-            return false;
+        if (!matcher.find()) return false;
 
         rank = matcher.group(1);
         if (rank == null) // Preventing rank from being null avoids a null check in GameChatHandler
-            rank = "";
+        rank = "";
         username = matcher.group(2);
 
         return true;
@@ -56,5 +53,4 @@ public class JoinMatcher implements MessageMatcher {
     public String getUsername() {
         return username;
     }
-
 }

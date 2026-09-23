@@ -13,10 +13,8 @@ public class TimeUtil {
      * This does truncate values but that's not too much of a problem
      */
     public static String format(long time) {
-        if (time < MILLIS_PER_MINUTE)
-            return time / 1000 + "s";
-        if (time < MILLIS_PER_HOUR)
-            return time / MILLIS_PER_MINUTE + "m " + (time % MILLIS_PER_MINUTE) / 1000 + "s";
+        if (time < MILLIS_PER_MINUTE) return time / 1000 + "s";
+        if (time < MILLIS_PER_HOUR) return time / MILLIS_PER_MINUTE + "m " + (time % MILLIS_PER_MINUTE) / 1000 + "s";
         if (time < MILLIS_PER_DAY)
             return time / MILLIS_PER_HOUR + "h " + (time % MILLIS_PER_HOUR) / MILLIS_PER_MINUTE + "m";
         if (time < MILLIS_PER_WEEK)
@@ -32,13 +30,11 @@ public class TimeUtil {
     public static long parse(String time) {
         long total = -1;
         String[] segments = time.split(" +");
-        if (segments.length == 0)
-            return -1;
+        if (segments.length == 0) return -1;
 
         for (String part : segments) {
             int l = part.length();
-            if (l < 2)
-                continue;
+            if (l < 2) continue;
 
             try {
                 int prefix = Integer.parseInt(part.substring(0, l - 1));
@@ -60,5 +56,4 @@ public class TimeUtil {
         // Returns -1 if all parts are too short
         return total == -1 ? -1 : total + 1;
     }
-
 }

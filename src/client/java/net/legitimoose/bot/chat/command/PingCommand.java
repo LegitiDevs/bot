@@ -6,8 +6,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 public class PingCommand {
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
-        dispatcher.register(LiteralArgumentBuilder.<CommandSource>literal("ping")
-                .executes(context -> {
+        dispatcher.register(
+                LiteralArgumentBuilder.<CommandSource>literal("ping").executes(context -> {
                     context.getSource().sendMessage("Pong!");
                     return Command.SINGLE_SUCCESS;
                 }));

@@ -15,11 +15,9 @@ public class Database {
 
     private static final String DATABASE_NAME = "legitimooseapi";
 
-    private static final MongoClient mongoClient =
-            MongoClients.create(CONFIG.mongoUri);
+    private static final MongoClient mongoClient = MongoClients.create(CONFIG.mongoUri);
 
-    private final MongoDatabase database =
-            mongoClient.getDatabase(DATABASE_NAME);
+    private final MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
 
     private MongoCollection<World> worlds;
     private MongoCollection<Document> worldStats;

@@ -1,16 +1,14 @@
 package net.legitimoose.bot.util;
 
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
-import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Used to do webhook stuff easily
@@ -113,9 +111,7 @@ public class DiscordWebhook {
         stream.flush();
         stream.close();
 
-        connection
-                .getInputStream()
-                .close(); // I'm not sure why but it doesn't work without getting the InputStream
+        connection.getInputStream().close(); // I'm not sure why but it doesn't work without getting the InputStream
         connection.disconnect();
     }
 }

@@ -2,7 +2,6 @@ package net.legitimoose.bot.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,7 +25,8 @@ public class McUtil {
                 .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", username)))
                 .GET()
                 .build();
-        String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
+        String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString())
+                .body();
         JsonObject data = JsonParser.parseString(response).getAsJsonObject();
 
         return (data.getAsJsonObject("data").getAsJsonObject("player").get("id").getAsString());
@@ -37,10 +37,14 @@ public class McUtil {
                 .uri(new URI(String.format("https://playerdb.co/api/player/minecraft/%s", uuid)))
                 .GET()
                 .build();
-        String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString()).body();
+        String response = client.send(bannedUUIDRequest, HttpResponse.BodyHandlers.ofString())
+                .body();
         JsonObject data = JsonParser.parseString(response).getAsJsonObject();
 
-        return (data.getAsJsonObject("data").getAsJsonObject("player").get("username").getAsString());
+        return (data.getAsJsonObject("data")
+                .getAsJsonObject("player")
+                .get("username")
+                .getAsString());
     }
 
     /// Usage: Sanitize when sending minecraft chat message (including all MiniMessage and such) or command

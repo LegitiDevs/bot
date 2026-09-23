@@ -22,12 +22,18 @@ public class StreakCommand extends ListenerAdapter {
                 String player = event.getOption("player").getAsString();
                 event.deferReply().queue();
 
-                Player dbPlayer = Database.getPlayers().find(Filters.eq("name", player)).first();
+                Player dbPlayer =
+                        Database.getPlayers().find(Filters.eq("name", player)).first();
                 if (dbPlayer == null) {
-                    event.getHook().sendMessage("Could not find a player named " + player).queue();
+                    event.getHook()
+                            .sendMessage("Could not find a player named " + player)
+                            .queue();
                     return;
                 }
-                event.getHook().sendMessage(player + "'s current login streak is " + dbPlayer.streak().days() + " days").queue();
+                event.getHook()
+                        .sendMessage(player + "'s current login streak is "
+                                + dbPlayer.streak().days() + " days")
+                        .queue();
             }
             case "lb", "leaderboard" -> {
                 // super jank. could cause a memory leak probably

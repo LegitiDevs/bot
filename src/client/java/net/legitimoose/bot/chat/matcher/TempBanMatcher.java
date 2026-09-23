@@ -1,11 +1,10 @@
 package net.legitimoose.bot.chat.matcher;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.legitimoose.bot.chat.GameChatHandler;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.network.chat.Component;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Matcher for temporary bans. (including IP bans)
@@ -14,8 +13,9 @@ import java.util.regex.Pattern;
  */
 public class TempBanMatcher implements MessageMatcher {
 
-    private static final Pattern PATTERN = Pattern.compile("(\\w{3,16})\\s((?:temp)(?:\\s?IP-)?banned)\\s(\\w{3,16})\\sfor\\s(\\d*\\s(?:days?|hours?|minutes?|seconds?))(?:\\sfor\\s'(.*)')?");
-    
+    private static final Pattern PATTERN = Pattern.compile(
+            "(\\w{3,16})\\s((?:temp)(?:\\s?IP-)?banned)\\s(\\w{3,16})\\sfor\\s(\\d*\\s(?:days?|hours?|minutes?|seconds?))(?:\\sfor\\s'(.*)')?");
+
     private String moderatorName;
     private String typeString;
     private String bannedName;
@@ -36,11 +36,10 @@ public class TempBanMatcher implements MessageMatcher {
     public boolean matches(String message) {
         Matcher matcher = PATTERN.matcher(message);
 
-        if (!matcher.find())
-            return false;
+        if (!matcher.find()) return false;
 
         moderatorName = matcher.group(1);
-        typeString = matcher.group(2); 
+        typeString = matcher.group(2);
         bannedName = matcher.group(3);
         banTimeString = matcher.group(4);
         if (banTimeString.contains("day")) {
@@ -73,17 +72,16 @@ public class TempBanMatcher implements MessageMatcher {
     public String getReason() {
         return reason;
     }
-    
+
     public String getBanType() {
-    	return typeString;
+        return typeString;
     }
-    
+
     public String getBanTimeString() {
-    	return banTimeString;
+        return banTimeString;
     }
 
     public long getDuration() {
         return duration;
     }
-
 }

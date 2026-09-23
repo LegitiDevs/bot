@@ -1,24 +1,23 @@
 package net.legitimoose.bot.http.endpoint;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.legitimoose.bot.scraper.Database;
-import net.legitimoose.bot.scraper.Player;
-import net.legitimoose.bot.scraper.Rank;
-import net.legitimoose.bot.util.McUtil;
-import org.bson.Document;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import org.jspecify.annotations.NonNull;
-
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.mongodb.client.model.Filters.eq;
+import net.legitimoose.bot.scraper.Database;
+import net.legitimoose.bot.scraper.Player;
+import net.legitimoose.bot.scraper.Rank;
+import net.legitimoose.bot.util.McUtil;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import org.bson.Document;
+import org.jspecify.annotations.NonNull;
 
 public class PlayerEndpoint {
     private final Pattern listallPattern = Pattern.compile("\\[(.*)] \\(\\d*\\): (.*)");
@@ -30,7 +29,15 @@ public class PlayerEndpoint {
         for (String username : usernames.keySet()) {
             try {
                 if (Database.getPlayers().countDocuments(new Document("name", username)) == 0) {
-                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), new Player.Streak(1, false), Instant.EPOCH, 0).write();
+                    new Player(
+                                    McUtil.getUuid(username),
+                                    username,
+                                    Rank.Unknown,
+                                    List.of(),
+                                    new Player.Streak(1, false),
+                                    Instant.EPOCH,
+                                    0)
+                            .write();
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -77,7 +84,15 @@ public class PlayerEndpoint {
         for (String username : usernames.keySet()) {
             try {
                 if (Database.getPlayers().countDocuments(new Document("name", username)) == 0) {
-                    new Player(McUtil.getUuid(username), username, Rank.Unknown, List.of(), new Player.Streak(1, false), Instant.EPOCH, 0).write();
+                    new Player(
+                                    McUtil.getUuid(username),
+                                    username,
+                                    Rank.Unknown,
+                                    List.of(),
+                                    new Player.Streak(1, false),
+                                    Instant.EPOCH,
+                                    0)
+                            .write();
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -118,16 +133,15 @@ public class PlayerEndpoint {
             Matcher matcher = listallPattern.matcher(worldString);
             if (!matcher.matches()) continue;
             String world;
-            String worldCommand = ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
+            String worldCommand =
+                    ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
             if (worldCommand.equals("/lobby")) {
                 world = "lobby";
             } else world = worldCommand.substring(7);
             for (String user : matcher.group(2).split(", ", -1)) {
                 int separator = user.indexOf("| ");
 
-                String username = separator >= 0
-                        ? user.substring(separator + 2)
-                        : user;
+                String username = separator >= 0 ? user.substring(separator + 2) : user;
                 usernames.put(username, world);
             }
         }

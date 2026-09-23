@@ -1,6 +1,7 @@
 plugins {
   id("net.fabricmc.fabric-loom") version "1.17-SNAPSHOT"
   id("com.gradleup.shadow") version "9.3.1"
+  id("com.diffplug.spotless") version "8.10.2"
 }
 
 version = project.property("mod_version") as String
@@ -89,6 +90,15 @@ tasks {
     configurations = listOf(project.configurations.shadow.get())
     archiveClassifier = ""
     //    minimize()
+  }
+}
+spotless {
+  java {
+    removeUnusedImports()
+    shortenFullyQualifiedTypes()
+
+    palantirJavaFormat()
+    formatAnnotations()
   }
 }
 

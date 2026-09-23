@@ -9,8 +9,7 @@ public class UnMute extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        if (!event.getName().equals("unbotmute"))
-            return;
+        if (!event.getName().equals("unbotmute")) return;
 
         event.deferReply().queue();
 
@@ -20,9 +19,13 @@ public class UnMute extends ListenerAdapter {
         boolean didDelete = BotMuteHandler.getInstance().delete(user.getId(), minecraftName);
 
         if (!didDelete)
-            event.getHook().sendMessage("No bot mute exists for this person!").setEphemeral(true).queue();
+            event.getHook()
+                    .sendMessage("No bot mute exists for this person!")
+                    .setEphemeral(true)
+                    .queue();
         else
-            event.getHook().sendMessage("<@" + user.getId() + "> | " + minecraftName + " has been unmuted from the bot").queue();
+            event.getHook()
+                    .sendMessage("<@" + user.getId() + "> | " + minecraftName + " has been unmuted from the bot")
+                    .queue();
     }
-
 }

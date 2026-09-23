@@ -1,11 +1,10 @@
 package net.legitimoose.bot.chat.matcher;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.legitimoose.bot.chat.GameChatHandler;
 import net.legitimoose.bot.util.DiscordWebhook;
 import net.minecraft.network.chat.Component;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Matcher for broadcasts.
@@ -24,13 +23,11 @@ public class BroadcastMatcher implements MessageMatcher {
     @Override
     public boolean matches(String message) {
         // Only using first two characters as they differentiate it from all others anyway
-        if (!message.startsWith("[B"))
-            return false;
+        if (!message.startsWith("[B")) return false;
 
         Matcher matcher = PATTERN.matcher(message);
 
-        if (!matcher.find())
-            return false;
+        if (!matcher.find()) return false;
 
         this.message = matcher.group(1);
 
@@ -45,5 +42,4 @@ public class BroadcastMatcher implements MessageMatcher {
     public String getMessage() {
         return message;
     }
-
 }

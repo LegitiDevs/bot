@@ -1,20 +1,19 @@
 package net.legitimoose.bot.http.endpoint;
 
+import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.legitimoose.bot.chat.GameChatHandler;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static net.legitimoose.bot.LegitimooseBot.LOGGER;
+import net.legitimoose.bot.chat.GameChatHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
 
 public class PlayersEndpoint {
     private final Pattern listallPattern = Pattern.compile("\\[(.*)] \\(\\d*\\): (.*)");
@@ -33,9 +32,7 @@ public class PlayersEndpoint {
             for (String user : matcher.group(2).split(", ", -1)) {
                 int separator = user.indexOf("| ");
 
-                String username = separator >= 0
-                        ? user.substring(separator + 2)
-                        : user;
+                String username = separator >= 0 ? user.substring(separator + 2) : user;
                 usernames.add(username);
             }
             JsonArray players = new JsonArray();
@@ -44,7 +41,8 @@ public class PlayersEndpoint {
                 players.add(username);
             }
             String uuid;
-            String worldCommand = ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
+            String worldCommand =
+                    ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
             if (worldCommand.equals("/lobby")) {
                 uuid = "lobby";
             } else uuid = worldCommand.substring(7);
@@ -69,13 +67,12 @@ public class PlayersEndpoint {
             for (String user : matcher.group(2).split(", ", -1)) {
                 int separator = user.indexOf("| ");
 
-                String username = separator >= 0
-                        ? user.substring(separator + 2)
-                        : user;
+                String username = separator >= 0 ? user.substring(separator + 2) : user;
                 usernames.add(username);
             }
             String worldUuid;
-            String worldCommand = ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
+            String worldCommand =
+                    ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
             if (worldCommand.equals("/lobby")) {
                 worldUuid = "lobby";
             } else worldUuid = worldCommand.substring(7);

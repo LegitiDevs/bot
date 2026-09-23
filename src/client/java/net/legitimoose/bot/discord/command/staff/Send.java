@@ -17,11 +17,15 @@ public class Send extends ListenerAdapter {
         Minecraft.getInstance().schedule(() -> {
             if (message.startsWith("/")) {
                 Minecraft.getInstance().getConnection().sendCommand(message.substring(1));
-                event.getHook().sendMessage(String.format("Command sent: `%s`", message)).queue();
+                event.getHook()
+                        .sendMessage(String.format("Command sent: `%s`", message))
+                        .queue();
                 return;
             }
             Minecraft.getInstance().getConnection().sendChat(message);
-            event.getHook().sendMessage(String.format("Message sent: `%s`", message)).queue();
+            event.getHook()
+                    .sendMessage(String.format("Message sent: `%s`", message))
+                    .queue();
         });
     }
 }

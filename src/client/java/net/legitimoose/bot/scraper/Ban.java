@@ -11,7 +11,7 @@ public record Ban(
         String reason,
         long duration, // Duration is in seconds
         long expires_at // Expiration date is in Epoch Time (seconds)
-) {
+        ) {
 
     private static final int PERMANENT_DURATION = -1;
 
@@ -24,8 +24,7 @@ public record Ban(
                 McUtil.getUuidOrThrow(moderator),
                 reason,
                 duration,
-                banTime + duration
-        );
+                banTime + duration);
         ban.write();
     }
 
@@ -38,8 +37,7 @@ public record Ban(
                 McUtil.getUuidOrThrow(moderator),
                 reason,
                 PERMANENT_DURATION,
-                PERMANENT_DURATION
-        );
+                PERMANENT_DURATION);
         ban.write();
     }
 
