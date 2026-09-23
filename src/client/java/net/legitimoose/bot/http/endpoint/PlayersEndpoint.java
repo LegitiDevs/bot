@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -28,7 +29,7 @@ public class PlayersEndpoint {
             if (!matcher.matches()) continue;
             JsonObject world = new JsonObject();
 
-            List<String> usernames = List.of();
+            List<String> usernames = new ArrayList<>();
             for (String user : matcher.group(2).split(", ", -1)) {
                 int separator = user.indexOf("| ");
 
@@ -64,7 +65,7 @@ public class PlayersEndpoint {
             Matcher matcher = listallPattern.matcher(worldString);
             if (!matcher.matches()) continue;
 
-            List<String> usernames = List.of();
+            List<String> usernames = new ArrayList<>();
             for (String user : matcher.group(2).split(", ", -1)) {
                 int separator = user.indexOf("| ");
 
