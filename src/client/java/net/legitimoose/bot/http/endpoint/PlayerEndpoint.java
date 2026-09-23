@@ -123,7 +123,12 @@ public class PlayerEndpoint {
                 world = "lobby";
             } else world = worldCommand.substring(7);
             for (String user : matcher.group(2).split(", ", -1)) {
-                usernames.put(user, world);
+                int separator = user.indexOf("| ");
+
+                String username = separator >= 0
+                        ? user.substring(separator + 2)
+                        : user;
+                usernames.put(username, world);
             }
         }
         return usernames;

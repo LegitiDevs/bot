@@ -28,7 +28,15 @@ public class PlayersEndpoint {
             if (!matcher.matches()) continue;
             JsonObject world = new JsonObject();
 
-            String[] usernames = matcher.group(2).split(", ", -1);
+            List<String> usernames = List.of();
+            for (String user : matcher.group(2).split(", ", -1)) {
+                int separator = user.indexOf("| ");
+
+                String username = separator >= 0
+                        ? user.substring(separator + 2)
+                        : user;
+                usernames.add(username);
+            }
             JsonArray players = new JsonArray();
 
             for (String username : usernames) {
@@ -56,7 +64,15 @@ public class PlayersEndpoint {
             Matcher matcher = listallPattern.matcher(worldString);
             if (!matcher.matches()) continue;
 
-            String[] usernames = matcher.group(2).split(", ", -1);
+            List<String> usernames = List.of();
+            for (String user : matcher.group(2).split(", ", -1)) {
+                int separator = user.indexOf("| ");
+
+                String username = separator >= 0
+                        ? user.substring(separator + 2)
+                        : user;
+                usernames.add(username);
+            }
             String worldUuid;
             String worldCommand = ((ClickEvent.SuggestCommand) worldMessage.getStyle().getClickEvent()).command();
             if (worldCommand.equals("/lobby")) {
