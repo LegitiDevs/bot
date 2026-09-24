@@ -9,6 +9,8 @@ import com.mongodb.client.MongoDatabase;
 import net.legitimoose.bot.discord.command.mute.BotMute;
 import org.bson.Document;
 
+import javax.print.Doc;
+
 public class Database {
 
     private static Database instance;
@@ -20,6 +22,7 @@ public class Database {
     private final MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
 
     private MongoCollection<World> worlds;
+    private MongoCollection<Document> worldDocuments;
     private MongoCollection<Document> worldStats;
     private MongoCollection<Player> players;
     private MongoCollection<Document> stats;
@@ -28,6 +31,7 @@ public class Database {
 
     private Database() {
         worlds = database.getCollection("worlds", World.class);
+        worldDocuments = database.getCollection("worlds");
         worldStats = database.getCollection("world_stats");
         players = database.getCollection("players", Player.class);
         stats = database.getCollection("stats");
@@ -61,5 +65,10 @@ public class Database {
 
     public static MongoCollection<BotMute> getBotMutes() {
         return getInstance().mutes;
+    }
+
+    // workaround for mongodb deserialization errors
+    public static MongoCollection<Document> getWorldDocuments() {
+        return getInstance().worldDocuments;
     }
 }

@@ -14,10 +14,7 @@ import com.mongodb.client.model.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -166,20 +163,20 @@ public class Scraper {
                 "Legitimoose Lobby",
                 Unicode.normalize("Legitimoose Lobby"),
                 Minecraft.getInstance().getCurrentServer().motd.getString(),
-                "{\"text\":\"Legitimoose Lobby\",\"color\":\"white\",\"italic\":false}",
-                lobbyRawDescription
+                Document.parse("{\"text\":\"Legitimoose Lobby\",\"color\":\"white\",\"italic\":false}"),
+                BsonArray.parse(lobbyRawDescription
                         + ComponentSerialization.CODEC
                                 .encodeStart(
                                         JsonOps.INSTANCE,
                                         Minecraft.getInstance().getCurrentServer().motd)
                                 .result()
                                 .get()
-                        + "]",
+                        + "]"),
                 -1,
                 new org.bson.json.JsonObject("{}"),
                 "minecraft:grass_block",
                 System.currentTimeMillis() / 1000L,
-                System.currentTimeMillis(),
+                new BsonDateTime(System.currentTimeMillis()),
                 false);
         bulkUpsert(List.of(lobby), List.of());
 
@@ -361,17 +358,17 @@ public class Scraper {
                         itemName,
                         Unicode.normalize(itemName),
                         description.toString(),
-                        ComponentSerialization.CODEC
+                        Document.parse(ComponentSerialization.CODEC
                                 .encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME))
                                 .result()
                                 .get()
-                                .toString(),
-                        raw_description.toString(),
+                                .toString()),
+                        BsonArray.parse(raw_description.toString()),
                         featured_instant,
                         new org.bson.json.JsonObject(jam.toString()),
                         itemStack.get(DataComponents.ITEM_MODEL).toString(),
                         System.currentTimeMillis() / 1000L,
-                        System.currentTimeMillis(),
+                        new BsonDateTime(System.currentTimeMillis()),
                         false);
 
                 worlds.add(world);
@@ -395,13 +392,20 @@ public class Scraper {
         List<WriteModel<Player>> playerOperations = new ArrayList<>();
         LOGGER.info("writing world");
         for (World world : worlds) {
+            LOGGER.info(world.world_uuid());
             boolean deleted = false;
-            World worldPrev = Database.getWorlds()
+            Document worldPrev = Database.getWorldDocuments()
                     .find(eq("world_uuid", world.world_uuid()))
                     .first();
-            if (worldPrev != null
-                    && System.currentTimeMillis() - worldPrev.last_scraped_ms() > TimeUnit.HOURS.toMillis(24)) {
-                deleted = true;
+
+            if (worldPrev != null) {
+                Date lastScraped = worldPrev.getDate("last_scraped_ms");
+
+                if (lastScraped != null
+                        && System.currentTimeMillis() - lastScraped.getTime()
+                        > TimeUnit.HOURS.toMillis(24)) {
+                    deleted = true;
+                }
             }
 
             Document prevWorldStats = Database.getWorldStats()
@@ -436,13 +440,13 @@ public class Scraper {
                     Updates.set("name", world.name()),
                     Updates.set("normalized_name", world.normalized_name()),
                     Updates.set("description", world.description()),
-                    Updates.set("raw_name", Document.parse(world.raw_name())),
-                    Updates.set("raw_description", BsonArray.parse(world.raw_description())),
+                    Updates.set("raw_name", world.raw_name()),
+                    Updates.set("raw_description", world.raw_description()),
                     Updates.set("featured_instant", world.featured_instant()),
                     Updates.set("jam", world.jam()),
                     Updates.set("icon", world.icon()),
                     Updates.set("last_scraped", world.last_scraped()),
-                    Updates.set("last_scraped_ms", new BsonDateTime(world.last_scraped_ms())),
+                    Updates.set("last_scraped_ms", world.last_scraped_ms()),
                     Updates.set("deleted", deleted));
             operations.add(new UpdateOneModel<>(
                     eq("world_uuid", world.world_uuid()), updates, new UpdateOptions().upsert(true)));
@@ -475,7 +479,7 @@ public class Scraper {
     }
 
     private void writeWorldStats(World world, JsonObject statsObj) {
-        statsObj.addProperty("timestamp", world.last_scraped_ms());
+        statsObj.addProperty("timestamp", world.last_scraped_ms().getValue());
         statsObj.addProperty("visits", world.visits());
         statsObj.addProperty("votes", world.votes());
 

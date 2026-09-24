@@ -1,5 +1,8 @@
 package net.legitimoose.bot.scraper;
 
+import org.bson.BsonArray;
+import org.bson.BsonDateTime;
+import org.bson.Document;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.json.JsonObject;
 
@@ -23,8 +26,8 @@ public record World(
         String name,
         String normalized_name,
         String description,
-        String raw_name,
-        String raw_description,
+        Document raw_name,
+        BsonArray raw_description,
         int featured_instant,
 
         JsonObject jam,
@@ -33,6 +36,6 @@ public record World(
 
         @Deprecated long last_scraped,
 
-        long last_scraped_ms,
+        BsonDateTime last_scraped_ms,
 
         @BsonProperty("legitidevs.deleted") boolean deleted) {}
