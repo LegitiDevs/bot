@@ -9,8 +9,6 @@ import com.mongodb.client.MongoDatabase;
 import net.legitimoose.bot.discord.command.mute.BotMute;
 import org.bson.Document;
 
-import javax.print.Doc;
-
 public class Database {
 
     private static Database instance;

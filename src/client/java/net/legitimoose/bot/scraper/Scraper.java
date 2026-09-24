@@ -402,8 +402,7 @@ public class Scraper {
                 Date lastScraped = worldPrev.getDate("last_scraped_ms");
 
                 if (lastScraped != null
-                        && System.currentTimeMillis() - lastScraped.getTime()
-                        > TimeUnit.HOURS.toMillis(24)) {
+                        && System.currentTimeMillis() - lastScraped.getTime() > TimeUnit.HOURS.toMillis(24)) {
                     deleted = true;
                 }
             }
