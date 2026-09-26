@@ -156,7 +156,7 @@ public class Scraper {
                 "lobby",
 
                 // Change on moose/bot update
-                "1.21.10",
+                Minecraft.getInstance().getCurrentServer().version.getString(),
                 300000,
                 300000,
                 false,
