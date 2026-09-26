@@ -45,7 +45,7 @@ dependencies {
 
   implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
-  //implementation(files("lib/baritone-api-fabric-1.11.1-17-g57758940.jar"))
+  implementation(files("lib/baritone-api-fabric-1.20.0.jar"))
 
   shadow(implementation("org.mongodb:mongodb-driver-sync:5.6.3")!!)
   shadow(implementation("net.dv8tion:JDA:6.3.0") {

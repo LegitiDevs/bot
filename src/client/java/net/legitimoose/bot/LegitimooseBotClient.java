@@ -3,6 +3,7 @@ package net.legitimoose.bot;
 import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
+import baritone.api.BaritoneAPI;
 import com.mojang.brigadier.context.CommandContext;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -130,8 +131,8 @@ public class LegitimooseBotClient implements ClientModInitializer {
     }
 
     private void setupBaritone() {
-        // BaritoneAPI.getSettings().allowBreak.value = false;
-        // BaritoneAPI.getSettings().freeLook.value = false;
+        BaritoneAPI.getSettings().allowBreak.value = false;
+        BaritoneAPI.getSettings().freeLook.value = false;
     }
 
     private void scheduleExit() {
