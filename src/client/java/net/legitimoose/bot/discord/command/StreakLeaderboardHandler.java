@@ -12,6 +12,9 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 public class StreakLeaderboardHandler extends ListenerAdapter {
     static int maxId = 0;
     int page = 1;
@@ -59,6 +62,7 @@ public class StreakLeaderboardHandler extends ListenerAdapter {
         int i = 1;
         for (Player player : Database.getPlayers()
                 .find(Filters.exists("streak.days"))
+                .filter(Filters.gte("last_joined", Instant.now().minus(48, ChronoUnit.HOURS)))
                 .sort(descending("streak.days", "last_joined"))
                 .skip((page - 1) * 5)
                 .limit(5)) {

@@ -13,6 +13,9 @@ import com.mongodb.client.model.Updates;
 import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 public class StreakCommand {
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
@@ -91,6 +94,7 @@ public class StreakCommand {
         int i = 1;
         for (Player player : Database.getPlayers()
                 .find(Filters.exists("streak.days"))
+                .filter(Filters.gte("last_joined", Instant.now().minus(48, ChronoUnit.HOURS)))
                 .sort(descending("streak.days", "last_joined"))
                 .skip((page - 1) * 5)
                 .limit(5)) {
