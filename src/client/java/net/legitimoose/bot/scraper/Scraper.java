@@ -47,6 +47,16 @@ public class Scraper {
     private boolean isScraping;
     private volatile boolean scrapeOverride = false;
 
+    /**
+     * The delay between a world not being scraped, and the world being set to 'deleted'
+     */
+    private static final long DELETION_TIME_MILLIS = 24 * 60 * 60 * 1000L;
+
+    /**
+     * The delay between a world not being scraped, and the world being set to offline.
+     */
+    private static final long UNLOCK_TIME_MILLIS = 6 * 60 * 60 * 1000L;
+
     public static Scraper getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new Scraper();
@@ -65,10 +75,18 @@ public class Scraper {
 
     public void startScraping() {
         isScraping = true;
+        int scrape = 0;
+
         while (true) {
             if (!scrapeOverride) {
                 try {
                     scrape();
+                    if (++scrape == 10) {
+                        scrape = 0;
+                        // Mark worlds that have not been scraped for set amounts of
+                        // time as offline and/or deleted. Happens after every 10th scrape.
+                        markDeletedWorlds();
+                    }
                 } catch (Exception e) {
                     try {
                         error("Scraper error", e);
@@ -95,8 +113,21 @@ public class Scraper {
     }
 
     public void scrape() throws Exception {
-        if (!CONFIG.scrape) return;
+        if (!CONFIG.scrape) {
+            return;
+        }
+
         Minecraft client = Minecraft.getInstance();
+
+        if (client.getCurrentServer() == null) {
+            return;
+        }
+
+        if (!Database.isConnected()) {
+            LOGGER.warn("Database is not connected");
+            return;
+        }
+
         MongoCollection<Document> stats = Database.getStats();
 
         // Please ignore the nulls. Only the 'input' is actually used
@@ -137,7 +168,7 @@ public class Scraper {
                     .updateOne(eq("name", player.getProfile().name()), Updates.set("legiticoins", legiticoins));
         }
 
-        client.player.closeContainer();
+        client.submit(() -> client.player.closeContainer());
 
         String lobbyRawDescription = "[";
 
@@ -383,42 +414,102 @@ public class Scraper {
                             client.player.containerMenu.containerId, 32, 0, ContainerInput.PICKUP, client.player);
             waitSeconds(1); // wait a sec to give legmos time to load
         }
-        client.player.closeContainer();
+
+        client.submit(() -> client.player.closeContainer());
+
         LOGGER.info("Finished Scraping");
     }
 
-    private void bulkUpsert(List<World> worlds, List<Player> players) {
-        List<WriteModel<World>> operations = new ArrayList<>();
-        List<WriteModel<Player>> playerOperations = new ArrayList<>();
-        LOGGER.info("writing world");
-        for (World world : worlds) {
-            LOGGER.info(world.world_uuid());
-            boolean deleted = false;
-            Document worldPrev = Database.getWorldDocuments()
-                    .find(eq("world_uuid", world.world_uuid()))
-                    .first();
+    /**
+     * Searches through the world database and marks all worlds that have not been
+     * scraped within DELETION_TIME_MILLIS as deleted, and UNLOCK_TIME_MILLIS as offline.
+     * <p>
+     * This ensures that the 'deleted' field is up to date, and that old unscraped worlds
+     * do not appear online.
+     */
+    private void markDeletedWorlds() {
+        LOGGER.info("Marking Deleted Worlds...");
+        long now = System.currentTimeMillis();
 
-            if (worldPrev != null) {
-                Date lastScraped = worldPrev.getDate("last_scraped_ms");
+        MongoCollection<Document> worlds = Database.getWorldDocuments();
 
-                if (lastScraped != null
-                        && System.currentTimeMillis() - lastScraped.getTime() > TimeUnit.HOURS.toMillis(24)) {
-                    deleted = true;
-                }
+        for (Document world : worlds.find()) {
+            Date lastScraped = world.getDate("last_scraped_ms");
+            // null check should not be necessary
+            if (lastScraped == null) {
+                continue;
             }
 
-            Document prevWorldStats = Database.getWorldStats()
-                    .find(eq("world_uuid", world.world_uuid()))
-                    .first();
-            JsonObject statsObj = new JsonObject();
-            if (prevWorldStats != null) {
-                Document stats = prevWorldStats.getList("stats", Document.class).getLast();
-                if (world.visits() != stats.getInteger("visits") || world.votes() != stats.getInteger("votes")) {
-                    writeWorldStats(world, statsObj);
-                }
-            } else {
+            long elapsed = now - lastScraped.getTime();
+            if (elapsed > DELETION_TIME_MILLIS) {
+                updateOutdatedWorld(world, true);
+                LOGGER.info(
+                        "Marked world {} as deleted: last scraped {} hours ago",
+                        world.getString("name"),
+                        elapsed / 1000 / 60 / 60);
+            } else if (elapsed > UNLOCK_TIME_MILLIS) {
+                updateOutdatedWorld(world, false);
+                LOGGER.info(
+                        "Marked world {} as offline: last scraped {} hours ago",
+                        world.getString("name"),
+                        elapsed / 1000 / 60 / 60);
+            }
+        }
+    }
+
+    /**
+     * Sets the world to offline with a 0 player count
+     * @param setDeleted whether to also set it to deleted
+     */
+    private void updateOutdatedWorld(Document world, boolean setDeleted) {
+        String uuid = world.getString("world_uuid");
+        Bson setOffline = Updates.combine(Updates.set("player_count", 0), Updates.set("locked", false));
+        Bson update = setDeleted ? Updates.combine(setOffline, Updates.set("deleted", true)) : setOffline;
+        Bson filter = Filters.eq("world_uuid", uuid);
+        Database.getWorldDocuments().updateOne(filter, update);
+    }
+
+    /**
+     * Updates the world stats for the given world. This data is stored in the
+     * world stats collection and found with the worlds/stats/ endpoint
+     * @param world The world in question
+     */
+    private void updateWorldStats(World world) {
+        Document prevWorldStats = Database.getWorldStats()
+                .find(eq("world_uuid", world.world_uuid()))
+                .first();
+        JsonObject statsObj = new JsonObject();
+        if (prevWorldStats != null) {
+            Document stats = prevWorldStats.getList("stats", Document.class).getLast();
+            if (world.visits() != stats.getInteger("visits") || world.votes() != stats.getInteger("votes")) {
                 writeWorldStats(world, statsObj);
             }
+        } else {
+            writeWorldStats(world, statsObj);
+        }
+    }
+
+    private void writeWorldStats(World world, JsonObject statsObj) {
+        statsObj.addProperty("timestamp", world.last_scraped_ms().getValue());
+        statsObj.addProperty("visits", world.visits());
+        statsObj.addProperty("votes", world.votes());
+
+        Bson statUpdates = Updates.push("stats", Document.parse(statsObj.toString()));
+
+        Database.getWorldStats()
+                .updateOne(eq("world_uuid", world.world_uuid()), statUpdates, new UpdateOptions().upsert(true));
+    }
+
+    private void bulkUpsert(List<World> worlds, List<Player> players) {
+        List<WriteModel<World>> worldOperations = new ArrayList<>();
+        List<WriteModel<Player>> playerOperations = new ArrayList<>();
+
+        LOGGER.info("writing world");
+
+        for (World world : worlds) {
+            LOGGER.info(world.world_uuid());
+
+            updateWorldStats(world);
 
             Bson updates = Updates.combine(
                     Updates.set("creation_date", world.creation_date()),
@@ -446,8 +537,8 @@ public class Scraper {
                     Updates.set("icon", world.icon()),
                     Updates.set("last_scraped", world.last_scraped()),
                     Updates.set("last_scraped_ms", world.last_scraped_ms()),
-                    Updates.set("deleted", deleted));
-            operations.add(new UpdateOneModel<>(
+                    Updates.set("deleted", false)); // Can not be deleted if just scraped!
+            worldOperations.add(new UpdateOneModel<>(
                     eq("world_uuid", world.world_uuid()), updates, new UpdateOptions().upsert(true)));
         }
 
@@ -461,31 +552,22 @@ public class Scraper {
                             "last_joined", new BsonDateTime(player.last_joined().toEpochMilli())),
                     Updates.set("legiticoins", player.legiticoins()),
                     Updates.setOnInsert("blocked", player.blocked()));
-
             playerOperations.add(
                     new UpdateOneModel<>(eq("uuid", player.uuid()), playerUpdates, new UpdateOptions().upsert(true)));
         }
 
-        if (!operations.isEmpty()) {
-            Database.getWorlds().bulkWrite(operations);
+        // Write the data
+
+        if (!worldOperations.isEmpty()) {
+            Database.getWorlds().bulkWrite(worldOperations);
         }
 
         if (!playerOperations.isEmpty()) {
             Database.getPlayers().bulkWrite(playerOperations);
         }
-        LOGGER.info("Bulk wrote {} worlds", operations.size());
+
+        LOGGER.info("Bulk wrote {} worlds", worldOperations.size());
         LOGGER.info("Bulk wrote {} players", playerOperations.size());
-    }
-
-    private void writeWorldStats(World world, JsonObject statsObj) {
-        statsObj.addProperty("timestamp", world.last_scraped_ms().getValue());
-        statsObj.addProperty("visits", world.visits());
-        statsObj.addProperty("votes", world.votes());
-
-        Bson statUpdates = Updates.push("stats", Document.parse(statsObj.toString()));
-
-        Database.getWorldStats()
-                .updateOne(eq("world_uuid", world.world_uuid()), statUpdates, new UpdateOptions().upsert(true));
     }
 
     private Optional<String> getNbtString(CompoundTag tag, String field) {
