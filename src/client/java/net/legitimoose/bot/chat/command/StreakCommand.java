@@ -10,11 +10,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
-import net.legitimoose.bot.scraper.Database;
-import net.legitimoose.bot.scraper.Player;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import net.legitimoose.bot.scraper.Database;
+import net.legitimoose.bot.scraper.Player;
 
 public class StreakCommand {
 

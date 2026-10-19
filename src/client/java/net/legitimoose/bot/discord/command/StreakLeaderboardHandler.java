@@ -3,6 +3,8 @@ package net.legitimoose.bot.discord.command;
 import static com.mongodb.client.model.Sorts.descending;
 
 import com.mongodb.client.model.Filters;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -11,9 +13,6 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.legitimoose.bot.scraper.Database;
 import net.legitimoose.bot.scraper.Player;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 public class StreakLeaderboardHandler extends ListenerAdapter {
     static int maxId = 0;
