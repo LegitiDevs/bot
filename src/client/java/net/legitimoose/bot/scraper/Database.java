@@ -37,6 +37,15 @@ public class Database {
         mutes = database.getCollection("mutes", BotMute.class);
     }
 
+    public static boolean isConnected() {
+        try {
+            instance.database.runCommand(new Document("ping", 1));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private static Database getInstance() {
         return instance == null ? (instance = new Database()) : instance;
     }
