@@ -68,6 +68,9 @@ public class PlayerEndpoint {
                 player.addProperty("rank", rank.toString());
                 player.addProperty("online", online);
                 player.addProperty("world", world);
+                if (dbPlayer.last_joined() != Instant.EPOCH) {
+                    player.addProperty("last_seen", dbPlayer.last_joined().toString());
+                }
                 response.add(player);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -114,6 +117,9 @@ public class PlayerEndpoint {
             response.addProperty("streak", dbPlayer.streak().days());
             response.addProperty("online", online);
             response.addProperty("world", world);
+            if (dbPlayer.last_joined() != Instant.EPOCH) {
+                response.addProperty("last_seen", dbPlayer.last_joined().toString());
+            }
             response.addProperty("legiticoins", dbPlayer.legiticoins());
         } catch (Exception e) {
             throw new RuntimeException(e);
