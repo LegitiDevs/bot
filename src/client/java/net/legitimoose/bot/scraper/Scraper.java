@@ -9,7 +9,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.serialization.JsonOps;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.*;
 import java.io.IOException;
@@ -76,6 +75,11 @@ public class Scraper {
 
     public void startScraping() {
         isScraping = true;
+
+        // Mark worlds that have not been scraped for set amounts of time as offline and/or deleted
+        // Called here so that it only occurs once each 24 hours
+        markDeletedWorlds();
+
         while (true) {
             if (!scrapeOverride) {
                 try {
@@ -407,10 +411,6 @@ public class Scraper {
         }
 
         client.submit(()->client.player.closeContainer());
-
-        // Mark worlds that have not been scraped for set amounts of time
-        // as offline and/or deleted
-        markDeletedWorlds();
 
         LOGGER.info("Finished Scraping");
     }
