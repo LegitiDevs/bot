@@ -506,11 +506,6 @@ public class Scraper {
 
         LOGGER.info("writing world");
 
-
-        // Bug here was that iterating over this worlds list
-        // only ever iterates over NON deleted worlds (because they were just scraped)
-        // and hence no world ever gets set to deleted
-
         for (World world : worlds) {
             LOGGER.info(world.world_uuid());
 
