@@ -2,9 +2,12 @@ package net.legitimoose.bot.http;
 
 import static spark.Spark.get;
 
+import com.google.gson.JsonObject;
 import net.fabricmc.loader.api.FabricLoader;
 import net.legitimoose.bot.http.endpoint.PlayerEndpoint;
 import net.legitimoose.bot.http.endpoint.PlayersEndpoint;
+import net.legitimoose.bot.util.McUtil;
+import net.minecraft.client.Minecraft;
 
 public class HttpServer {
     private static HttpServer INSTANCE;
@@ -12,13 +15,16 @@ public class HttpServer {
     public void start() {
         get("/", (req, res) -> {
             res.type("application/json");
-            return String.format(
-                    "{\"version\":\"%s\"}",
-                    FabricLoader.getInstance()
-                            .getModContainer("legitimoose-bot")
-                            .get()
-                            .getMetadata()
-                            .getVersion());
+            JsonObject response = new JsonObject();
+            response.addProperty("version", FabricLoader.getInstance()
+                    .getModContainer("legitimoose-bot")
+                    .get()
+                    .getMetadata()
+                    .getVersion()
+                    .getFriendlyString());
+            response.addProperty("online", McUtil.isOnline());
+
+            return response;
         });
 
         get("/players", (req, res) -> {

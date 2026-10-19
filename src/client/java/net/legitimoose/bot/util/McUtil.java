@@ -2,7 +2,11 @@ package net.legitimoose.bot.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -55,5 +59,14 @@ public class McUtil {
         result = result.replaceAll("[\\x00-\\x1f\\x7f\\xa7]", "?");
         if (result.length() > 256) result = result.substring(0, 253) + "..";
         return result;
+    }
+
+    /// @return true if connected to legitimoose.com
+    public static boolean isOnline() {
+        ClientPacketListener connection = Minecraft.getInstance().getConnection();
+
+        return connection != null
+                && connection.getConnection().getRemoteAddress() instanceof InetSocketAddress address
+                && address.getAddress().getHostAddress().equals("170.205.24.42");
     }
 }
