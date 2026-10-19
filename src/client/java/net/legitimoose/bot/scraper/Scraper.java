@@ -113,13 +113,15 @@ public class Scraper {
     }
 
     public void scrape() throws Exception {
-        if (!CONFIG.scrape)
+        if (!CONFIG.scrape) {
             return;
+        }
 
         Minecraft client = Minecraft.getInstance();
 
-        if (client.getCurrentServer() == null)
+        if (client.getCurrentServer() == null) {
             return;
+        }
 
         if (!Database.isConnected()) {
             LOGGER.warn("Database is not connected");
@@ -166,7 +168,7 @@ public class Scraper {
                     .updateOne(eq("name", player.getProfile().name()), Updates.set("legiticoins", legiticoins));
         }
 
-        client.submit(()-> client.player.closeContainer());
+        client.submit(() -> client.player.closeContainer());
 
         String lobbyRawDescription = "[";
 
@@ -413,7 +415,7 @@ public class Scraper {
             waitSeconds(1); // wait a sec to give legmos time to load
         }
 
-        client.submit(()->client.player.closeContainer());
+        client.submit(() -> client.player.closeContainer());
 
         LOGGER.info("Finished Scraping");
     }
@@ -434,8 +436,9 @@ public class Scraper {
         for (Document world : worlds.find()) {
             Date lastScraped = world.getDate("last_scraped_ms");
             // null check should not be necessary
-            if (lastScraped == null)
+            if (lastScraped == null) {
                 continue;
+            }
 
             long elapsed = now - lastScraped.getTime();
             if (elapsed > DELETION_TIME_MILLIS) {
@@ -443,16 +446,13 @@ public class Scraper {
                 LOGGER.info(
                         "Marked world {} as deleted: last scraped {} hours ago",
                         world.getString("name"),
-                        (elapsed / 1000 / 60 / 60)
-                );
-            }
-            else if (elapsed > UNLOCK_TIME_MILLIS) {
+                        elapsed / 1000 / 60 / 60);
+            } else if (elapsed > UNLOCK_TIME_MILLIS) {
                 updateOutdatedWorld(world, false);
                 LOGGER.info(
                         "Marked world {} as offline: last scraped {} hours ago",
                         world.getString("name"),
-                        (elapsed / 1000 / 60 / 60)
-                );
+                        elapsed / 1000 / 60 / 60);
             }
         }
     }
@@ -463,10 +463,7 @@ public class Scraper {
      */
     private void updateOutdatedWorld(Document world, boolean setDeleted) {
         String uuid = world.getString("world_uuid");
-        Bson setOffline = Updates.combine(
-                Updates.set("player_count", 0),
-                Updates.set("locked", false)
-        );
+        Bson setOffline = Updates.combine(Updates.set("player_count", 0), Updates.set("locked", false));
         Bson update = setDeleted ? Updates.combine(setOffline, Updates.set("deleted", true)) : setOffline;
         Bson filter = Filters.eq("world_uuid", uuid);
         Database.getWorldDocuments().updateOne(filter, update);
@@ -551,7 +548,8 @@ public class Scraper {
                     Updates.set("name", player.name()),
                     Updates.set("rank", player.rank()),
                     Updates.set("streak", player.streak()),
-                    Updates.set("last_joined", new BsonDateTime(player.last_joined().toEpochMilli())),
+                    Updates.set(
+                            "last_joined", new BsonDateTime(player.last_joined().toEpochMilli())),
                     Updates.set("legiticoins", player.legiticoins()),
                     Updates.setOnInsert("blocked", player.blocked()));
             playerOperations.add(
