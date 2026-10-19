@@ -75,15 +75,18 @@ public class Scraper {
 
     public void startScraping() {
         isScraping = true;
-
-        // Mark worlds that have not been scraped for set amounts of time as offline and/or deleted
-        // Called here so that it only occurs once each 24 hours
-        markDeletedWorlds();
+        int scrape = 0;
 
         while (true) {
             if (!scrapeOverride) {
                 try {
                     scrape();
+                    if (++scrape == 10) {
+                        scrape = 0;
+                        // Mark worlds that have not been scraped for set amounts of
+                        // time as offline and/or deleted. Happens after every 10th scrape.
+                        markDeletedWorlds();
+                    }
                 } catch (Exception e) {
                     try {
                         error("Scraper error", e);
