@@ -70,7 +70,7 @@ public class GameChatHandler {
     public void handleChat(Component component) {
         lastMessages.add(component);
 
-        handleChat(component, component.getString(), webhook);
+        handleChat(component, component.getString().replaceAll("§.", ""), webhook);
     }
 
     private void handleChat(Component original, String message, DiscordWebhook webhook) {
