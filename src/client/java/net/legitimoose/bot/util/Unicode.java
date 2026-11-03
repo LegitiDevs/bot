@@ -130,7 +130,7 @@ public class Unicode {
         // Posted by Nick Bull, modified by community. See post 'Timeline' for change history
         // Retrieved 2026-11-03, License - CC BY-SA 3.0
 
-        String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+        String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\p{IsAlphabetic}\\s]";
         return orig.replaceAll(characterFilter, "");
     }
 
