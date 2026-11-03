@@ -125,8 +125,18 @@ public class Unicode {
             Map.entry("Z", "🄩🅉ꓜ𝗭𝐙☡Ꮓ𝘡🆉🅩ⓏＺẔƵ乙ẐȤᶻ⒵ŹℤΖŻŽẒⱫ🇿"),
             Map.entry("z", "𝑍𝒁𝒵𝓩𝖹𝙕𝚉𝚭𝛧𝜡𝝛𝞕ᵶꮓ𝐳𝑧𝒛𝓏𝔃𝔷𝕫𝖟𝗓𝘇𝘻𝙯𝚣ⓩｚźẑżžẓẕƶȥɀᴢጊʐⱬᶎʑᙆ"));
 
+    public static String stripEmojis(String orig) {
+        // Source - https://stackoverflow.com/a/49516025
+        // Posted by Nick Bull, modified by community. See post 'Timeline' for change history
+        // Retrieved 2026-11-03, License - CC BY-SA 3.0
+
+        String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+        return orig.replaceAll(characterFilter, "");
+    }
+
     public static String normalize(String orig) throws CharacterCodingException {
         StringBuilder normalized = new StringBuilder();
+        orig = stripEmojis(orig);
         for (char c : orig.toCharArray()) {
             String cStr = Character.toString(c);
             normalized.append(CONFUSABLES.entrySet().stream()
