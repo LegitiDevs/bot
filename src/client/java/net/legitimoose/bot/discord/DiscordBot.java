@@ -4,6 +4,7 @@ import static net.legitimoose.bot.LegitimooseBot.CONFIG;
 import static net.legitimoose.bot.LegitimooseBot.LOGGER;
 
 import dev.vankka.mcdiscordreserializer.minecraft.MinecraftSerializer;
+import java.util.HashMap;
 import java.util.List;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -27,6 +28,8 @@ import net.minecraft.client.Minecraft;
 
 public class DiscordBot extends ListenerAdapter {
     public static JDA jda;
+
+    private static final HashMap<String, String> messageCache = new HashMap<>();
 
     public static void run() {
         List<ListenerAdapter> commands = List.of(
@@ -142,6 +145,10 @@ public class DiscordBot extends ListenerAdapter {
         if (event.getChannel().getId().equals(CONFIG.channelId)) {
             Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
         }
+
+        if (messageCache.size() > 10) messageCache.clear();
+
+        messageCache.put(event.getMessageId(), event.getMessage().getContentRaw());
     }
 
     @Override
@@ -153,6 +160,17 @@ public class DiscordBot extends ListenerAdapter {
         } else {
             discordNick = event.getMember().getEffectiveName();
         }
+
+        if (CONFIG.channelId.isEmpty()) LOGGER.error("Discord channel ID is not set in config!");
+        if (!event.getChannel().getId().equals(CONFIG.channelId)) return;
+
+        // dont send edited message if same content
+        String newContent = event.getMessage().getContentRaw();
+        String cachedContent = messageCache.get(event.getMessageId());
+        if (newContent.equals(cachedContent)) return;
+
+        messageCache.put(event.getMessageId(), newContent);
+
         Component formattedMesssage =
                 MinecraftSerializer.INSTANCE.serialize(event.getMessage().getContentDisplay());
         String message = String.format(
@@ -162,9 +180,6 @@ public class DiscordBot extends ListenerAdapter {
             message += " <blue>[Attachment Included]</blue>";
         }
         message += " <blue>[Edited]</blue>";
-        if (CONFIG.channelId.isEmpty()) LOGGER.error("Discord channel ID is not set in config!");
-        if (event.getChannel().getId().equals(CONFIG.channelId)) {
-            Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
-        }
+        Minecraft.getInstance().player.connection.sendChat(McUtil.sanitizeString(message));
     }
 }
